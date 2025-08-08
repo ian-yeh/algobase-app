@@ -11,8 +11,6 @@ export default async function middleware(request: NextRequest) {
 
   const isProtected = protectedRoutes.some((route) => pathname.startsWith((route)))
 
-  console.log(session);
-
   if (isProtected && !session) {
     return NextResponse.redirect(new URL("/sign-in", request.url))
   }

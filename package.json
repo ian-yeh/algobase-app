@@ -6,11 +6,23 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit up",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:drop": "drizzle-kit drop"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.10.0",
+    "@neondatabase/serverless": "^1.0.1",
+    "dotenv": "^17.2.1",
+    "drizzle-orm": "^0.44.4",
+    "groq-sdk": "^0.30.0",
+    "lucide-react": "^0.539.0",
     "next": "15.4.5",
     "next-auth": "^5.0.0-beta.29",
+    "postgres": "^3.4.7",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
@@ -20,6 +32,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.4.5",
     "tailwindcss": "^4",

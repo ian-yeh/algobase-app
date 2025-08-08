@@ -1,17 +1,17 @@
 import { ReactNode } from "react";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-// import { after } from "next/server";
-//import { db } from "@/database/drizzle";
-//import { users } from "@/database/schema";
-//import { eq } from "drizzle-orm";
+import { after } from "next/server";
+import { db } from "@/database/drizzle";
+import { users } from "@/database/schema";
+import { eq } from "drizzle-orm";
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const session = await auth();
 
   if (!session) redirect("/sign-in");
 
-  /* 
+  // updating the user's activity date
   after(async () => {
     if (!session?.user?.id) return;
 
@@ -29,7 +29,6 @@ const Layout = async ({ children }: { children: ReactNode }) => {
       .set({ lastActivityDate: new Date().toISOString().slice(0, 10) })
       .where(eq(users.id, session?.user?.id));
   });
-  */
 
   return (
     <main className="">
