@@ -11,6 +11,7 @@ export const {
     signOut 
 } = NextAuth({
   adapter: DrizzleAdapter(db),
+  trustHost: true,
   providers: [
     GitHubProvider({
       clientId: process.env.AUTH_GITHUB_ID!,
