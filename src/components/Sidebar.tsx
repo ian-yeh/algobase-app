@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, User, Settings, Mail, Info } from 'lucide-react';
@@ -18,9 +17,9 @@ export const Sidebar = () => {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <div className="font-sans flex flex-col bg-white border-r border-gray-200 h-full w-full rounded-lg">
+    <div className="font-sans flex flex-col bg-background border-r border-border h-full w-full rounded-lg">
       <div className="flex-1 p-4 h-full">
-        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           GENERAL
         </div>
         <div className="space-y-1">
@@ -30,8 +29,8 @@ export const Sidebar = () => {
               href={href}
               className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-colors ${
                 isActive(href)
-                  ? "text-white bg-gray-900"
-                  : "text-gray-700 hover:bg-gray-200"
+                  ? "text-primary-foreground bg-primary"
+                  : "text-foreground hover:bg-muted"
               }`}
             >
               <Icon size={18} />
