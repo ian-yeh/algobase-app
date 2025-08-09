@@ -16,6 +16,8 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
     "@neondatabase/serverless": "^1.0.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.4",
     "groq-sdk": "^0.30.0",
@@ -24,7 +26,8 @@
     "next-auth": "^5.0.0-beta.29",
     "postgres": "^3.4.7",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -36,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.5",
     "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.6",
     "typescript": "^5"
   }
 }

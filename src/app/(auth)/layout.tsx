@@ -8,7 +8,7 @@ const Layout = async ({ children }: { children: ReactNode }) => {
   if (session) redirect("/home");
 
   return (
-    <main className="auth-container">
+    <main className="">
       <div>{children}</div>
     </main>
   );
