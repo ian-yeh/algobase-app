@@ -1,29 +1,19 @@
-"use client";
-import { useUser } from "@/components/providers/UserProvider";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive"
+import { DataTable } from "@/components/data-table"
+import { SectionCards } from "@/components/section-cards"
 
-const HomePage = () => {
-  const { user } = useUser();
-  if (!user) return <div>Please log in</div>
-  console.log(user.name)
-  
+import data from "./data.json"
+
+export default function Page() {
   return (
-    <div className="flex flex-col font-sans bg-background min-h-screen">
-      
-      {/* Main content with fixed sidebar width */}
-      <main className="flex flex-1">
-        <div className="flex flex-col flex-1">
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-4 p-4">
-            <div className="bg-card text-card-foreground p-4 rounded-lg xl:col-span-2 border border-border">Chart</div>
-            <div className="bg-card text-card-foreground p-4 rounded-lg border border-border">Chart</div>
-            <div className="bg-card text-card-foreground p-4 rounded-lg border border-border">Chart</div>
-            <div className="bg-card text-card-foreground p-4 rounded-lg border border-border">Chart</div>
-            <div className="bg-card text-card-foreground p-4 rounded-lg border border-border">Chart</div>
-            <div className="bg-card text-card-foreground p-4 rounded-lg xl:col-span-2 border border-border">Chart</div>
-          </div>
+    <div className="@container/main flex flex-1 flex-col gap-2">
+      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+        <SectionCards />
+        <div className="px-4 lg:px-6">
+          <ChartAreaInteractive />
         </div>
-      </main>
+        <DataTable data={data} />
+      </div>
     </div>
-  );
-};
-
-export default HomePage;
+  )
+}
