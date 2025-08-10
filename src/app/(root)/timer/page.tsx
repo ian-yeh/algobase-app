@@ -5,7 +5,7 @@ import { useInspection } from "@/hooks/use-inspection";
 import { useSolves } from "@/hooks/use-solves";
 import { useScramble } from "@/hooks/use-scramble";
 import { useKeyboardControls } from "@/hooks/use-keyboard-controls";
-import { ScrambleCard } from "@/components/timer/ScrambleCard";
+import { ScrambleCard } from "@/components/timer/TimerMain";
 import { StatsCard } from "@/components/timer/StatsCard";
 import { HistoryCard } from "@/components/timer/HistoryCard";
 import { exportData, importData } from "@/lib/timer/dataHandlers";
@@ -80,11 +80,8 @@ const Timer = () => {
 
   return (
     <main className="mx-auto max-w-5xl p-4 sm:p-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">AlgoBase Timer</h1>
-      </header>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="flex flex-col md:flex-row gap-6">
         <ScrambleCard
           scramble={currentScramble}
           canGoPrev={scrambleIndex > 0}
@@ -102,20 +99,25 @@ const Timer = () => {
           isInspecting={isInspecting}
         />
 
+        {/*
         <StatsCard
           solves={solves}
           onExport={() => exportData(solves)}
           onImport={handleImport}
           onReset={resetSolves}
         />
+        */}
       </section>
 
+      {/*
       <section className="mt-6">
         <HistoryCard
           solves={solves}
           onUpdatePenalty={updateSolvePenalty}
         />
       </section>
+
+      */}
 
       <input 
         ref={importRef} 
