@@ -5,7 +5,8 @@ import { useInspection } from "@/hooks/use-inspection";
 import { useSolves } from "@/hooks/use-solves";
 import { useScramble } from "@/hooks/use-scramble";
 import { useKeyboardControls } from "@/hooks/use-keyboard-controls";
-import { ScrambleCard } from "@/components/timer/TimerMain";
+import { ScrambleCard } from "@/components/timer/ScrambleCard";
+import { TimerMain } from "@/components/timer/TimerMain";
 import { StatsCard } from "@/components/timer/StatsCard";
 import { HistoryCard } from "@/components/timer/HistoryCard";
 import { exportData, importData } from "@/lib/timer/dataHandlers";
@@ -79,9 +80,8 @@ const Timer = () => {
   });
 
   return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-8">
-
-      <section className="flex flex-col md:flex-row gap-6">
+    <main className="mx-auto w-8xl p-4 sm:p-8">
+      <section className="flex flex-col gap-6 justify-center">
         <ScrambleCard
           scramble={currentScramble}
           canGoPrev={scrambleIndex > 0}
@@ -90,33 +90,36 @@ const Timer = () => {
           onNewSession={newSession}
           inspectionEnabled={true}
           onToggleInspection={() => {}} // You'll need to add this state
-          onRestartInspection={() => setIsInspecting(true)}
-          onStartStop={isRunning ? handleStop : handleStart}
+        />
+
+        <TimerMain
           elapsed={elapsed}
           isRunning={isRunning}
           isPrimed={isPrimed}
           inspectionLeft={inspectLeft}
           isInspecting={isInspecting}
+          inspectionEnabled={true}
+          onRestartInspection={() => setIsInspecting(true)}
+          onStartStop={isRunning ? handleStop : handleStart}
         />
+      </section>
 
-        {/*
+      {/*
+      <section className="mt-6">
         <StatsCard
           solves={solves}
           onExport={() => exportData(solves)}
           onImport={handleImport}
           onReset={resetSolves}
         />
-        */}
       </section>
 
-      {/*
       <section className="mt-6">
         <HistoryCard
           solves={solves}
           onUpdatePenalty={updateSolvePenalty}
         />
       </section>
-
       */}
 
       <input 
