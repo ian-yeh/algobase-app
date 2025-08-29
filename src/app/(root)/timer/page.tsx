@@ -129,8 +129,6 @@ const Timer = () => {
         className="hidden" 
         onChange={handleFileImport}
       />
-      <h1>adding to timer page</h1>
-      <h1>adding to timer page</h1>
     </main>
   );
 };
