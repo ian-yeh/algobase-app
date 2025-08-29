@@ -1,54 +1,65 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { TimerDisplay } from "./TimerDisplay";
+import React, { useState, useEffect, useCallback } from 'react';
 
-interface TimerMainProps {
-  elapsed: number;
-  isRunning: boolean;
-  isPrimed: boolean;
-  inspectionLeft: number;
-  isInspecting: boolean;
-  inspectionEnabled: boolean;
-  onRestartInspection: () => void;
-  onStartStop: () => void;
-}
+const TimerMain = () => {
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [pressStartTime, setPressStartTime] = useState<number | null>(null);
+  const [currentColor, setCurrentColor] = useState('text-white');
 
-export const TimerMain = ({
-  elapsed,
-  isRunning,
-  isPrimed,
-  inspectionLeft,
-  isInspecting,
-  inspectionEnabled,
-  onRestartInspection,
-  onStartStop,
-}: TimerMainProps) => {
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.code === 'Space' && !isSpacePressed) {
+      setIsSpacePressed(true);
+      setPressStartTime(Date.now());
+      setCurrentColor('text-red-500'); // initial hold color
+    }
+  }, [isSpacePressed]);
+
+  const handleKeyUp = useCallback((event: KeyboardEvent) => {
+    if (event.code === 'Space' && isSpacePressed) {
+      setIsSpacePressed(false);
+      setPressStartTime(null);
+      setCurrentColor('text-white'); // reset on release
+    }
+  }, [isSpacePressed]);
+
+  // Watch press duration while holding
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isSpacePressed && pressStartTime) {
+      interval = setInterval(() => {
+        const heldTime = Date.now() - pressStartTime;
+        if (heldTime >= 500) {
+          setCurrentColor('text-green-500');
+        } else {
+          setCurrentColor('text-red-500');
+        }
+      }, 100); // check every 100ms
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isSpacePressed, pressStartTime]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyDown, handleKeyUp]);
+
   return (
-    <Card className="w-full md:w-[450px]">
-      <CardContent className="p-8">
-        <div className="flex flex-col items-center justify-center py-12 border rounded-lg">
-          <TimerDisplay
-            elapsed={elapsed}
-            isRunning={isRunning}
-            isPrimed={isPrimed}
-            inspectionLeft={inspectionLeft}
-            isInspecting={isInspecting}
-            inspectionEnabled={inspectionEnabled}
-          />
-          <div className="mt-4 flex items-center gap-2">
-            <Button
-              variant="secondary"
-              onClick={onRestartInspection}
-              disabled={!inspectionEnabled || isRunning}
-            >
-              Restart Inspection
-            </Button>
-            <Button variant="outline" onClick={onStartStop}>
-              {isRunning ? "Stop" : "Start"}
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="w-full md:w-12xl p-8">
+      <div className="flex flex-col justify-center items-center">
+        <h1 className={`text-[200px] transition-colors duration-300 ${currentColor}`}>
+          0.00
+        </h1>
+      </div>
+    </div>
   );
 };
+
+export default TimerMain;
