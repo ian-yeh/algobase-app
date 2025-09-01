@@ -6,3 +6,4 @@ export type UserType = {
   emailVerified: Date | null,
   lastActivityDate: string | null,
 } | null;
+
