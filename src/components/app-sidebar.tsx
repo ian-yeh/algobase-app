@@ -34,7 +34,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-import Logo from "@/components/logo";
+import Logo from "@/components/AlgobaseLogo";
 
 const data = {
   navMain: [

@@ -1,5 +1,5 @@
 import { SignInWithGithub } from "@/components/SignInWithGithub"
-import Logo from "@/components/logo";
+import Logo from "@/components/AlgobaseLogo";
 import { SignInWithGoogle } from "@/components/SignInWithGoogle"
 
 const Page = () => {
