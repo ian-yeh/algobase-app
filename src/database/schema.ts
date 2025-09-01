@@ -107,8 +107,8 @@ export const times = pgTable("times", {
   userId: text("user_id").notNull(), // assuming you have user authentication
   time: integer("time").notNull(), // store as centiseconds (e.g., 1234 = 12.34 seconds)
   scramble: text("scramble").notNull(),
-  dnf: boolean("dnf").default(false), // Did Not Finish
-  plusTwo: boolean("plus_two").default(false), // +2 penalty
+  dnf: boolean("dnf").default(false).notNull(), // Did Not Finish
+  plusTwo: boolean("plus_two").default(false).notNull(), // +2 penalty
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Logo from "@/components/logo";
+import Logo from "@/components/AlgobaseLogo";
 
 interface HeaderProps {
   userAvatar?: string;
