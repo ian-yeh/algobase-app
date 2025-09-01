@@ -43,11 +43,6 @@ const data = {
       url: "/home",
       icon: IconDashboard,
     },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
   ],
   navClouds: [
     {
@@ -158,7 +153,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavTraining items={data.training} />
+        {/*
         <NavSecondary items={data.navSecondary} className="mt-auto" />
+        */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
