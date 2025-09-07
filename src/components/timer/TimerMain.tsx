@@ -10,7 +10,7 @@ interface TimerMainProps {
 const TimerMain = ({ onSolveComplete, currentScramble, userId }: TimerMainProps) => {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [pressStartTime, setPressStartTime] = useState<number | null>(null);
-  const [currentColor, setCurrentColor] = useState('text-white');
+  const [currentColor, setCurrentColor] = useState('text-foreground');
   const [timerStart, setTimerStart] = useState(false);
   const [timerStartTime, setTimerStartTime] = useState<number | null>(null);
   const [time, setTime] = useState(0.00);
@@ -24,7 +24,7 @@ const TimerMain = ({ onSolveComplete, currentScramble, userId }: TimerMainProps)
         console.log(roundedTime, currentScramble)
         setTimerStart(false);
         setTimerStartTime(null);
-        setCurrentColor('text-white');
+        setCurrentColor('text-foreground');
 
         onSolveComplete();
 
@@ -66,10 +66,10 @@ const TimerMain = ({ onSolveComplete, currentScramble, userId }: TimerMainProps)
         setTimerStart(true);
         setTimerStartTime(Date.now());
         setTime(0.00);
-        setCurrentColor('text-white');
+        setCurrentColor('text-foreground');
       } else {
         // Reset if not held long enough
-        setCurrentColor('text-white');
+        setCurrentColor('text-foreground');
       }
       
       setIsSpacePressed(false);
@@ -129,7 +129,7 @@ const TimerMain = ({ onSolveComplete, currentScramble, userId }: TimerMainProps)
         <h1 className={`text-[200px] transition-colors duration-300 ${currentColor}`}>
           {formatTime(time)}
         </h1>
-        <div className="mt-8 text-center text-gray-400">
+        <div className="mt-8 text-center text-muted-foreground">
           <p className="text-lg">
             {!timerStart && !isSpacePressed && "Hold SPACE for 0.5s to start timer"}
             {isSpacePressed && currentColor === 'text-red-500' && "Keep holding..."}

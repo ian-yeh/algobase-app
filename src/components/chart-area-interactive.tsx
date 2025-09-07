@@ -31,11 +31,11 @@ import {
 } from "@/components/ui/toggle-group"
 import { Solve } from "@/lib/types/SolveTypes"
 
-export const description = "Average solve time per day"
+export const description = "Individual solve times"
 
 const chartConfig: ChartConfig = {
   averageTime: {
-    label: "Average Time",
+    label: "Solve Time",
     color: "var(--primary)",
   },
 }
@@ -44,21 +44,13 @@ interface ChartAreaProps {
   solves: Solve[]
 }
 
-type TimeRange = "90d" | "30d" | "7d"
-
-interface DailyBucket {
-  times: number[]
-  count: number
-}
+type SolveRange = "10solves" | "50solves" | "100solves"
 
 interface ChartPoint {
-  date: string            // YYYY-MM-DD
-  averageTime: number     // centiseconds
-  count: number           // # solves that day
+  date: string
+  averageTime: number
+  count: number
 }
-
-// Convert centiseconds -> seconds (as string with 2 decimals, no "s")
-const formatTime = (centiseconds: number): string => (centiseconds / 100).toFixed(2)
 
 const formatTimeDisplay = (centiseconds: number): string => {
   const seconds = centiseconds / 100
@@ -67,90 +59,82 @@ const formatTimeDisplay = (centiseconds: number): string => {
 
 export function ChartAreaInteractive({ solves }: ChartAreaProps) {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState<TimeRange>("90d")
+  const [solveRange, setSolveRange] = React.useState<SolveRange>("100solves")
 
   React.useEffect(() => {
-    if (isMobile) setTimeRange("7d")
+    if (isMobile) setSolveRange("10solves")
   }, [isMobile])
 
-  // --- Build daily average time data ---
   const chartData: ChartPoint[] = React.useMemo(() => {
-    const daily: Record<string, DailyBucket> = {}
-
-    // Group valid solves by date (YYYY-MM-DD)
-    solves
+    const output = solves
       .filter((s) => !s.dnf)
-      .forEach((s) => {
-        const d = new Date(s.createdAt)
-        const key = d.toISOString().split("T")[0]
-        if (!daily[key]) daily[key] = { times: [], count: 0 }
-        const adjusted = s.plusTwo ? s.time + 200 : s.time
-        daily[key].times.push(adjusted)
-        daily[key].count += 1
-      })
-
-    // Sort by date first, then compute averages
-    return Object.entries(daily)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map<ChartPoint>(([date, bucket]) => {
-        const avg =
-          bucket.times.reduce((sum, t) => sum + t, 0) / (bucket.times.length || 1)
+      .map((solve) => {
+        const adjustedTime = solve.plusTwo ? solve.time + 200 : solve.time
         return {
-          date,
-          averageTime: Math.round(avg), // keep as centiseconds for the y-value
-          count: bucket.count,
+          date: new Date(solve.createdAt).toISOString(), 
+          averageTime: adjustedTime, 
+          count: 1
         }
       })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    return output;
   }, [solves])
 
-  // --- Apply time filter ---
   const filteredData: ChartPoint[] = React.useMemo(() => {
     if (chartData.length === 0) return []
-    const lastDate = new Date(chartData[chartData.length - 1].date)
 
-    const subtractDays = (range: TimeRange): number =>
-      range === "30d" ? 30 : range === "7d" ? 7 : 90
+    const getSolveCount = (range: SolveRange): number => {
+      switch (range) {
+        case "10solves": return 10
+        case "50solves": return 50  
+        case "100solves": return 100
+        default: return 100
+      }
+    }
 
-    const startDate = new Date(lastDate)
-    startDate.setDate(startDate.getDate() - subtractDays(timeRange))
+    const solveCount = getSolveCount(solveRange)
+    
+    // Take the last N solves
+    return chartData.slice(-solveCount)
+  }, [chartData, solveRange])
 
-    return chartData.filter((p) => new Date(p.date) >= startDate)
-  }, [chartData, timeRange])
+  console.log(chartData)
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Average Solve Time</CardTitle>
+        <CardTitle>Solve Timeline</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Daily average (excluding DNFs; +2 applied)
+            3x3 Times (excluding DNFs; +2 applied)
           </span>
-          <span className="@[540px]/card:hidden">Daily average time</span>
+          <span className="@[540px]/card:hidden">Solve Timeline</span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
             type="single"
-            value={timeRange}
-            onValueChange={(v) => v && setTimeRange(v as TimeRange)}
+            value={solveRange}
+            onValueChange={(v) => v && setSolveRange(v as SolveRange)}
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
+            <ToggleGroupItem value="10solves">Last 10 solves</ToggleGroupItem>
+            <ToggleGroupItem value="50solves">Last 50 solves</ToggleGroupItem>
+            <ToggleGroupItem value="100solves">Last 100 solves</ToggleGroupItem>
           </ToggleGroup>
-          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+          <Select value={solveRange} onValueChange={(v) => setSolveRange(v as SolveRange)}>
             <SelectTrigger
               className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
               size="sm"
               aria-label="Select a value"
             >
-              <SelectValue placeholder="Last 3 months" />
+              <SelectValue placeholder="Last 10 solves" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
-              <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
-              <SelectItem value="7d" className="rounded-lg">Last 7 days</SelectItem>
+              <SelectItem value="10solves" className="rounded-lg">Last 10 solves</SelectItem>
+              <SelectItem value="50solves" className="rounded-lg">Last 50 solves</SelectItem>
+              <SelectItem value="100solves" className="rounded-lg">Last 100 solves</SelectItem>
             </SelectContent>
           </Select>
         </CardAction>
@@ -191,7 +175,7 @@ export function ChartAreaInteractive({ solves }: ChartAreaProps) {
                         month: "short",
                         day: "numeric",
                       }) : ""}
-                      formatter={(value) => [formatTimeDisplay(value as number), "Average Time"]}
+                      formatter={(value) => [formatTimeDisplay(value as number), ""]}
                       indicator="dot"
                     />
                   )
