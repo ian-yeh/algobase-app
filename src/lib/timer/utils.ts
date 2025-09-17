@@ -42,16 +42,6 @@ const sameAxis = (face1: string, face2: string): boolean => {
   return OPPOSITE_FACES[face1] === face2 || OPPOSITE_FACES[face2] === face1;
 };
 
-/**
- * Generates a WCA-compliant scramble for 3x3x3 Rubik's Cube
- * 
- * Key improvements over simple random generation:
- * - Prevents consecutive moves on same face
- * - Limits consecutive moves on same axis (max 2 in a row)
- * - Uses proper move distribution
- * - Ensures sufficient randomness with 25 moves (WCA standard length)
- * - Follows WCA scramble orientation standards
- */
 export const generateScramble = (len = 25): string => {
   const moves: string[] = [];
   let lastFace: string | null = null;
