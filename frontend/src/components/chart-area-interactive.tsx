@@ -99,8 +99,6 @@ export function ChartAreaInteractive({ solves }: ChartAreaProps) {
     return chartData.slice(-solveCount)
   }, [chartData, solveRange])
 
-  console.log(chartData)
-
   return (
     <Card className="@container/card">
       <CardHeader>
