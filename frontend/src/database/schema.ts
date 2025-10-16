@@ -7,7 +7,6 @@ import {
   date,
   integer,
   serial,
-  real,
 } from "drizzle-orm/pg-core"
 import postgres from "postgres"
 import { drizzle } from "drizzle-orm/postgres-js"
@@ -29,6 +28,17 @@ export const users = pgTable("user", {
   lastActivityDate: date("last_activity_date").defaultNow(),
 })
  
+export const times = pgTable("times", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(), // assuming you have user authentication
+  time: integer("time").notNull(), // store as centiseconds (e.g., 1234 = 12.34 seconds)
+  scramble: text("scramble").notNull(),
+  dnf: boolean("dnf").default(false).notNull(), // Did Not Finish
+  plusTwo: boolean("plus_two").default(false).notNull(), // +2 penalty
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const accounts = pgTable(
   "account",
   {
@@ -101,14 +111,3 @@ export const authenticators = pgTable(
     },
   ]
 )
-
-export const times = pgTable("times", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").notNull(), // assuming you have user authentication
-  time: integer("time").notNull(), // store as centiseconds (e.g., 1234 = 12.34 seconds)
-  scramble: text("scramble").notNull(),
-  dnf: boolean("dnf").default(false).notNull(), // Did Not Finish
-  plusTwo: boolean("plus_two").default(false).notNull(), // +2 penalty
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});

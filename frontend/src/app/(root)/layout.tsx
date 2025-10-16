@@ -14,10 +14,16 @@ import { SiteHeader } from "@/components/site-header";
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const session = await auth();
-  if (!session?.user?.id) redirect("/sign-in");
+
+  if (!session?.user?.id) {
+    redirect("/sign-in")
+    return <div>Redirecting...</div>
+  }
 
   const user = await getCurrentUser(session.user.id);
   if (!user) return <div>User does not exist</div>;
+
+  console.log(session.user.id)
 
   // updating the user's activity date
   after(async () => {
@@ -33,7 +39,7 @@ const Layout = async ({ children }: { children: ReactNode }) => {
     .update(users)
     .set({ lastActivityDate: new Date().toISOString().slice(0, 10) })
     .where(eq(users.id, session?.user?.id));
-  });
+  })
 
   return (
     <div className="flex flex-col h-screen bg-background">
