@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -19,4 +20,4 @@ class UserRequest(BaseModel):
     user_id: str
     email: str
     username: str 
-    imageUrl: str
+    imageUrl: Optional[str] = None

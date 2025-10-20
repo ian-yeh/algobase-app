@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app.schemas.user import UserRequest, UserResponse 
 from app.models.user import User
+from app.models.solve import Solve
 
 app = FastAPI()
 
@@ -23,9 +24,8 @@ def read_root():
     return {"status": "200"}
 
 @app.post("/user", response_model=UserResponse)
-def create_user(req: UserRequest, db = Depends(get_db)) -> UserResponse:
-    print(req.user_id)
-
+def create_user(req: UserRequest, db = Depends(get_db)):
+    #print(req.user_id)
     user = db.query(User).filter(User.id == req.user_id).first()
 
     if user:
@@ -40,8 +40,8 @@ def create_user(req: UserRequest, db = Depends(get_db)) -> UserResponse:
             username=req.username,
             email=req.email,
             emailVerified=False,
-            imageUrl=req.user.image,
-            lastActivityDate=datetime.now()
+            image=req.imageUrl,
+            lastActivityDate=datetime.now(),
         )
 
         # Adding user to database
