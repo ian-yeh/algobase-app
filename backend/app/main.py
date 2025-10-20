@@ -40,7 +40,7 @@ def create_user(req: UserRequest, db = Depends(get_db)):
             username=req.username,
             email=req.email,
             emailVerified=False,
-            image=req.imageUrl,
+            imageUrl=req.imageUrl,
             lastActivityDate=datetime.now(),
         )
 

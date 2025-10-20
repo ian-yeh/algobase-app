@@ -10,7 +10,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     emailVerified = Column(Boolean, default=False)
-    image = Column(String, nullable=True)
+    imageUrl = Column(String, nullable=True)
     lastActivityDate = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     solves = relationship("Solve", back_populates="user")
