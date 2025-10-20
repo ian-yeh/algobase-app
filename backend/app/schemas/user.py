@@ -7,7 +7,7 @@ class User(BaseModel):
     username: str
     email: str
     emailVerified: bool
-    image: str | None
+    imageUrl: str | None
     lastActivityDate: datetime
 
 class UserResponse(BaseModel):
