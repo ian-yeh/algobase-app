@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app.schemas.user import UserRequest, UserResponse 
 from app.models.user import User
+from app.schemas.solve import SolveRequest, SolveResponse
 from app.models.solve import Solve
 
 app = FastAPI()
@@ -50,6 +51,25 @@ def create_user(req: UserRequest, db = Depends(get_db)):
         db.refresh(user)
 
     return {"user": user}
+
+@app.post("/solve", response_model=SolveResponse)
+def create_solve(req: SolveRequest, db = Depends(get_db)):
+    # Create new solve object
+    solve = Solve(
+        user_id=req.user_id,
+        time=req.time,
+        cube_type=req.cube_type,
+        scramble=req.scramble,
+        dnf=req.dnf,
+        createdAt=datetime.now(),
+    )
+
+    # Adding solve to database
+    db.add(solve)
+    db.commit()
+    db.refresh(solve)
+
+    return {"solve": solve}
 
 
 if __name__ == "__main__":
