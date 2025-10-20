@@ -1,12 +1,13 @@
 # https://dbdiagram.io/
+# run: uvicorn app.main:app --reload
 
-from core.config import SessionLocal 
+from app.core.config import SessionLocal 
 from fastapi import FastAPI, Depends
 import uvicorn
 from datetime import datetime
 
-from schemas.user import UserRequest, UserResponse 
-from models.user import User
+from app.schemas.user import UserRequest, UserResponse 
+from app.models.user import User
 
 app = FastAPI()
 
