@@ -3,8 +3,10 @@
 from core.config import SessionLocal 
 from fastapi import FastAPI, Depends
 import uvicorn
-from pydantic import BaseModel
 from datetime import datetime
+
+from schemas.user import UserRequest, UserResponse 
+from models.user import User
 
 app = FastAPI()
 
@@ -19,27 +21,34 @@ def get_db():
 def read_root():
     return {"status": "200"}
 
-class UserRequest(BaseModel):
-    user_id: str
-
-@app.post("/user")
-def create_user(req: UserRequest, db = Depends(get_db)):
+@app.post("/user", response_model=UserResponse)
+def create_user(req: UserRequest, db = Depends(get_db)) -> UserResponse:
     print(req.user_id)
 
-    user = db.query("users").filter("id" == req.user_id).first()
-    print(user)
+    user = db.query(User).filter(User.id == req.user_id).first()
 
-    # Build a full user dict that matches the User schema
-    user_obj = {
-        "id": req.user_id,
-        "username": "testuser",
-        "email": "ianyeh7@gmail.com",
-        "emailVerified": False,
-        "image": None,
-        "lastActivityDate": datetime.now()
-    }
+    if user:
+        user.lastActivityDate = datetime.now()
+        db.commit()
+        db.refresh(user)
 
-    return {"user": user_obj}
+    else:
+        # Create new user object for new user
+        user = User(
+            id=req.user_id,
+            username=req.username,
+            email=req.email,
+            emailVerified=False,
+            imageUrl=req.user.image,
+            lastActivityDate=datetime.now()
+        )
+
+        # Adding user to database
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    return {"user": user}
 
 
 if __name__ == "__main__":
