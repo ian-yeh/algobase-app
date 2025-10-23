@@ -39,7 +39,7 @@ export async function POST(req: Request) {
    }
 
    // Save to database
-   const response = await fetch(`http://127.0.0.1/solve`, {
+   const response = await fetch(`http://127.0.0.1/8000/solve`, {
      method: 'POST',
      headers: {
        'Content-Type': 'application/json',
@@ -69,4 +69,42 @@ export async function POST(req: Request) {
      { status: 500 }
    );
  }
+}
+
+// for getting all the solves for a user
+export async function GET() {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }   
+    const user = await getCurrentUser(session.user.id);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1/8000/solve?user_id=${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+  
+      const data = await response.json();
+  
+      return NextResponse.json({
+        success: true,
+        data: data.solves.map((solve: any) => ({
+          ...solve,
+          timeInSeconds: solve.time / 100
+        }))
+      }, { status: 200 });
+  
+    } catch (error) {
+      console.error("Error fetching solves:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch solves" }, 
+        { status: 500 }
+      );
+    }
 }

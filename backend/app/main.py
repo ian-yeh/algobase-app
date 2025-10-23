@@ -2,13 +2,13 @@
 # run: uvicorn app.main:app --reload
 
 from app.core.config import SessionLocal 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Query
 import uvicorn
 from datetime import datetime
 
 from app.schemas.user import UserRequest, UserResponse 
 from app.models.user import User
-from app.schemas.solve import SolveRequest, SolveResponse
+from app.schemas.solve import SolveRequest, SolveResponse, SolveGetResponse
 from app.models.solve import Solve
 
 app = FastAPI()
@@ -88,6 +88,15 @@ def create_solve(req: SolveRequest, db = Depends(get_db)):
 
     return {"solve": solve}
 
+# Get all solves by user's id
+@app.get("/solve", response_model=SolveGetResponse)
+def get_solve(user_id: str = Query(...), db = Depends(get_db)):
+    print("user_id:", user_id)
+
+    solves = db.query(Solve).filter(Solve.user_id == user_id).all()
+
+    print("solves:", solves)
+    return {"solves": solves}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -22,3 +22,12 @@ class SolveRequest(BaseModel):
     time: int # stored in centiseconds
     scramble: str
     dnf: bool
+
+class SolveGetRequest(BaseModel):
+    user_id: str
+
+class SolveGetResponse(BaseModel):
+    solves: list[Solve] = []
+
+    class Config:
+        from_attributes = True
