@@ -1,16 +1,21 @@
 from fastapi import APIRouter, Depends 
 from app.schemas.user import UserRequest, UserResponse
 from app.models.user import User
-from app.core.config import get_db
+from app.core.config import get_db 
+from app.core.auth import get_current_user
 
 from datetime import datetime
 
 router = APIRouter()
 
 @router.post("/user", response_model=UserResponse)
-def check_user(req: UserRequest, db = Depends(get_db)):
-    #print(req.user_id)
-    user = db.query(User).filter(User.id == req.user_id).first()
+def check_user(
+    req: UserRequest, 
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+    user = db.query(User).filter(User.id == user_id).first()
 
     if user:
         user.lastActivityDate = datetime.now()
@@ -20,7 +25,7 @@ def check_user(req: UserRequest, db = Depends(get_db)):
     else:
         # Create new user object for new user
         user = User(
-            id=req.user_id,
+            id=user_id,
             username=req.username,
             email=req.email,
             emailVerified=False,
@@ -36,8 +41,13 @@ def check_user(req: UserRequest, db = Depends(get_db)):
     return {"user": user}
 
 @router.put("/user", response_model=UserResponse)
-def update_user(req: UserRequest, db = Depends(get_db)):
-    user = db.query(User).filter(User.id == req.user_id).first()
+def update_user(
+    req: UserRequest, 
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+    user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
         raise Exception("User not found")

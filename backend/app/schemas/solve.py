@@ -3,7 +3,6 @@ from datetime import datetime
 
 class Solve(BaseModel):
     id: int
-    user_id: str
     cube_type: str
     time: int # stored in centiseconds
     scramble: str
