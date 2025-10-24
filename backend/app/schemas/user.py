@@ -17,7 +17,6 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 class UserRequest(BaseModel):
-    user_id: str
     email: str
     username: str 
     imageUrl: Optional[str] = None

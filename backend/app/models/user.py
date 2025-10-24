@@ -8,7 +8,7 @@ class User(Base):
 
     id = Column(String, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
+    email = Column(String, index=True)
     emailVerified = Column(Boolean, default=False)
     imageUrl = Column(String, nullable=True)
     lastActivityDate = Column(DateTime, default=datetime.now, onupdate=datetime.now)

@@ -3,7 +3,6 @@ from datetime import datetime
 
 class Solve(BaseModel):
     id: int
-    user_id: str
     cube_type: str
     time: int # stored in centiseconds
     scramble: str
@@ -17,14 +16,13 @@ class SolveResponse(BaseModel):
         from_attributes = True
 
 class SolveRequest(BaseModel):
-    user_id: str
     cube_type: str
     time: int # stored in centiseconds
     scramble: str
     dnf: bool
 
 class SolveGetRequest(BaseModel):
-    user_id: str
+    pass
 
 class SolveGetResponse(BaseModel):
     solves: list[Solve] = []
