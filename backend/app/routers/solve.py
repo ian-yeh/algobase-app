@@ -46,3 +46,7 @@ def create_solve(
 
     return {"solve": solve}
 
+@router.get("/stats")
+def get_stats():
+    pass
+
