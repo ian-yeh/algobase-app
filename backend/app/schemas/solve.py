@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class Solve(BaseModel):
+class SolveSchema(BaseModel):
     id: int
     cube_type: str
     time: int # stored in centiseconds
@@ -9,23 +9,15 @@ class Solve(BaseModel):
     dnf: bool
     createdAt: datetime
 
-class SolveResponse(BaseModel):
-    solve: Solve
-
-    class Config:
-        from_attributes = True
-
 class SolveRequest(BaseModel):
     cube_type: str
     time: int # stored in centiseconds
     scramble: str
     dnf: bool
 
-class SolveGetRequest(BaseModel):
-    pass
-
-class SolveGetResponse(BaseModel):
-    solves: list[Solve] = []
-
-    class Config:
-        from_attributes = True
+class StatsSchema(BaseModel):
+    best_ao5: int
+    best_ao12: int
+    best_ao100: int
+    best_time: int
+    total_solves: int

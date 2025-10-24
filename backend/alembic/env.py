@@ -4,8 +4,8 @@ import os
 import dotenv
 
 from app.core.config import Base 
-from app.models.user import User 
-from app.models.solve import Solve   
+from app.models.user import UserModel 
+from app.models.solve import SolveModel   
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
