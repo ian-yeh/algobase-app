@@ -15,7 +15,7 @@ class CubeType:
     SKEWB = "Skewb"
     SQUARE_ONE = "Square-1"
 
-class Solve(Base):
+class SolveModel(Base):
     __tablename__ = "solves"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -26,4 +26,4 @@ class Solve(Base):
     dnf = Column(Boolean, default=False)
     createdAt = Column(DateTime, default=datetime.now)
 
-    user = relationship("User", back_populates="solves")
+    user = relationship("UserModel", back_populates="solves")

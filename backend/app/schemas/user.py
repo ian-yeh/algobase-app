@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 
-class User(BaseModel):
+class UserSchema(BaseModel):
     id: str
     username: str
     email: str
@@ -11,7 +11,7 @@ class User(BaseModel):
     lastActivityDate: datetime
 
 class UserResponse(BaseModel):
-    user: User
+    user: UserSchema
 
     class Config:
         from_attributes = True
