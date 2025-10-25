@@ -1,5 +1,5 @@
 from app.core.config import Base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey 
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey 
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -21,7 +21,7 @@ class SolveModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.id"))
     cube_type = Column(String, nullable=False, index=True)
-    time = Column(Integer)  # stored in centiseconds
+    time = Column(Float)
     scramble = Column(String)
     dnf = Column(Boolean, default=False)
     createdAt = Column(DateTime, default=datetime.now)
