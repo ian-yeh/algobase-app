@@ -60,11 +60,13 @@ def get_stats(
 
     stat_calculator = SolveService()
 
+    times = [solve.time for solve in solves]
+
     stats = {
-        "best_ao5": 11,
-        "best_ao12": 13,
-        "best_ao100": 1,
-        "best_time": stat_calculator.get_best_time([1, 2, 3, 4, 5, 6]),
+        "best_ao5": stat_calculator.calculate_best_ao5(times),
+        "best_ao12": stat_calculator.calculate_best_ao12(times),
+        "best_ao100": stat_calculator.calculate_best_ao100(times),
+        "best_time": stat_calculator.get_best_time(times),
         "total_solves": len(solves)
     }
 
