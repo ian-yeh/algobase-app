@@ -1,7 +1,6 @@
 # =========================
 # Global ignores
 # =========================
-
 # OS / Editor junk
 .DS_Store
 Thumbs.db
@@ -12,53 +11,72 @@ Thumbs.db
 *.pyd
 __pycache__/
 *.sqlite3
-
 # Environment variables
 .env
 .env.*
 !.env.example
-
 # =========================
 # Frontend (Next.js)
 # =========================
-
 # Dependencies
 /frontend/node_modules
 /frontend/.pnp
 /frontend/.pnp.*
-
 # Yarn (keep certain subfolders)
 /frontend/.yarn/*
 !/frontend/.yarn/patches
 !/frontend/.yarn/plugins
 !/frontend/.yarn/releases
 !/frontend/.yarn/versions
-
 # Build output
 /frontend/.next/
 /frontend/out/
 /frontend/build
-
 # Testing
 /frontend/coverage
-
 # TypeScript
 /frontend/next-env.d.ts
 /frontend/*.tsbuildinfo
-
 # Vercel
 /frontend/.vercel
-
+# =========================
+# Web (Vite)
+# =========================
+# Dependencies
+/web/node_modules
+/web/.pnp
+/web/.pnp.*
+# Yarn (keep certain subfolders)
+/web/.yarn/*
+!/web/.yarn/patches
+!/web/.yarn/plugins
+!/web/.yarn/releases
+!/web/.yarn/versions
+# Build output
+/web/dist
+/web/dist-ssr
+/web/build
+# Vite cache
+/web/.vite
+# Testing
+/web/coverage
+# TypeScript
+/web/*.tsbuildinfo
+# Editor directories
+/web/.vscode/*
+!/web/.vscode/extensions.json
+/web/.idea
+# Temp files
+/web/*.local
+/web/*.temp
 # =========================
 # Backend (FastAPI)
 # =========================
-
 # Virtual environments
 /backend/venv/
 /backend/.venv/
 /backend/env/
 /backend/.env/
-
 # Python caches and build artifacts
 /backend/__pycache__/
 /backend/*.pyc
@@ -71,19 +89,15 @@ __pycache__/
 /backend/htmlcov/
 /backend/dist/
 /backend/build/
-
 # =========================
 # Shared / general
 # =========================
-
 # IDE / Editor folders
 .vscode/
 .idea/
 *.swp
-
 # Coverage reports (anywhere)
 coverage/
-
 # =========================
 # Misc
 # =========================
@@ -91,7 +105,6 @@ coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
 # Lockfiles (optional — keep if you want deterministic builds)
 # package-lock.json
 # yarn.lock
