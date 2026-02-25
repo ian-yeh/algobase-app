@@ -1,8 +1,8 @@
-import { createContext, useEffect, useState, useContext, type ReactNode } from 'react';
+import { createContext, useEffect, useState, type ReactNode } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthContextType {
   session: Session | null;
@@ -10,6 +10,9 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>
 }
 
+/*
+The auth context. This is the security guard of the app. Checks whether or not the user is logged in. Returns the user id, which will be used for db queries. 
+*/
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
 
@@ -61,10 +64,3 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   )
 } 
-
-export const UserAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('UserAuth must be used within an AuthContext!');
-
-return context
-}

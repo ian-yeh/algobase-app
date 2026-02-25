@@ -1,13 +1,14 @@
-import { UserAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
 const SignInWithGoogle = () => {
   const navigate = useNavigate();
-  const { session, signInWithGoogle } = UserAuth();
+  const { session, signInWithGoogle } = useAuth();
 
   const handleSignIn = async() => {
     await signInWithGoogle();
-    console.log(session)
+    navigate("/");
+    console.log(session);
   }
 
   return (
