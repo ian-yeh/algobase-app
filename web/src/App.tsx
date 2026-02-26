@@ -16,7 +16,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-purple-100">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto animate-reveal">
         <div className="flex items-center space-x-2">
           <Link to="/">
             <Logo className="text-xl font-medium cursor-pointer hover:opacity-80 transition-opacity" />
@@ -24,11 +24,12 @@ const App: React.FC = () => {
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
-          {navLinks.map((link) => (
+          {navLinks.map((link, i) => (
             <a
               key={link.name}
               href={link.path}
-              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors animate-reveal"
+              style={{ animationDelay: `${100 + i * 50}ms` }}
             >
               {link.name}
             </a>
@@ -37,7 +38,7 @@ const App: React.FC = () => {
 
         <button
           onClick={() => navigate("/signin")}
-          className="px-4 py-2 text-sm font-medium border border-foreground/10 rounded-lg hover:bg-foreground/5 transition-all"
+          className="px-4 py-2 text-sm font-medium border border-foreground/10 rounded-lg hover:bg-foreground/5 transition-all animate-reveal delay-300"
         >
           Get started free
         </button>
@@ -47,7 +48,7 @@ const App: React.FC = () => {
       <main className="pt-32 pb-20 px-8">
         <div className="max-w-4xl mx-auto text-center">
           {/* Illustration Container */}
-          <div className="mb-12 flex justify-center">
+          <div className="mb-12 flex justify-center animate-blur-in">
             <div className="relative w-64 h-64 md:w-80 md:h-80">
               <img
                 src="/cube.png"
@@ -57,14 +58,14 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-serif font-medium leading-[1.1] mb-8 tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-serif font-medium leading-[1.1] mb-10 tracking-tight animate-slide-up delay-200">
             The speedcubing companion <br className="hidden md:block" />
             that levels with you
           </h1>
 
           <button
             onClick={() => navigate("/signin")}
-            className="px-8 py-3 bg-foreground text-background font-medium rounded-full hover:opacity-90 transition-all shadow-xl shadow-foreground/10 active:scale-95"
+            className="px-8 py-3 bg-foreground text-background font-medium rounded-full hover:opacity-90 transition-all shadow-xl shadow-foreground/10 active:scale-95 animate-slide-up delay-300"
           >
             Try for free
           </button>

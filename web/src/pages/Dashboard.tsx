@@ -5,21 +5,26 @@ import Loading from '@/components/Loading';
 
 const DashboardPage = () => {
   const [stats, setStats] = useState<any>(null);
+  const [solves, setSolves] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const data = await authenticatedFetch('/stats');
-        setStats(data);
+        const [statsData, solvesData] = await Promise.all([
+          authenticatedFetch('/stats'),
+          authenticatedFetch('/solve')
+        ]);
+        setStats(statsData);
+        setSolves(solvesData);
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -28,7 +33,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-full py-8">
-      <StatsDashboard stats={stats} />
+      <StatsDashboard stats={stats} solves={solves} />
     </div>
   );
 };

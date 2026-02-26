@@ -30,7 +30,7 @@ const Sidebar = () => {
     return (
         <div className="w-64 h-screen bg-background text-foreground flex flex-col border-r border-foreground/5">
             <div className="p-8">
-                <Link to="/timer">
+                <Link to="/">
                     <Logo className="text-2xl font-semibold hover:opacity-80 transition-opacity cursor-pointer" />
                 </Link>
             </div>
