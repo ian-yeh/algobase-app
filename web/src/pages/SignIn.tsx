@@ -1,5 +1,6 @@
 import SignInWithGoogle from "@/features/auth/SignInWithGoogle"
 import { useNavigate } from "react-router-dom"
+import Logo from "@/components/Logo"
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ const SignIn = () => {
       {/* Shared Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto w-full">
         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
-          <span className="text-xl font-serif font-semibold tracking-tight">Algobase</span>
+          <Logo className="text-xl font-medium" />
         </div>
       </header>
 

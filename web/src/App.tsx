@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import Logo from "@/components/Logo";
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="flex items-center space-x-2">
-          <span className="text-xl font-serif font-semibold tracking-tight">Algobase</span>
+          <Logo className="text-xl font-medium" />
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
