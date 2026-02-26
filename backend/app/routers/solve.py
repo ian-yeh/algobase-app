@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.config import get_db
 from app.core.auth import get_current_user
@@ -71,4 +71,28 @@ def get_stats(
     }
 
     return stats
+
+@router.delete("/solve/{solve_id}")
+def delete_solve(
+    solve_id: int,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+    
+    solve = db.query(SolveModel).filter(
+        SolveModel.id == solve_id, 
+        SolveModel.user_id == user_id
+    ).first()
+    
+    if not solve:
+        raise HTTPException(
+            status_code=404,
+            detail="Solve not found"
+        )
+    
+    db.delete(solve)
+    db.commit()
+    
+    return {"status": "success"}
 

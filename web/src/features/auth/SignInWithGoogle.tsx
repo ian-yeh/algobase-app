@@ -7,7 +7,7 @@ const SignInWithGoogle = () => {
 
   const handleSignIn = async () => {
     await signInWithGoogle();
-    navigate("/");
+    navigate("/timer");
     console.log(session);
   }
 

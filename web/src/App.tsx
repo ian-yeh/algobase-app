@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Logo from "@/components/Logo";
 
 const App: React.FC = () => {
@@ -14,11 +14,13 @@ const App: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-purple-100">
+    <div className="min-h-screen bg-background text-foreground selection:bg-purple-100">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="flex items-center space-x-2">
-          <Logo className="text-xl font-medium" />
+          <Link to="/">
+            <Logo className="text-xl font-medium cursor-pointer hover:opacity-80 transition-opacity" />
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">

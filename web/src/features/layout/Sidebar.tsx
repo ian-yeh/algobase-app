@@ -20,17 +20,17 @@ const Sidebar = () => {
     const user = session?.user;
 
     const navItems = [
-        { name: 'Dashboard', path: '/home', icon: <DashboardIcon /> },
         { name: 'Timer', path: '/timer', icon: <TimerIcon /> },
+        { name: 'Dashboard', path: '/home', icon: <DashboardIcon /> },
     ];
 
     const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
     const userAvatar = user?.user_metadata?.avatar_url;
 
     return (
-        <div className="w-64 h-screen bg-background text-foreground flex flex-col border-r border-foreground/5 font-sans">
+        <div className="w-64 h-screen bg-background text-foreground flex flex-col border-r border-foreground/5">
             <div className="p-8">
-                <Link to="/">
+                <Link to="/timer">
                     <Logo className="text-2xl font-semibold hover:opacity-80 transition-opacity cursor-pointer" />
                 </Link>
             </div>

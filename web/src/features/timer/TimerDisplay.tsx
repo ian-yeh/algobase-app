@@ -121,7 +121,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
 
     return (
         <div className="flex flex-col items-center justify-center py-20 select-none">
-            <div className={`text-8xl md:text-9xl font-mono tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
+            <div className={`text-8xl md:text-9xl font-sans tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
                 {formatTime(time)}
             </div>
             <div className="mt-8 text-foreground/40 text-sm font-medium h-6">

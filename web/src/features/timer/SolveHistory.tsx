@@ -21,7 +21,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onDeleteSolve }) =>
 
     return (
         <div className="w-full max-w-md mx-auto mt-8 border-t border-foreground/5 pt-8">
-            <h3 className="text-foreground/40 text-xs font-bold uppercase tracking-widest mb-4 px-4">
+            <h3 className="text-black! text-xs font-bold font-sans! uppercase tracking-widest mb-4 px-4">
                 Recent Solves
             </h3>
             <div className="space-y-2 max-h-[400px] overflow-y-auto px-2 custom-scrollbar font-sans text-black">

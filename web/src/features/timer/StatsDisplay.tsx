@@ -1,41 +1,35 @@
 import React from 'react';
 
 interface StatsDisplayProps {
-    solves: number[];
+    stats: {
+        best_ao5: number;
+        best_ao12: number;
+        best_ao100: number;
+        best_time: number;
+        total_solves: number;
+    } | null;
+    runningAO5?: number | null;
+    runningAO12?: number | null;
 }
 
-const StatsDisplay: React.FC<StatsDisplayProps> = ({ solves }) => {
-    const calculateAverage = (times: number[], count: number) => {
-        if (times.length < count) return null;
-        const sessionTimes = times.slice(0, count);
+const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, runningAO5, runningAO12 }) => {
+    if (!stats) return null;
 
-        // Sort to remove best and worst
-        const sorted = [...sessionTimes].sort((a, b) => a - b);
-        const trimmed = sorted.slice(1, -1);
-
-        const sum = trimmed.reduce((acc, time) => acc + time, 0);
-        return sum / trimmed.length;
+    const formatTime = (seconds: number | null | undefined) => {
+        if (seconds === null || seconds === undefined || seconds === 0 || seconds === Infinity) return '--';
+        const ms = seconds * 1000;
+        const s = Math.floor(ms / 1000);
+        const m = Math.floor((ms % 1000) / 10);
+        return `${s}.${m.toString().padStart(2, '0')}`;
     };
-
-    const formatTime = (ms: number | null) => {
-        if (ms === null) return '--';
-        const seconds = Math.floor(ms / 1000);
-        const milliseconds = Math.floor((ms % 1000) / 10);
-        return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
-    };
-
-    const ao5 = calculateAverage(solves, 5);
-    const ao12 = calculateAverage(solves, 12);
 
     return (
-        <div className="grid grid-cols-2 gap-8 py-10 w-full max-w-sm mx-auto">
-            <div className="text-center">
-                <div className="text-foreground/40 text-xs font-bold uppercase tracking-widest mb-1">ao5</div>
-                <div className="text-2xl font-serif font-medium">{formatTime(ao5)}</div>
-            </div>
-            <div className="text-center">
-                <div className="text-foreground/40 text-xs font-bold uppercase tracking-widest mb-1">ao12</div>
-                <div className="text-2xl font-serif font-medium">{formatTime(ao12)}</div>
+        <div className="py-8 w-full max-w-lg mx-auto text-sm text-foreground/60 font-sans tracking-wide space-y-1">
+            <div className="flex justify-center space-x-8 uppercase font-bold">
+                <span>ao5: {formatTime(runningAO5)}</span>
+                <span>ao12: {formatTime(runningAO12)}</span>
+                <span>best: {formatTime(stats.best_time)}</span>
+                <span>solves: {stats.total_solves}</span>
             </div>
         </div>
     );

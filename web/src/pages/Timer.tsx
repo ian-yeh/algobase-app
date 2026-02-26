@@ -6,36 +6,43 @@ import SolveHistory from '@/features/timer/SolveHistory';
 import type { Solve } from '@/features/timer/SolveHistory';
 import { generateScramble } from '@/lib/scramble';
 import { authenticatedFetch } from '@/lib/api';
+import Loading from '@/components/Loading';
+import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
 const Timer = () => {
     const [currentScramble, setCurrentScramble] = useState(generateScramble());
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState<any>(null);
 
-    // Load solves from backend on mount
-    useEffect(() => {
-        const fetchSolves = async () => {
-            try {
-                const data = await authenticatedFetch('/solve');
-                // Backend might return items sorted by createdAt
-                const formattedSolves = data.map((s: any) => ({
-                    id: s.id.toString(),
-                    time: s.time * 1000, // Backend stores in seconds? Let's check.
-                    scramble: s.scramble,
-                    timestamp: new Date(s.createdAt).getTime()
-                })).reverse(); // Newest first
-                setSolves(formattedSolves);
-            } catch (e) {
-                console.error('Failed to fetch solves from backend', e);
-                // Fallback to local storage if needed, or just show empty
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    // Load solves and stats from backend on mount
+    const fetchData = useCallback(async () => {
+        try {
+            const [solvesData, statsData] = await Promise.all([
+                authenticatedFetch('/solve'),
+                authenticatedFetch('/stats')
+            ]);
 
-        fetchSolves();
+            const formattedSolves = solvesData.map((s: any) => ({
+                id: s.id.toString(),
+                time: s.time * 1000,
+                scramble: s.scramble,
+                timestamp: new Date(s.createdAt).getTime()
+            })).reverse();
+
+            setSolves(formattedSolves);
+            setStats(statsData);
+        } catch (e) {
+            console.error('Failed to fetch data from backend', e);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const handleSolveComplete = useCallback(async (timeMs: number) => {
         const timeSec = timeMs / 1000;
@@ -57,7 +64,7 @@ const Timer = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     time: timeSec,
-                    cube_type: '3x3x3',
+                    cube_type: '3x3', // Backend uses '3x3'
                     scramble: currentScramble,
                     dnf: false
                 })
@@ -68,31 +75,42 @@ const Timer = () => {
                 ...s,
                 id: result.id.toString()
             } : s));
+
+            // Refresh stats
+            const statsData = await authenticatedFetch('/stats');
+            setStats(statsData);
         } catch (e) {
             console.error('Failed to save solve to backend', e);
-            // Optionally notify user or handle retry
         }
     }, [currentScramble]);
 
     const handleDeleteSolve = useCallback(async (id: string) => {
-        // Backend doesn't seem to have a delete endpoint yet in solve.py
-        // We'll just update local state for now, but in a real app we'd call DELETE /solve/:id
+        // Optimistic delete
+        const originalSolves = [...solves];
         setSolves(prev => prev.filter(s => s.id !== id));
-    }, []);
+
+        try {
+            await authenticatedFetch(`/solve/${id}`, {
+                method: 'DELETE'
+            });
+            // Refresh stats
+            const statsData = await authenticatedFetch('/stats');
+            setStats(statsData);
+        } catch (e) {
+            console.error('Failed to delete solve from backend', e);
+            setSolves(originalSolves); // Rollback
+        }
+    }, [solves]);
 
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
 
     if (isLoading) {
-        return (
-            <div className="min-h-full flex items-center justify-center">
-                <div className="text-foreground/20 font-serif text-2xl animate-pulse">Algobase</div>
-            </div>
-        );
+        return <Loading />;
     }
 
     return (
-        <div className="min-h-full py-12 px-6 flex flex-col items-center">
+        <div className="min-h-full py-12 px-6 flex flex-col items-center tracking-tight">
             <div className={`w-full max-w-4xl transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <ScrambleDisplay scramble={currentScramble} />
             </div>
@@ -105,7 +123,11 @@ const Timer = () => {
                 />
 
                 <div className={`w-full transition-all duration-500 transform ${isTiming ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-                    <StatsDisplay solves={solves.map(s => s.time)} />
+                    <StatsDisplay
+                        stats={stats}
+                        runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
+                        runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
+                    />
                     <SolveHistory solves={solves} onDeleteSolve={handleDeleteSolve} />
                 </div>
             </div>
