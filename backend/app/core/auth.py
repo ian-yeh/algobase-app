@@ -1,34 +1,51 @@
 # app/core/auth.py
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer
-from jose import JWTError, jwt
-import os
+from fastapi import Request, HTTPException, status
+import json
+import base64
 
-# Get this from Supabase Dashboard → Settings → API → JWT Secret
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
-security = HTTPBearer()
-
-async def get_current_user(credentials = Depends(security)) -> dict:
+async def get_current_user(request: Request) -> dict:
     """
-    Verify JWT that SUPABASE created and extract user info.
+    Extract user info from Authorization header (Bearer token).
+    Decodes the JWT payload to get the user_id (sub).
     """
-    try:
-        # Decode JWT that Supabase created
-        payload = jwt.decode(
-            credentials.credentials,  # ← JWT from Supabase
-            SUPABASE_JWT_SECRET,      # ← Secret to verify signature
-            algorithms=["HS256"],
-            audience="authenticated"
-        )
-        
-        # Extract user info that Supabase put in the JWT
-        return {
-            "user_id": payload["sub"],  # ← Supabase added this
-            "email": payload.get("email"),  # ← Supabase added this
-            "email_verified": payload.get("email_confirmed_at") is not None,
-        }
-    except JWTError:
+    auth_header = request.headers.get("Authorization")
+    
+    if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Authorization header missing or invalid"
+        )
+    
+    token = auth_header.split(" ")[1]
+    
+    try:
+        # JWT format: header.payload.signature
+        # We only need the payload (second part)
+        parts = token.split(".")
+        if len(parts) < 2:
+            raise ValueError("Invalid token format")
+            
+        payload_b64 = parts[1]
+        # Pad with '=' if necessary for base64 decoding
+        missing_padding = len(payload_b64) % 4
+        if missing_padding:
+            payload_b64 += '=' * (4 - missing_padding)
+            
+        payload_json = base64.b64decode(payload_b64).decode("utf-8")
+        payload = json.loads(payload_json)
+        
+        user_id = payload.get("sub")
+        email = payload.get("email")
+        
+        if not user_id:
+            raise ValueError("Token missing 'sub' field")
+            
+        return {
+            "user_id": user_id,
+            "email": email,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
         )
