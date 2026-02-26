@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ScrambleDisplay from '@/features/timer/ScrambleDisplay';
 import TimerDisplay from '@/features/timer/TimerDisplay';
 import StatsDisplay from '@/features/timer/StatsDisplay';
-import SolveHistory, { Solve } from '@/features/timer/SolveHistory';
+import SolveHistory from '@/features/timer/SolveHistory';
+import type { Solve } from '@/features/timer/SolveHistory';
 import { generateScramble } from '@/lib/scramble';
 import { authenticatedFetch } from '@/lib/api';
 
@@ -79,6 +80,9 @@ const Timer = () => {
         setSolves(prev => prev.filter(s => s.id !== id));
     }, []);
 
+    const handleStart = useCallback(() => setIsTiming(true), []);
+    const handleStop = useCallback(() => setIsTiming(false), []);
+
     if (isLoading) {
         return (
             <div className="min-h-full flex items-center justify-center">
@@ -96,8 +100,8 @@ const Timer = () => {
             <div className="flex-1 flex flex-col items-center justify-center w-full">
                 <TimerDisplay
                     onSolveComplete={handleSolveComplete}
-                    onStart={() => setIsTiming(true)}
-                    onStop={() => setIsTiming(false)}
+                    onStart={handleStart}
+                    onStop={handleStop}
                 />
 
                 <div className={`w-full transition-all duration-500 transform ${isTiming ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>

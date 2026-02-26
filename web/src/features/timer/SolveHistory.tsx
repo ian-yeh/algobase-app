@@ -24,7 +24,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onDeleteSolve }) =>
             <h3 className="text-foreground/40 text-xs font-bold uppercase tracking-widest mb-4 px-4">
                 Recent Solves
             </h3>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto px-2 custom-scrollbar">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto px-2 custom-scrollbar font-sans text-black">
                 {solves.length === 0 ? (
                     <div className="text-center py-8 text-foreground/20 text-sm">
                         No solves yet.
@@ -36,7 +36,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onDeleteSolve }) =>
                             className="flex items-center justify-between p-4 rounded-xl hover:bg-foreground/5 transition-colors group"
                         >
                             <div className="flex flex-col">
-                                <span className="text-xl font-mono tabular-nums leading-tight">
+                                <span className="text-xl tabular-nums leading-tight">
                                     {formatTime(solve.time)}
                                 </span>
                                 <span className="text-[10px] text-foreground/30 truncate max-w-[200px]">

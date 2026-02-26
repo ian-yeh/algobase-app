@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface TimerDisplayProps {
     onSolveComplete: (time: number) => void;
@@ -12,10 +12,17 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     const [time, setTime] = useState(0);
     const [displayState, setDisplayState] = useState<TimerState>('IDLE');
 
+    // Logical state tracking
     const stateRef = useRef<TimerState>('IDLE');
     const startTimeRef = useRef<number>(0);
     const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Sync props to refs to avoid re-running the effect when callbacks change
+    const callbacks = useRef({ onSolveComplete, onStart, onStop });
+    useEffect(() => {
+        callbacks.current = { onSolveComplete, onStart, onStop };
+    }, [onSolveComplete, onStart, onStop]);
 
     const updateState = (newState: TimerState) => {
         stateRef.current = newState;
@@ -25,9 +32,10 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     const startTimer = () => {
         startTimeRef.current = Date.now();
         updateState('RUNNING');
-        onStart?.();
+        callbacks.current.onStart?.();
 
         // Ticking loop
+        if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setTime(Date.now() - startTimeRef.current);
         }, 10);
@@ -43,8 +51,8 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         startTimeRef.current = 0;
         setTime(finalTime);
         updateState('IDLE');
-        onStop?.();
-        onSolveComplete(finalTime);
+        callbacks.current.onStop?.();
+        callbacks.current.onSolveComplete(finalTime);
     };
 
     useEffect(() => {
@@ -65,7 +73,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
                     if (stateRef.current === 'HOLDING') {
                         updateState('READY');
                     }
-                }, 1000);
+                }, 350);
             }
         };
 
@@ -94,7 +102,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
             if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [onSolveComplete, onStart, onStop]); // Stable dependencies
+    }, []); // Only run once on mount
 
     const formatTime = (ms: number) => {
         const seconds = Math.floor(ms / 1000);
