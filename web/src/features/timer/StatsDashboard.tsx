@@ -1,4 +1,5 @@
 import React from 'react';
+import SolveChart from './SolveChart';
 
 interface StatsDashboardProps {
     stats: {
@@ -8,9 +9,10 @@ interface StatsDashboardProps {
         best_time: number;
         total_solves: number;
     } | null;
+    solves: any[];
 }
 
-const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
+const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
     if (!stats) return null;
 
     const formatTime = (seconds: number) => {
@@ -67,6 +69,8 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
                 <StatCard label="Average of 12" value={formatTime(stats.best_ao12)} subtext="+13.5%" />
                 <StatCard label="Personal Best" value={formatTime(stats.best_time)} subtext="+13.5%" />
             </div>
+
+            <SolveChart solves={solves} />
         </div>
     );
 };
