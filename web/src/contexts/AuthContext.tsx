@@ -1,8 +1,7 @@
 import { createContext, useEffect, useState, type ReactNode } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
-
-export const AuthContext = createContext<AuthContextType | null>(null);
+import { authenticatedFetch } from '@/lib/api';
 
 interface AuthContextType {
   session: Session | null;
@@ -10,23 +9,47 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>
 }
 
+export const AuthContext = createContext<AuthContextType | null>(null);
+
 /*
 The auth context. This is the security guard of the app. Checks whether or not the user is logged in. Returns the user id, which will be used for db queries. 
 */
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
 
+  const syncUserWithBackend = async (currentSession: Session | null) => {
+    if (currentSession?.user) {
+      try {
+        await authenticatedFetch('/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: currentSession.user.user_metadata?.full_name || currentSession.user.email?.split('@')[0],
+            email: currentSession.user.email,
+            imageUrl: currentSession.user.user_metadata?.avatar_url,
+          }),
+        });
+      } catch (error) {
+        console.error('Error syncing user with backend:', error);
+      }
+    }
+  };
+
   // listen to auth changes
   useEffect(() => {
-    const getSession = async() => {
+    const getSession = async () => {
       const { data } = await supabase.auth.getSession();
-      setSession(data.session)
+      setSession(data.session);
+      if (data.session) syncUserWithBackend(data.session);
     }
 
     getSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) syncUserWithBackend(session);
     })
 
     return () => {
@@ -34,7 +57,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-  const signInWithGoogle = async() => {
+  const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -57,7 +80,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider 
+    <AuthContext.Provider
       value={value}
     >
       {children}

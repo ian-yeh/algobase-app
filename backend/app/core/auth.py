@@ -1,34 +1,20 @@
 # app/core/auth.py
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer
-from jose import JWTError, jwt
-import os
+from fastapi import Request, HTTPException, status
 
-# Get this from Supabase Dashboard → Settings → API → JWT Secret
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
-security = HTTPBearer()
-
-async def get_current_user(credentials = Depends(security)) -> dict:
+async def get_current_user(request: Request) -> dict:
     """
-    Verify JWT that SUPABASE created and extract user info.
+    Extract user info from X-User-ID header.
+    In a production app, this should be replaced with proper JWT verification.
     """
-    try:
-        # Decode JWT that Supabase created
-        payload = jwt.decode(
-            credentials.credentials,  # ← JWT from Supabase
-            SUPABASE_JWT_SECRET,      # ← Secret to verify signature
-            algorithms=["HS256"],
-            audience="authenticated"
-        )
-        
-        # Extract user info that Supabase put in the JWT
-        return {
-            "user_id": payload["sub"],  # ← Supabase added this
-            "email": payload.get("email"),  # ← Supabase added this
-            "email_verified": payload.get("email_confirmed_at") is not None,
-        }
-    except JWTError:
+    user_id = request.headers.get("X-User-ID")
+    
+    if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="X-User-ID header missing"
         )
+    
+    return {
+        "user_id": user_id,
+        "email": request.headers.get("X-User-Email"),  # Optional: pass email in header too
+    }
