@@ -1,370 +1,202 @@
-# Algobase API Documentation
+# Algobase Convex API Reference
 
-Base URL: `http://localhost:8000` (development)
+Algobase's backend is a set of Convex functions in `/convex`. There is no HTTP API — the React client talks to Convex over a WebSocket, and functions are invoked by reference (e.g., `api.solve.createSolve`) rather than by URL.
+
+This doc describes every public function: its module, kind (query vs. mutation), arguments, return value, and authorization.
+
+## Calling functions from the client
+
+```ts
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@convex/_generated/api';
+
+// Query — re-runs whenever underlying data changes.
+const solves = useQuery(api.solve.getSolves, token ? { token } : 'skip');
+
+// Mutation — call as an async function.
+const createSolve = useMutation(api.solve.createSolve);
+await createSolve({ token, cubeType: '3x3', time: 12.34, scramble: '…', dnf: false });
+```
+
+Pass `'skip'` as the second arg to `useQuery` to defer execution (e.g., until a token is available).
 
 ## Authentication
 
-All endpoints except `/` require a **Supabase JWT token** in the `Authorization` header:
+Every non-auth function takes a `token: string` argument. The function calls `verifyToken(token)` from `convex/auth.ts`; if it returns `null` the function throws `"Invalid token"`.
 
-```
-Authorization: Bearer <jwt_token>
-```
-
-The JWT payload must contain:
-- `sub` (string) — User ID from Supabase
-- `email` (string) — User email
-
-**Example Authorization Header:**
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLWlkIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIn0.signature
-```
+Tokens are issued by `auth.signUp` / `auth.signIn`. They are HMAC-SHA256-signed strings of the form `v1|userId|email|timestamp|nonce|signature` and expire 7 days after issue. The client stores them in `localStorage` via the Zustand auth store (`web/src/stores/authStore.ts`) and passes them with every call.
 
 ---
 
-## Endpoints
+## `auth` module
 
-### Health Check
+### `auth.signUp` — mutation
 
-**GET** `/`
+Create a new account.
 
-Check API availability.
+**Args:**
+- `email: string`
+- `password: string`
+- `username: string`
 
-**Response:**
-```json
+**Returns:**
+```ts
 {
-  "status": "200"
+  token: string;
+  user: { userId: string; username: string; email: string };
 }
 ```
+
+**Throws:** `"User already exists"` if `email` is already registered.
+
+**Notes:** `userId` is currently set to `email`. Password is hashed with PBKDF2 (100k iterations, SHA-256) using a static salt — see `convex/auth.ts`.
 
 ---
 
-## User Management
+### `auth.signIn` — mutation
 
-### Create or Update User
+Authenticate with email + password.
 
-**POST** `/user`
+**Args:**
+- `email: string`
+- `password: string`
 
-Creates a new user if they don't exist, or updates `lastActivityDate` if they do. Returns user profile.
+**Returns:** same shape as `signUp`.
 
-**Headers:**
-- `Authorization: Bearer <token>` (required)
+**Throws:** `"Invalid email or password"` for unknown email *or* bad password (does not leak which).
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "username": "speedcuber123",
-  "imageUrl": "https://example.com/avatar.jpg"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "id": "user-id-from-jwt",
-  "username": "speedcuber123",
-  "email": "user@example.com",
-  "emailVerified": false,
-  "imageUrl": "https://example.com/avatar.jpg",
-  "lastActivityDate": "2026-05-18T10:30:00"
-}
-```
-
-**Status Codes:**
-- `200` — User created or updated successfully
-- `401` — Missing or invalid authorization
-
-**Example:**
-```bash
-curl -X POST http://localhost:8000/user \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "username": "speedcuber123",
-    "imageUrl": "https://example.com/avatar.jpg"
-  }'
-```
+**Side effect:** updates the user's `lastActivityDate` to now.
 
 ---
 
-### Update User Profile
+## `user` module
 
-**PUT** `/user`
+### `user.getUser` — mutation
 
-Updates user information (username, email, image). Updates `lastActivityDate`.
+Fetch the current user record. Defined as a mutation (not a query) because it bumps `lastActivityDate`.
 
-**Headers:**
-- `Authorization: Bearer <token>` (required)
+**Args:**
+- `token: string`
 
-**Request Body:**
-```json
-{
-  "email": "newemail@example.com",
-  "username": "newusername",
-  "imageUrl": "https://example.com/new-avatar.jpg"
-}
-```
+**Returns:** the full `users` document (`_id`, `_creationTime`, `userId`, `username`, `email`, `emailVerified`, `imageUrl?`, `lastActivityDate`).
 
-**Response (200 OK):**
-```json
-{
-  "user": {
-    "id": "user-id-from-jwt",
-    "username": "newusername",
-    "email": "newemail@example.com",
-    "emailVerified": false,
-    "imageUrl": "https://example.com/new-avatar.jpg",
-    "lastActivityDate": "2026-05-18T11:00:00"
-  }
-}
-```
-
-**Status Codes:**
-- `200` — User updated successfully
-- `401` — Missing or invalid authorization
-- `500` — User not found (should not happen if user exists in database)
-
-**Example:**
-```bash
-curl -X PUT http://localhost:8000/user \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "newemail@example.com",
-    "username": "newusername",
-    "imageUrl": "https://example.com/new-avatar.jpg"
-  }'
-```
+**Throws:** `"Invalid token"`, `"User not found"`.
 
 ---
 
-## Solve Management
+### `user.updateUser` — mutation
 
-### Get All Solves
+Update the current user's `username` and optionally `imageUrl`.
 
-**GET** `/solve`
+**Args:**
+- `token: string`
+- `username: string`
+- `imageUrl?: string`
 
-Retrieves all cube solves for the authenticated user, ordered by creation date (oldest first).
+**Returns:** the pre-update `users` document.
 
-**Headers:**
-- `Authorization: Bearer <token>` (required)
-
-**Query Parameters:**
-- None
-
-**Response (200 OK):**
-```json
-[
-  {
-    "id": 1,
-    "cube_type": "3x3",
-    "time": 45.32,
-    "scramble": "R U R' U' R U R' U'",
-    "dnf": false,
-    "createdAt": "2026-05-18T08:00:00"
-  },
-  {
-    "id": 2,
-    "cube_type": "3x3",
-    "time": 42.15,
-    "scramble": "M' U M U2 M' U M",
-    "dnf": false,
-    "createdAt": "2026-05-18T09:30:00"
-  }
-]
-```
-
-**Status Codes:**
-- `200` — Solves retrieved successfully (empty array if no solves)
-- `401` — Missing or invalid authorization
-
-**Example:**
-```bash
-curl -X GET http://localhost:8000/solve \
-  -H "Authorization: Bearer <token>"
-```
+**Throws:** `"Invalid token"`, `"User not found"`.
 
 ---
 
-### Record a New Solve
+## `solve` module
 
-**POST** `/solve`
+### `solve.getSolves` — query
 
-Creates and records a new cube solve for the authenticated user.
+Return all solves for the authenticated user, unordered.
 
-**Headers:**
-- `Authorization: Bearer <token>` (required)
+**Args:**
+- `token: string`
 
-**Request Body:**
-```json
+**Returns:** array of `solves` documents:
+```ts
 {
-  "cube_type": "3x3",
-  "time": 45.32,
-  "scramble": "R U R' U' R U R' U'",
-  "dnf": false
-}
+  _id: Id<'solves'>;
+  _creationTime: number;   // ms since epoch — use this for timestamps
+  userId: string;
+  cubeType: string;
+  time: number;            // seconds
+  scramble: string;
+  dnf: boolean;
+}[]
 ```
 
-**Field Descriptions:**
-- `cube_type` (string) — Type of cube solved. Valid values:
-  - `2x2`, `3x3`, `4x4`, `5x5`, `6x6`, `7x7`
-  - `Megaminx`, `Pyraminx`, `Skewb`, `Square-1`
-- `time` (float) — Solve time in seconds (e.g., `45.32`)
-- `scramble` (string) — The scramble sequence used
-- `dnf` (boolean) — Did Not Finish flag
+**Throws:** `"Invalid token"`.
 
-**Response (200 OK):**
-```json
-{
-  "id": 3,
-  "cube_type": "3x3",
-  "time": 45.32,
-  "scramble": "R U R' U' R U R' U'",
-  "dnf": false,
-  "createdAt": "2026-05-18T10:15:00"
-}
-```
-
-**Status Codes:**
-- `200` — Solve recorded successfully
-- `401` — Missing or invalid authorization
-- `422` — Validation error (invalid cube type, missing fields, etc.)
-
-**Example:**
-```bash
-curl -X POST http://localhost:8000/solve \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cube_type": "3x3",
-    "time": 45.32,
-    "scramble": "R U R'\''U'\'' R U R'\''U'\''",
-    "dnf": false
-  }'
-```
+**Live updates:** because this is a query, the client subscription auto-refreshes whenever `createSolve` or `deleteSolve` runs.
 
 ---
 
-### Delete a Solve
+### `solve.createSolve` — mutation
 
-**DELETE** `/solve/{solve_id}`
+Record a new solve for the authenticated user.
 
-Deletes a specific solve. Only the user who created the solve can delete it.
+**Args:**
+- `token: string`
+- `cubeType: string` — e.g., `"3x3"`. Not currently validated against an enum.
+- `time: number` — seconds, e.g., `12.34`
+- `scramble: string`
+- `dnf: boolean`
 
-**Headers:**
-- `Authorization: Bearer <token>` (required)
+**Returns:** `Id<'solves'>` (the new document's id).
 
-**Path Parameters:**
-- `solve_id` (integer) — The ID of the solve to delete
-
-**Response (200 OK):**
-```json
-{
-  "status": "success"
-}
-```
-
-**Status Codes:**
-- `200` — Solve deleted successfully
-- `401` — Missing or invalid authorization
-- `404` — Solve not found or does not belong to the authenticated user
-
-**Example:**
-```bash
-curl -X DELETE http://localhost:8000/solve/3 \
-  -H "Authorization: Bearer <token>"
-```
+**Throws:** `"Invalid token"`.
 
 ---
 
-## Statistics
+### `solve.deleteSolve` — mutation
 
-### Get Performance Statistics
+Delete one of the authenticated user's solves.
 
-**GET** `/stats`
+**Args:**
+- `token: string`
+- `solveId: Id<'solves'>` — import `Id` from `@convex/_generated/dataModel`
 
-Calculates and returns performance statistics for the authenticated user based on all their solves.
+**Returns:** `{ status: 'success' }`.
 
-**Headers:**
-- `Authorization: Bearer <token>` (required)
-
-**Response (200 OK):**
-```json
-{
-  "best_ao5": 45.21,
-  "best_ao12": 46.53,
-  "best_ao100": 48.12,
-  "best_time": 40.22,
-  "total_solves": 156
-}
-```
-
-**Field Descriptions:**
-- `best_ao5` (float) — Best average of 5 consecutive solves (seconds)
-- `best_ao12` (float) — Best average of 12 consecutive solves (seconds)
-- `best_ao100` (float) — Best average of 100 consecutive solves (seconds)
-- `best_time` (float) — Fastest single solve (seconds)
-- `total_solves` (integer) — Total number of recorded solves
-
-**Status Codes:**
-- `200` — Statistics calculated successfully
-- `401` — Missing or invalid authorization
-
-**Example:**
-```bash
-curl -X GET http://localhost:8000/stats \
-  -H "Authorization: Bearer <token>"
-```
+**Throws:** `"Invalid token"`, `"Solve not found or access denied"` (covers both nonexistent rows and rows owned by another user).
 
 ---
 
-## Error Responses
+### `solve.getStats` — query
 
-All error responses follow this format:
+Aggregate performance stats over all of the user's solves.
 
-```json
+**Args:**
+- `token: string`
+
+**Returns:**
+```ts
 {
-  "detail": "Error message describing what went wrong"
+  best_ao5:   number;  // best rolling avg of 5 (seconds), 0 if fewer than 5 solves
+  best_ao12:  number;  // best rolling avg of 12
+  best_ao100: number;  // best rolling avg of 100
+  best_time:  number;  // single best, 0 if no solves
+  total_solves: number;
 }
 ```
 
-### Common Error Scenarios
+**Throws:** `"Invalid token"`.
 
-**Missing Authorization Header (401):**
-```json
-{
-  "detail": "Authorization header missing or invalid"
-}
-```
-
-**Invalid JWT Token (401):**
-```json
-{
-  "detail": "Invalid token: [error details]"
-}
-```
-
-**Solve Not Found (404):**
-```json
-{
-  "detail": "Solve not found"
-}
-```
-
-**Validation Error (422):**
-```json
-{
-  "detail": "1 validation error for Request\ncube_type\n  string should be one of: 2x2, 3x3, etc. (type=enum)"
-}
-```
+**Note:** DNF solves are not currently excluded from averages — they're treated as regular times.
 
 ---
 
-## Notes
+## Schema reference
 
-- All timestamps are in ISO 8601 format (UTC)
-- Times are recorded in seconds with decimal precision
-- DNF (Did Not Finish) solves are included in the solves list but may be excluded from certain stat calculations
-- The API currently allows all origins (CORS enabled globally) — this should be restricted in production
-- Database timestamps (`lastActivityDate`, `createdAt`) are automatically set by the backend
+Defined in `convex/schema.ts`:
+
+| Table | Fields | Indexes |
+|---|---|---|
+| `users` | `userId`, `username`, `email`, `emailVerified`, `imageUrl?`, `lastActivityDate` | `by_userId`, `by_email` |
+| `passwords` | `userId`, `hashedPassword` | `by_userId` |
+| `solves` | `userId`, `cubeType`, `time`, `scramble`, `dnf` | `by_userId` |
+
+All tables also carry the Convex-managed `_id` and `_creationTime` fields.
+
+## Adding a new function
+
+1. Add or extend a file in `/convex`. Export `query({...})` or `mutation({...})`.
+2. For protected functions, take `token: v.string()` and call `await verifyToken(args.token)` first — throw if `null`.
+3. Save. `npm run convex:dev` hot-reloads the deployment and regenerates `_generated/api.d.ts`.
+4. Call from the client via `useQuery(api.<module>.<fn>, args)` or `useMutation(api.<module>.<fn>)`.
