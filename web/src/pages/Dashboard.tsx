@@ -1,39 +1,23 @@
-import { useEffect, useState } from 'react';
-import { authenticatedFetch } from '@/lib/api';
+import { useContext } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import { AuthContext } from '@/contexts/AuthContext';
 import StatsDashboard from '@/features/timer/StatsDashboard';
 import Loading from '@/components/Loading';
 
 const DashboardPage = () => {
-  const [stats, setStats] = useState<any>(null);
-  const [solves, setSolves] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const auth = useContext(AuthContext);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsData, solvesData] = await Promise.all([
-          authenticatedFetch('/stats'),
-          authenticatedFetch('/solve')
-        ]);
-        setStats(statsData);
-        setSolves(solvesData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const statsData = useQuery(api.solve.getStats, auth?.token ? { token: auth.token } : 'skip');
+  const solvesData = useQuery(api.solve.getSolves, auth?.token ? { token: auth.token } : 'skip');
 
-    fetchData();
-  }, []);
-
-  if (loading) {
+  if (!statsData || !solvesData) {
     return <Loading />;
   }
 
   return (
     <div className="min-h-full py-8">
-      <StatsDashboard stats={stats} solves={solves} />
+      <StatsDashboard stats={statsData} solves={solvesData} />
     </div>
   );
 };

@@ -16,16 +16,14 @@ const TimerIcon = () => (
 
 const Sidebar = () => {
     const location = useLocation();
-    const { session } = useAuth();
-    const user = session?.user;
+    const { user } = useAuth();
 
     const navItems = [
         { name: 'Timer', path: '/timer', icon: <TimerIcon /> },
         { name: 'Dashboard', path: '/home', icon: <DashboardIcon /> },
     ];
 
-    const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-    const userAvatar = user?.user_metadata?.avatar_url;
+    const userDisplayName = user?.username || user?.email?.split('@')[0] || 'User';
 
     return (
         <div className="w-64 h-screen bg-background text-foreground flex flex-col border-r border-foreground/5">
@@ -56,13 +54,9 @@ const Sidebar = () => {
 
             <div className="p-6 border-t border-foreground/5">
                 <div className="flex items-center space-x-3">
-                    {userAvatar ? (
-                        <img src={userAvatar} alt="" className="w-8 h-8 rounded-full border border-foreground/10" />
-                    ) : (
-                        <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center text-sm font-bold text-foreground/40">
-                            {userDisplayName[0].toUpperCase()}
-                        </div>
-                    )}
+                    <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center text-sm font-bold text-foreground/40">
+                        {userDisplayName[0].toUpperCase()}
+                    </div>
                     <div className="flex flex-col min-w-0">
                         <span className="text-xs font-semibold text-foreground truncate">{userDisplayName}</span>
                         <span className="text-[10px] text-foreground/40 truncate">{user?.email}</span>
