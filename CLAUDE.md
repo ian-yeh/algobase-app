@@ -109,3 +109,17 @@ Frontend and backend can be deployed separately:
 - **Add a new user metric**: Add column to User model → create Alembic migration → add schema field → expose in router
 - **Add a new solve endpoint**: Create router handler → add service logic → add response schema → export from routers
 - **Update frontend styling**: Tailwind CSS via `src/index.css`; components use `className` directly
+
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->
