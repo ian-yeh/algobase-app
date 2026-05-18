@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, useContext } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import type { Id } from '@convex/_generated/dataModel';
-import { AuthContext } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores/authStore';
 import ScrambleDisplay from '@/features/timer/ScrambleDisplay';
 import TimerDisplay from '@/features/timer/TimerDisplay';
 import StatsDisplay from '@/features/timer/StatsDisplay';
@@ -13,7 +13,7 @@ import Loading from '@/components/Loading';
 import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
 const Timer = () => {
-    const auth = useContext(AuthContext);
+    const token = useAuthStore((s) => s.token);
     const [currentScramble, setCurrentScramble] = useState(generateScramble());
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
@@ -21,8 +21,8 @@ const Timer = () => {
     const createSolveMutation = useMutation(api.solve.createSolve);
     const deleteSolveMutation = useMutation(api.solve.deleteSolve);
 
-    const solvesData = useQuery(api.solve.getSolves, auth?.token ? { token: auth.token } : 'skip');
-    const statsData = useQuery(api.solve.getStats, auth?.token ? { token: auth.token } : 'skip');
+    const solvesData = useQuery(api.solve.getSolves, token ? { token } : 'skip');
+    const statsData = useQuery(api.solve.getStats, token ? { token } : 'skip');
 
     useEffect(() => {
         if (solvesData) {
@@ -39,7 +39,7 @@ const Timer = () => {
     const handleSolveComplete = useCallback(async (timeMs: number) => {
         const timeSec = timeMs / 1000;
 
-        if (!auth?.token) {
+        if (!token) {
             console.error('Not authenticated');
             return;
         }
@@ -57,7 +57,7 @@ const Timer = () => {
 
         try {
             await createSolveMutation({
-                token: auth.token,
+                token,
                 cubeType: '3x3',
                 time: timeSec,
                 scramble: currentScramble,
@@ -67,10 +67,10 @@ const Timer = () => {
             console.error('Failed to save solve', e);
             setSolves(prev => prev.filter(s => s.id !== tempId));
         }
-    }, [currentScramble, auth?.token, createSolveMutation]);
+    }, [currentScramble, token, createSolveMutation]);
 
     const handleDeleteSolve = useCallback(async (id: string) => {
-        if (!auth?.token) {
+        if (!token) {
             console.error('Not authenticated');
             return;
         }
@@ -81,14 +81,14 @@ const Timer = () => {
 
         try {
             await deleteSolveMutation({
-                token: auth.token,
+                token,
                 solveId: id as Id<'solves'>
             });
         } catch (e) {
             console.error('Failed to delete solve', e);
             setSolves(originalSolves);
         }
-    }, [solves, auth?.token, deleteSolveMutation]);
+    }, [solves, token, deleteSolveMutation]);
 
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
