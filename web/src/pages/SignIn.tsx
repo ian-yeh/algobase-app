@@ -1,7 +1,9 @@
-import { useState, useContext } from "react"
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { useMutation } from "convex/react"
+import { api } from "@convex/_generated/api"
 import Logo from "@/components/Logo"
-import { AuthContext } from "@/contexts/AuthContext"
+import { useAuthStore } from "@/stores/authStore"
 
 const SignIn = () => {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -11,8 +13,10 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const auth = useContext(AuthContext)
   const navigate = useNavigate()
+  const setAuth = useAuthStore((s) => s.setAuth)
+  const signUpMutation = useMutation(api.auth.signUp)
+  const signInMutation = useMutation(api.auth.signIn)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,14 +24,20 @@ const SignIn = () => {
     setLoading(true)
 
     try {
-      if (isSignUp) {
-        await auth?.signUp(email, password, username)
-      } else {
-        await auth?.signIn(email, password)
-      }
+      const result = isSignUp
+        ? await signUpMutation({ email, password, username })
+        : await signInMutation({ email, password })
+      setAuth(result)
       navigate("/home")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      const message = err instanceof Error ? err.message : String(err)
+      if (message.includes("User already exists")) {
+        setError("This email is already registered. Try signing in instead.")
+      } else if (message.includes("Invalid email or password")) {
+        setError("Invalid email or password. Please try again.")
+      } else {
+        setError(isSignUp ? "Sign up failed. Please try again." : "Sign in failed. Please try again.")
+      }
     } finally {
       setLoading(false)
     }

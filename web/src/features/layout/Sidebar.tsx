@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import Logo from '@/components/Logo';
 
 const DashboardIcon = () => (
@@ -16,7 +16,7 @@ const TimerIcon = () => (
 
 const Sidebar = () => {
     const location = useLocation();
-    const { user } = useAuth();
+    const user = useAuthStore((s) => s.user);
 
     const navItems = [
         { name: 'Timer', path: '/timer', icon: <TimerIcon /> },

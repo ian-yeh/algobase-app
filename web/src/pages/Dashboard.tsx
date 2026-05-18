@@ -1,15 +1,14 @@
-import { useContext } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { AuthContext } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores/authStore';
 import StatsDashboard from '@/features/timer/StatsDashboard';
 import Loading from '@/components/Loading';
 
 const DashboardPage = () => {
-  const auth = useContext(AuthContext);
+  const token = useAuthStore((s) => s.token);
 
-  const statsData = useQuery(api.solve.getStats, auth?.token ? { token: auth.token } : 'skip');
-  const solvesData = useQuery(api.solve.getSolves, auth?.token ? { token: auth.token } : 'skip');
+  const statsData = useQuery(api.solve.getStats, token ? { token } : 'skip');
+  const solvesData = useQuery(api.solve.getSolves, token ? { token } : 'skip');
 
   if (!statsData || !solvesData) {
     return <Loading />;
