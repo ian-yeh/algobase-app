@@ -139,21 +139,26 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     };
 
     return (
-        <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm mt-8">
+        <div className="bg-slate-50 rounded-2xl border border-foreground/5 p-6 shadow-sm mt-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900">Solve Insights</h3>
-                    <p className="text-gray-400 text-xs">Analyze your progress over time</p>
+                    <h3 className="text-xl font-serif font-medium tracking-tight text-foreground">
+                        Solve Insights
+                    </h3>
+                    <p className="text-foreground/60 text-xs mt-1">
+                        Analyze your progress over time
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    {/* Interval Selectors */}
-                    <div className="flex bg-gray-50 p-1 rounded-lg border border-gray-100">
+                    <div className="flex bg-background p-1 rounded-lg border border-foreground/5">
                         {(['hour', 'day', 'week', 'month', 'all'] as Interval[]).map((int) => (
                             <button
                                 key={int}
                                 onClick={() => setInterval(int)}
-                                className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${interval === int ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                                className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-all ${interval === int
+                                    ? 'bg-foreground text-background shadow-sm'
+                                    : 'text-foreground/40 hover:text-foreground'
                                     }`}
                             >
                                 {int}
@@ -161,25 +166,30 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         ))}
                     </div>
 
-                    {/* Series Toggles */}
                     <div className="flex gap-2 ml-2">
                         <button
                             onClick={() => setShowSingle(!showSingle)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showSingle ? 'border-gray-200 bg-gray-50 text-gray-700' : 'border-transparent text-gray-300'
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showSingle
+                                ? 'border-foreground/10 bg-background text-foreground/70'
+                                : 'border-transparent text-foreground/30'
                                 }`}
                         >
                             Single
                         </button>
                         <button
                             onClick={() => setShowAO5(!showAO5)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO5 ? 'border-purple-100 bg-purple-50 text-purple-700' : 'border-transparent text-gray-300'
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO5
+                                ? 'border-purple-100 bg-purple-50 text-purple-700'
+                                : 'border-transparent text-foreground/30'
                                 }`}
                         >
                             AO5
                         </button>
                         <button
                             onClick={() => setShowAO12(!showAO12)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO12 ? 'border-blue-100 bg-blue-50 text-blue-700' : 'border-transparent text-gray-300'
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO12
+                                ? 'border-blue-100 bg-blue-50 text-blue-700'
+                                : 'border-transparent text-foreground/30'
                                 }`}
                         >
                             AO12
