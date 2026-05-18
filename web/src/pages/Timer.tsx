@@ -1,51 +1,48 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useContext } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import type { Id } from '@convex/_generated/dataModel';
+import { AuthContext } from '@/contexts/AuthContext';
 import ScrambleDisplay from '@/features/timer/ScrambleDisplay';
 import TimerDisplay from '@/features/timer/TimerDisplay';
 import StatsDisplay from '@/features/timer/StatsDisplay';
 import SolveHistory from '@/features/timer/SolveHistory';
 import type { Solve } from '@/features/timer/SolveHistory';
 import { generateScramble } from '@/lib/scramble';
-import { authenticatedFetch } from '@/lib/api';
 import Loading from '@/components/Loading';
 import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
 const Timer = () => {
+    const auth = useContext(AuthContext);
     const [currentScramble, setCurrentScramble] = useState(generateScramble());
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [stats, setStats] = useState<any>(null);
 
-    // Load solves and stats from backend on mount
-    const fetchData = useCallback(async () => {
-        try {
-            const [solvesData, statsData] = await Promise.all([
-                authenticatedFetch('/solve'),
-                authenticatedFetch('/stats')
-            ]);
+    const createSolveMutation = useMutation(api.solve.createSolve);
+    const deleteSolveMutation = useMutation(api.solve.deleteSolve);
 
-            const formattedSolves = solvesData.map((s: any) => ({
-                id: s.id.toString(),
-                time: s.time * 1000,
-                scramble: s.scramble,
-                timestamp: new Date(s.createdAt).getTime()
-            })).reverse();
-
-            setSolves(formattedSolves);
-            setStats(statsData);
-        } catch (e) {
-            console.error('Failed to fetch data from backend', e);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+    const solvesData = useQuery(api.solve.getSolves, auth?.token ? { token: auth.token } : 'skip');
+    const statsData = useQuery(api.solve.getStats, auth?.token ? { token: auth.token } : 'skip');
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        if (solvesData) {
+            const formattedSolves = solvesData.map((s: any) => ({
+                id: s._id,
+                time: s.time * 1000,
+                scramble: s.scramble,
+                timestamp: s._creationTime
+            })).reverse();
+            setSolves(formattedSolves);
+        }
+    }, [solvesData]);
 
     const handleSolveComplete = useCallback(async (timeMs: number) => {
         const timeSec = timeMs / 1000;
+
+        if (!auth?.token) {
+            console.error('Not authenticated');
+            return;
+        }
 
         // Optimistic update
         const tempId = crypto.randomUUID();
@@ -59,53 +56,44 @@ const Timer = () => {
         setCurrentScramble(generateScramble());
 
         try {
-            const result = await authenticatedFetch('/solve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    time: timeSec,
-                    cube_type: '3x3', // Backend uses '3x3'
-                    scramble: currentScramble,
-                    dnf: false
-                })
+            await createSolveMutation({
+                token: auth.token,
+                cubeType: '3x3',
+                time: timeSec,
+                scramble: currentScramble,
+                dnf: false
             });
-
-            // Update tempId with real ID from backend
-            setSolves(prev => prev.map(s => s.id === tempId ? {
-                ...s,
-                id: result.id.toString()
-            } : s));
-
-            // Refresh stats
-            const statsData = await authenticatedFetch('/stats');
-            setStats(statsData);
         } catch (e) {
-            console.error('Failed to save solve to backend', e);
+            console.error('Failed to save solve', e);
+            setSolves(prev => prev.filter(s => s.id !== tempId));
         }
-    }, [currentScramble]);
+    }, [currentScramble, auth?.token, createSolveMutation]);
 
     const handleDeleteSolve = useCallback(async (id: string) => {
+        if (!auth?.token) {
+            console.error('Not authenticated');
+            return;
+        }
+
         // Optimistic delete
         const originalSolves = [...solves];
         setSolves(prev => prev.filter(s => s.id !== id));
 
         try {
-            await authenticatedFetch(`/solve/${id}`, {
-                method: 'DELETE'
+            await deleteSolveMutation({
+                token: auth.token,
+                solveId: id as Id<'solves'>
             });
-            // Refresh stats
-            const statsData = await authenticatedFetch('/stats');
-            setStats(statsData);
         } catch (e) {
-            console.error('Failed to delete solve from backend', e);
-            setSolves(originalSolves); // Rollback
+            console.error('Failed to delete solve', e);
+            setSolves(originalSolves);
         }
-    }, [solves]);
+    }, [solves, auth?.token, deleteSolveMutation]);
 
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
 
-    if (isLoading) {
+    if (!solvesData || !statsData) {
         return <Loading />;
     }
 
@@ -124,7 +112,7 @@ const Timer = () => {
 
                 <div className={`w-full transition-all duration-500 transform ${isTiming ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
                     <StatsDisplay
-                        stats={stats}
+                        stats={statsData}
                         runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
                         runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
                     />

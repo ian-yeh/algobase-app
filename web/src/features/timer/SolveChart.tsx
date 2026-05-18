@@ -37,7 +37,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     const [showAO12, setShowAO12] = useState(true);
 
     const filteredSolves = useMemo(() => {
-        const sorted = [...solves].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        const sorted = [...solves].sort((a, b) => a._creationTime - b._creationTime);
         if (interval === 'all') return sorted;
 
         const now = new Date();
@@ -47,12 +47,12 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
         else if (interval === 'week') cutoff.setDate(now.getDate() - 7);
         else if (interval === 'month') cutoff.setMonth(now.getMonth() - 1);
 
-        return sorted.filter(s => new Date(s.createdAt) >= cutoff);
+        return sorted.filter(s => s._creationTime >= cutoff.getTime());
     }, [solves, interval]);
 
     const chartData = useMemo(() => {
         const labels = filteredSolves.map(s => {
-            const date = new Date(s.createdAt);
+            const date = new Date(s._creationTime);
             return interval === 'hour' || interval === 'day'
                 ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 : date.toLocaleDateString([], { month: 'short', day: 'numeric' });

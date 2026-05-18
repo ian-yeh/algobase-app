@@ -98,6 +98,8 @@ __pycache__/
 *.swp
 # Coverage reports (anywhere)
 coverage/
+# Root-level node_modules (workspace root)
+/node_modules
 # =========================
 # Misc
 # =========================
