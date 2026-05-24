@@ -1,8 +1,10 @@
-import { action, mutation } from "./_generated/server";
+import { action, mutation, internalQuery, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { verifyToken } from "./auth";
 
 const WCA_BASE = "https://www.worldcubeassociation.org/api/v0";
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export interface WcaCompetition {
     id: string;
@@ -34,11 +36,48 @@ const pickFields = (c: any): WcaCompetition => ({
     event_ids: c.event_ids,
 });
 
+export const getCachedByCountry = internalQuery({
+    args: { country: v.string() },
+    handler: async (ctx, args): Promise<WcaCompetition[] | null> => {
+        const cached = await ctx.db
+            .query("competitionCache")
+            .withIndex("by_country", (q) => q.eq("country", args.country))
+            .first();
+        if (!cached) return null;
+        if (Date.now() - cached.fetchedAt > CACHE_TTL_MS) return null;
+        return cached.comps as WcaCompetition[];
+    },
+});
+
+export const writeCacheByCountry = internalMutation({
+    args: { country: v.string(), comps: v.array(v.any()) },
+    handler: async (ctx, args) => {
+        const existing = await ctx.db
+            .query("competitionCache")
+            .withIndex("by_country", (q) => q.eq("country", args.country))
+            .first();
+        if (existing) {
+            await ctx.db.patch(existing._id, { fetchedAt: Date.now(), comps: args.comps });
+        } else {
+            await ctx.db.insert("competitionCache", {
+                country: args.country,
+                fetchedAt: Date.now(),
+                comps: args.comps,
+            });
+        }
+    },
+});
+
 export const listByCountry = action({
     args: {
         country: v.string(),
     },
-    handler: async (_ctx, args): Promise<WcaCompetition[]> => {
+    handler: async (ctx, args): Promise<WcaCompetition[]> => {
+        const cached = await ctx.runQuery(internal.competitions.getCachedByCountry, {
+            country: args.country,
+        });
+        if (cached) return cached;
+
         const today = new Date().toISOString().slice(0, 10);
         const url = `${WCA_BASE}/competitions?country_iso2=${encodeURIComponent(args.country)}&start=${today}&sort=start_date&per_page=50`;
         const res = await fetch(url, { headers: { Accept: "application/json" } });
@@ -46,7 +85,14 @@ export const listByCountry = action({
             throw new Error(`WCA API error: ${res.status}`);
         }
         const data = await res.json();
-        return Array.isArray(data) ? data.map(pickFields) : [];
+        const comps = Array.isArray(data) ? data.map(pickFields) : [];
+
+        await ctx.runMutation(internal.competitions.writeCacheByCountry, {
+            country: args.country,
+            comps,
+        });
+
+        return comps;
     },
 });
 

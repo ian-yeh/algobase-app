@@ -29,4 +29,11 @@ export default defineSchema({
     dnf: v.boolean(),
   })
     .index("by_userId", ["userId"]),
+
+  competitionCache: defineTable({
+    country: v.string(), // ISO 3166-1 alpha-2
+    fetchedAt: v.number(), // ms since epoch
+    comps: v.array(v.any()),
+  })
+    .index("by_country", ["country"]),
 });
