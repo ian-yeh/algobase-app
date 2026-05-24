@@ -15,8 +15,10 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="min-h-full py-8">
-      <StatsDashboard stats={statsData} solves={solvesData} />
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-6xl mx-auto py-8 px-6">
+        <StatsDashboard stats={statsData} solves={solvesData} />
+      </div>
     </div>
   );
 };

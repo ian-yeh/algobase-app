@@ -4,11 +4,12 @@ interface TimerDisplayProps {
     onSolveComplete: (time: number) => void;
     onStart?: () => void;
     onStop?: () => void;
+    disabled?: boolean;
 }
 
 type TimerState = 'IDLE' | 'HOLDING' | 'READY' | 'RUNNING';
 
-const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, onStop }) => {
+const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, onStop, disabled }) => {
     const [time, setTime] = useState(0);
     const [displayState, setDisplayState] = useState<TimerState>('IDLE');
 
@@ -17,12 +18,17 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     const startTimeRef = useRef<number>(0);
     const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const disabledRef = useRef(disabled);
 
     // Sync props to refs to avoid re-running the effect when callbacks change
     const callbacks = useRef({ onSolveComplete, onStart, onStop });
     useEffect(() => {
         callbacks.current = { onSolveComplete, onStart, onStop };
     }, [onSolveComplete, onStart, onStop]);
+
+    useEffect(() => {
+        disabledRef.current = disabled;
+    }, [disabled]);
 
     const updateState = (newState: TimerState) => {
         stateRef.current = newState;
@@ -57,13 +63,14 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // If any key is pressed while running, stop
+            // If any key is pressed while running, stop (even when disabled — safety)
             if (stateRef.current === 'RUNNING') {
                 e.preventDefault();
                 stopTimer();
                 return;
             }
 
+            if (disabledRef.current) return;
             if (e.code !== 'Space') return;
             e.preventDefault();
 
@@ -78,6 +85,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
+            if (disabledRef.current) return;
             if (e.code !== 'Space') return;
             e.preventDefault();
 

@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as competitions from "../competitions.js";
 import type * as solve from "../solve.js";
 import type * as user from "../user.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  competitions: typeof competitions;
   solve: typeof solve;
   user: typeof user;
 }>;

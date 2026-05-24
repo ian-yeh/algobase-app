@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, Trophy } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import Logo from '@/components/Logo';
 
@@ -24,6 +24,7 @@ const Sidebar = () => {
     const navItems = [
         { name: 'Timer', path: '/timer', icon: <TimerIcon /> },
         { name: 'Dashboard', path: '/home', icon: <DashboardIcon /> },
+        { name: 'Competitions', path: '/competitions', icon: <Trophy className="w-5 h-5" /> },
     ];
 
     const userDisplayName = user?.username || user?.email?.split('@')[0] || 'User';
