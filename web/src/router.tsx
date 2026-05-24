@@ -4,6 +4,7 @@ import App from '@/App';
 import DashboardPage from '@/pages/Dashboard';
 import TimerPage from "@/pages/Timer";
 import SignIn from "@/pages/SignIn";
+import Competitions from "@/pages/Competitions";
 import Layout from "@/features/layout/Layout";
 
 export const router = createBrowserRouter([
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/home', element: <DashboardPage /> },
       { path: '/timer', element: <TimerPage /> },
+      { path: '/competitions', element: <Competitions /> },
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }

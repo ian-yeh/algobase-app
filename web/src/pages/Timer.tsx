@@ -7,6 +7,7 @@ import ScrambleDisplay from '@/features/timer/ScrambleDisplay';
 import TimerDisplay from '@/features/timer/TimerDisplay';
 import StatsDisplay from '@/features/timer/StatsDisplay';
 import SolveHistory from '@/features/timer/SolveHistory';
+import SolveDetailModal from '@/features/timer/SolveDetailModal';
 import type { Solve } from '@/features/timer/SolveHistory';
 import { generateScramble } from '@/lib/scramble';
 import Loading from '@/components/Loading';
@@ -17,6 +18,7 @@ const Timer = () => {
     const [currentScramble, setCurrentScramble] = useState(generateScramble());
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
+    const [selectedSolve, setSelectedSolve] = useState<Solve | null>(null);
 
     const createSolveMutation = useMutation(api.solve.createSolve);
     const deleteSolveMutation = useMutation(api.solve.deleteSolve);
@@ -44,7 +46,6 @@ const Timer = () => {
             return;
         }
 
-        // Optimistic update
         const tempId = crypto.randomUUID();
         const newSolve: Solve = {
             id: tempId,
@@ -75,7 +76,6 @@ const Timer = () => {
             return;
         }
 
-        // Optimistic delete
         const originalSolves = [...solves];
         setSolves(prev => prev.filter(s => s.id !== id));
 
@@ -98,27 +98,43 @@ const Timer = () => {
     }
 
     return (
-        <div className="min-h-full py-12 px-6 flex flex-col items-center tracking-tight">
-            <div className={`w-full max-w-4xl transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                <ScrambleDisplay scramble={currentScramble} />
-            </div>
+        <div className="flex h-full">
+            <div className="flex-1 flex flex-col items-center py-12 px-6 tracking-tight overflow-y-auto">
+                <div className={`w-full max-w-4xl transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    <ScrambleDisplay scramble={currentScramble} />
+                </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center w-full">
-                <TimerDisplay
-                    onSolveComplete={handleSolveComplete}
-                    onStart={handleStart}
-                    onStop={handleStop}
-                />
-
-                <div className={`w-full transition-all duration-500 transform ${isTiming ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-                    <StatsDisplay
-                        stats={statsData}
-                        runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
-                        runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
+                <div className="flex-1 flex flex-col items-center justify-center w-full">
+                    <TimerDisplay
+                        onSolveComplete={handleSolveComplete}
+                        onStart={handleStart}
+                        onStop={handleStop}
+                        disabled={!!selectedSolve}
                     />
-                    <SolveHistory solves={solves} onDeleteSolve={handleDeleteSolve} />
+
+                    <div className={`w-full transition-all duration-500 transform ${isTiming ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+                        <StatsDisplay
+                            stats={statsData}
+                            runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
+                            runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
+                        />
+                    </div>
                 </div>
             </div>
+
+            <aside className={`w-80 shrink-0 border-l border-foreground/5 transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <SolveHistory
+                    solves={solves}
+                    onSelectSolve={setSelectedSolve}
+                    onDeleteSolve={handleDeleteSolve}
+                />
+            </aside>
+
+            <SolveDetailModal
+                solve={selectedSolve}
+                onClose={() => setSelectedSolve(null)}
+                onDelete={handleDeleteSolve}
+            />
         </div>
     );
 };

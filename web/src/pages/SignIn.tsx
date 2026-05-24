@@ -28,7 +28,7 @@ const SignIn = () => {
         ? await signUpMutation({ email, password, username })
         : await signInMutation({ email, password })
       setAuth(result)
-      navigate("/home")
+      navigate("/timer")
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       if (message.includes("User already exists")) {

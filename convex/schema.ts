@@ -9,6 +9,8 @@ export default defineSchema({
     emailVerified: v.boolean(),
     imageUrl: v.optional(v.string()),
     lastActivityDate: v.number(), // Unix timestamp
+    country: v.optional(v.string()), // ISO 3166-1 alpha-2, e.g. "CA"
+    bookmarkedCompetitions: v.optional(v.array(v.string())), // WCA competition IDs
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"]),
