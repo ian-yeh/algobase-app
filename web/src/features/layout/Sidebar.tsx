@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Trophy } from 'lucide-react';
+import { LogOut, Trophy, X } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import Logo from '@/components/Logo';
 
@@ -15,7 +15,12 @@ const TimerIcon = () => (
     </svg>
 );
 
-const Sidebar = () => {
+interface SidebarProps {
+    mobileOpen: boolean;
+    onClose: () => void;
+}
+
+const Sidebar = ({ mobileOpen, onClose }: SidebarProps) => {
     const location = useLocation();
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
@@ -34,12 +39,19 @@ const Sidebar = () => {
         navigate('/signin');
     };
 
-    return (
-        <div className="w-64 h-screen bg-background text-foreground flex flex-col border-r border-foreground/5">
-            <div className="p-8">
-                <Link to="/">
+    const content = (
+        <>
+            <div className="p-8 flex items-center justify-between">
+                <Link to="/" onClick={onClose}>
                     <Logo className="text-2xl font-semibold hover:opacity-80 transition-opacity cursor-pointer" />
                 </Link>
+                <button
+                    onClick={onClose}
+                    aria-label="Close menu"
+                    className="md:hidden p-1.5 rounded-lg text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
             <nav className="flex-1 px-4 py-4 space-y-1">
@@ -49,6 +61,7 @@ const Sidebar = () => {
                         <Link
                             key={item.path}
                             to={item.path}
+                            onClick={onClose}
                             className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive
                                 ? 'bg-foreground text-background shadow-md shadow-foreground/5'
                                 : 'text-foreground/50 hover:bg-foreground/5 hover:text-foreground'
@@ -80,7 +93,28 @@ const Sidebar = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </>
+    );
+
+    return (
+        <>
+            {/* Desktop sidebar */}
+            <div className="hidden md:flex w-64 h-screen bg-background text-foreground flex-col border-r border-foreground/5">
+                {content}
+            </div>
+
+            {/* Mobile drawer + backdrop */}
+            <div
+                className={`md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={onClose}
+                aria-hidden="true"
+            />
+            <div
+                className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[80vw] bg-background text-foreground flex flex-col border-r border-foreground/5 shadow-2xl transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            >
+                {content}
+            </div>
+        </>
     );
 };
 

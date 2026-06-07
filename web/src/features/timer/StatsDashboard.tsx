@@ -35,7 +35,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
     );
 
     return (
-        <div className="w-full max-w-5xl mx-auto py-10 px-6">
+        <div className="w-full max-w-5xl mx-auto py-6 md:py-10 px-0 md:px-6">
             <div className="mb-8 animate-blur-in">
                 <h2 className="text-3xl md:text-4xl font-serif font-medium tracking-tight">
                     Dashboard

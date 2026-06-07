@@ -16,7 +16,7 @@ const DashboardPage = () => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-6xl mx-auto py-8 px-6">
+      <div className="max-w-6xl mx-auto py-6 px-4 md:py-8 md:px-6">
         <StatsDashboard stats={statsData} solves={solvesData} />
       </div>
     </div>
