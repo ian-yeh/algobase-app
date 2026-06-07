@@ -47,7 +47,7 @@ const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onD
             onClick={onClose}
         >
             <div
-                className="bg-background rounded-2xl shadow-2xl border border-foreground/5 max-w-md w-full mx-4 p-8"
+                className="bg-background rounded-2xl shadow-2xl border border-foreground/5 max-w-md w-full mx-4 p-6 md:p-8"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="text-xs font-bold uppercase tracking-widest text-foreground/40 mb-2">

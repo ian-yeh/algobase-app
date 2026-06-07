@@ -53,7 +53,7 @@ const SignIn = () => {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-8 pt-20">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 pt-20">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-serif font-medium mb-4 tracking-tight animate-blur-in">
@@ -66,7 +66,7 @@ const SignIn = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-slate-50 border border-foreground/5 p-8 rounded-2xl shadow-sm space-y-4 animate-slide-up delay-300">
+          <form onSubmit={handleSubmit} className="bg-slate-50 border border-foreground/5 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4 animate-slide-up delay-300">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium">
                 <p className="flex items-center gap-2">
@@ -136,7 +136,7 @@ const SignIn = () => {
             </button>
           </p>
 
-          <p className="mt-8 text-xs text-foreground/40 px-10 leading-relaxed text-center animate-reveal delay-500">
+          <p className="mt-8 text-xs text-foreground/40 px-4 sm:px-10 leading-relaxed text-center animate-reveal delay-500">
             By signing in, you agree to our <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.
           </p>
         </div>

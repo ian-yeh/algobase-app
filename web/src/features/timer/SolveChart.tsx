@@ -139,7 +139,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     };
 
     return (
-        <div className="bg-slate-50 rounded-2xl border border-foreground/5 p-6 shadow-sm mt-8">
+        <div className="bg-slate-50 rounded-2xl border border-foreground/5 p-4 md:p-6 shadow-sm mt-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
                 <div>
                     <h3 className="text-xl font-serif font-medium tracking-tight text-foreground">

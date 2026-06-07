@@ -112,6 +112,38 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         };
     }, []); // Only run once on mount
 
+    // Touch handlers mirror the space-bar hold/release behavior for mobile
+    const handleTouchStart = (e: React.TouchEvent) => {
+        e.preventDefault();
+        if (stateRef.current === 'RUNNING') {
+            stopTimer();
+            return;
+        }
+        if (disabledRef.current) return;
+        if (stateRef.current === 'IDLE' && !holdTimeoutRef.current) {
+            updateState('HOLDING');
+            holdTimeoutRef.current = setTimeout(() => {
+                if (stateRef.current === 'HOLDING') {
+                    updateState('READY');
+                }
+            }, 350);
+        }
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        e.preventDefault();
+        if (disabledRef.current) return;
+        if (holdTimeoutRef.current) {
+            clearTimeout(holdTimeoutRef.current);
+            holdTimeoutRef.current = null;
+        }
+        if (stateRef.current === 'READY') {
+            startTimer();
+        } else if (stateRef.current === 'HOLDING') {
+            updateState('IDLE');
+        }
+    };
+
     const formatTime = (ms: number) => {
         const seconds = Math.floor(ms / 1000);
         const milliseconds = Math.floor((ms % 1000) / 10);
@@ -128,15 +160,19 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     };
 
     return (
-        <div className="flex flex-col items-center justify-center py-20 select-none">
-            <div className={`text-8xl md:text-9xl font-sans tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
+        <div
+            className="flex flex-col items-center justify-center py-12 md:py-20 select-none touch-none cursor-pointer w-full"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
+            <div className={`text-7xl sm:text-8xl md:text-9xl font-sans tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
                 {formatTime(time)}
             </div>
-            <div className="mt-8 text-foreground/40 text-sm font-medium h-6">
-                {displayState === 'IDLE' && 'Hold SPACE to start'}
+            <div className="mt-8 text-foreground/40 text-sm font-medium h-6 text-center px-4">
+                {displayState === 'IDLE' && 'Hold to start'}
                 {displayState === 'HOLDING' && 'Wait for green...'}
                 {displayState === 'READY' && 'Release to start!'}
-                {displayState === 'RUNNING' && 'Press any key to stop'}
+                {displayState === 'RUNNING' && 'Tap or press a key to stop'}
             </div>
         </div>
     );

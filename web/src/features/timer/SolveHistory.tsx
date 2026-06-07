@@ -66,7 +66,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                                                         onDeleteSolve(solve.id);
                                                     }
                                                 }}
-                                                className="opacity-0 group-hover:opacity-100 p-1 text-foreground/20 hover:text-red-500 transition-all active:scale-90 cursor-pointer"
+                                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 text-foreground/20 hover:text-red-500 transition-all active:scale-90 cursor-pointer"
                                                 title="Delete solve"
                                             >
                                                 ✕

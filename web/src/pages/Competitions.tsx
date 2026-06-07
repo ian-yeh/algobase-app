@@ -143,7 +143,7 @@ const Competitions = () => {
 
     return (
         <div className="h-full overflow-y-auto font-sans">
-            <div className="max-w-4xl mx-auto py-12 px-6">
+            <div className="max-w-4xl mx-auto py-8 px-4 md:py-12 md:px-6">
                 <header className="mb-8">
                     <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight text-black mb-2">
                         Competitions
@@ -153,8 +153,8 @@ const Competitions = () => {
                     </p>
                 </header>
 
-                <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-                    <div className="flex items-center gap-1 border border-foreground/10 rounded-lg p-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-1 border border-foreground/10 rounded-lg p-1 self-start">
                         <button
                             type="button"
                             onClick={() => setTab("all")}
@@ -175,11 +175,11 @@ const Competitions = () => {
                     </div>
 
                     <label className="flex items-center gap-2 text-sm">
-                        <span className="text-foreground/50">Country:</span>
+                        <span className="text-foreground/50 shrink-0">Country:</span>
                         <select
                             value={country}
                             onChange={(e) => handleCountryChange(e.target.value)}
-                            className="border border-foreground/10 rounded-lg px-3 py-1.5 bg-background hover:border-foreground/30 focus:outline-none focus:border-foreground/30 font-medium"
+                            className="flex-1 sm:flex-none border border-foreground/10 rounded-lg px-3 py-1.5 bg-background hover:border-foreground/30 focus:outline-none focus:border-foreground/30 font-medium"
                         >
                             {COUNTRIES.map((c) => (
                                 <option key={c.code} value={c.code}>
