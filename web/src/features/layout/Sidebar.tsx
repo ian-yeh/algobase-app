@@ -70,13 +70,10 @@ const Sidebar = () => {
                             to={item.path}
                             title={collapsed ? item.name : undefined}
                             className={`relative flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg transition-colors duration-150 ${isActive
-                                ? 'text-foreground bg-foreground/[0.04]'
+                                ? 'text-foreground bg-foreground/[0.06] ring-1 ring-inset ring-foreground/10'
                                 : 'text-foreground/45 hover:text-foreground/80'
                                 }`}
                         >
-                            {isActive && (
-                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-accent" />
-                            )}
                             {item.icon}
                             {!collapsed && <span className="text-sm font-medium tracking-tight">{item.name}</span>}
                         </Link>
