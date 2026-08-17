@@ -24,33 +24,36 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
     };
 
     const StatCard = ({ label, value }: { label: string; value: string }) => (
-        <div className="bg-slate-50 border border-foreground/5 rounded-2xl shadow-sm p-6 transition-all hover:shadow-md">
-            <span className="text-foreground/40 text-xs font-medium tracking-wider uppercase">
+        <div className="bg-surface border border-line rounded-2xl p-6 sm:p-7 transition-colors hover:border-foreground/15">
+            <span className="text-foreground/45 text-[11px] font-medium tracking-[0.12em] uppercase">
                 {label}
             </span>
-            <div className="mt-4 text-4xl font-serif font-medium tracking-tight text-foreground">
-                {value}
+            <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-5xl font-serif font-medium tracking-tight tabular-nums">
+                    {value}
+                </span>
+                <span className="text-foreground/30 text-lg font-serif">s</span>
             </div>
         </div>
     );
 
     return (
-        <div className="w-full max-w-5xl mx-auto py-10 px-6">
-            <div className="mb-8 animate-blur-in">
-                <h2 className="text-3xl md:text-4xl font-serif font-medium tracking-tight">
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-12 space-y-8 sm:space-y-10">
+            <header className="animate-blur-in">
+                <h2 className="text-4xl font-serif font-medium tracking-tight">
                     Dashboard
                 </h2>
-                <p className="text-foreground/60 font-medium text-sm mt-2">
+                <p className="text-foreground/50 text-sm mt-2">
                     {stats.total_solves > 0
                         ? `${stats.total_solves} solve${stats.total_solves === 1 ? '' : 's'} tracked so far`
                         : 'Your cubing progress at a glance'}
                 </p>
-            </div>
+            </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up delay-200">
-                <StatCard label="Average of 5" value={formatTime(stats.best_ao5)} />
-                <StatCard label="Average of 12" value={formatTime(stats.best_ao12)} />
-                <StatCard label="Personal Best" value={formatTime(stats.best_time)} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-slide-up delay-200">
+                <StatCard label="Best Ao5" value={formatTime(stats.best_ao5)} />
+                <StatCard label="Best Ao12" value={formatTime(stats.best_ao12)} />
+                <StatCard label="Best single" value={formatTime(stats.best_time)} />
             </div>
 
             <div className="animate-slide-up delay-300">

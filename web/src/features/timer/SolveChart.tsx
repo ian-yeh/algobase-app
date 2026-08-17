@@ -51,12 +51,14 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     }, [solves, interval]);
 
     const chartData = useMemo(() => {
-        const labels = filteredSolves.map(s => {
+        const allLabels = filteredSolves.map(s => {
             const date = new Date(s._creationTime);
             return interval === 'hour' || interval === 'day'
                 ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         });
+        // only label a point when its date/time bucket changes
+        const labels = allLabels.map((l, i) => (i > 0 && l === allLabels[i - 1] ? '' : l));
 
         const times = filteredSolves.map(s => s.time);
         const ao5Series = calculateAverageSeries(times.reverse(), 5).reverse();
@@ -68,8 +70,8 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
             datasets.push({
                 label: 'Single',
                 data: times,
-                borderColor: 'rgba(156, 163, 175, 0.5)',
-                backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                borderColor: 'rgba(120, 113, 108, 0.35)',
+                backgroundColor: 'rgba(120, 113, 108, 0.08)',
                 borderWidth: 1.5,
                 pointRadius: 2,
                 tension: 0.3,
@@ -94,8 +96,8 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
             datasets.push({
                 label: 'AO12',
                 data: ao12Series,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: '#c2761a',
+                backgroundColor: 'rgba(194, 118, 26, 0.1)',
                 borderWidth: 2,
                 pointRadius: 0,
                 tension: 0.4,
@@ -114,10 +116,10 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
             tooltip: {
                 mode: 'index' as const,
                 intersect: false,
-                backgroundColor: '#fff',
-                titleColor: '#111827',
-                bodyColor: '#4b5563',
-                borderColor: '#e5e7eb',
+                backgroundColor: '#fcfcf9',
+                titleColor: '#1a1a1a',
+                bodyColor: 'rgba(26, 26, 26, 0.6)',
+                borderColor: '#e7e2d5',
                 borderWidth: 1,
                 padding: 12,
                 displayColors: true,
@@ -129,18 +131,24 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
         scales: {
             x: {
                 grid: { display: false },
-                ticks: { color: '#9ca3af', font: { size: 10 } }
+                ticks: {
+                    color: 'rgba(26, 26, 26, 0.35)',
+                    font: { size: 10 },
+                    maxRotation: 0,
+                    autoSkip: false,
+                }
             },
             y: {
-                grid: { color: '#f3f4f6' },
-                ticks: { color: '#9ca3af', font: { size: 10 }, callback: (value: any) => `${value}s` }
+                border: { display: false },
+                grid: { color: '#eeeade' },
+                ticks: { color: 'rgba(26, 26, 26, 0.35)', font: { size: 10 }, padding: 8, callback: (value: any) => `${value}s` }
             }
         }
     };
 
     return (
-        <div className="bg-slate-50 rounded-2xl border border-foreground/5 p-6 shadow-sm mt-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+        <div className="bg-surface rounded-2xl border border-line p-5 sm:p-7">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h3 className="text-xl font-serif font-medium tracking-tight text-foreground">
                         Solve Insights
@@ -151,7 +159,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex bg-background p-1 rounded-lg border border-foreground/5">
+                    <div className="flex bg-background p-1 rounded-lg border border-line">
                         {(['hour', 'day', 'week', 'month', 'all'] as Interval[]).map((int) => (
                             <button
                                 key={int}
@@ -170,7 +178,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         <button
                             onClick={() => setShowSingle(!showSingle)}
                             className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showSingle
-                                ? 'border-foreground/10 bg-background text-foreground/70'
+                                ? 'border-line bg-background text-foreground/70'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >
@@ -179,7 +187,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         <button
                             onClick={() => setShowAO5(!showAO5)}
                             className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO5
-                                ? 'border-purple-100 bg-purple-50 text-purple-700'
+                                ? 'border-accent/20 bg-accent/8 text-accent'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >
@@ -188,7 +196,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         <button
                             onClick={() => setShowAO12(!showAO12)}
                             className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO12
-                                ? 'border-blue-100 bg-blue-50 text-blue-700'
+                                ? 'border-accent-warm/25 bg-accent-warm/8 text-accent-warm'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >

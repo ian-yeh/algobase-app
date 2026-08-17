@@ -8,6 +8,9 @@
   --color-foreground: #1a1a1a;
   --color-accent: #9333ea;
   /* Purple pop */
+  --color-accent-warm: #c2761a;
+  --color-surface: #f6f3ec;
+  --color-line: #e7e2d5;
 }
 
 :root {
