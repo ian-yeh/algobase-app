@@ -24,7 +24,7 @@ Pass `'skip'` as the second arg to `useQuery` to defer execution (e.g., until a 
 
 Every non-auth function takes a `token: string` argument. The function calls `verifyToken(token)` from `convex/auth.ts`; if it returns `null` the function throws `"Invalid token"`.
 
-Tokens are issued by `auth.signUp` / `auth.signIn`. They are HMAC-SHA256-signed strings of the form `v1|userId|email|timestamp|nonce|signature` and expire 7 days after issue. The client stores them in `localStorage` via the Zustand auth store (`web/src/stores/authStore.ts`) and passes them with every call.
+Tokens are issued by `auth.signUp` / `auth.signIn`. They are HMAC-SHA256-signed strings of the form `v1|userId|email|timestamp|nonce|signature` and expire 7 days after issue. The client stores them in `localStorage` via the Zustand auth store (`apps/web/src/stores/authStore.ts`) and passes them with every call.
 
 ---
 
