@@ -197,7 +197,25 @@ const Competitions = () => {
                 )}
 
                 {isLoading ? (
-                    <div className="py-16 text-center text-foreground/30 text-sm">Loading competitions…</div>
+                    <ul className="space-y-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <li
+                                key={i}
+                                className="border border-foreground/10 rounded-xl p-5 animate-pulse"
+                            >
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="h-5 w-2/3 rounded bg-foreground/10" />
+                                        <div className="mt-3 flex gap-4">
+                                            <div className="h-3 w-32 rounded bg-foreground/10" />
+                                            <div className="h-3 w-24 rounded bg-foreground/10" />
+                                        </div>
+                                    </div>
+                                    <div className="shrink-0 w-9 h-9 rounded-lg bg-foreground/10" />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 ) : list.length === 0 ? (
                     <div className="py-16 text-center text-foreground/30 text-sm">
                         {tab === "bookmarked"
