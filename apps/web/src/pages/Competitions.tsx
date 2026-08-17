@@ -2,23 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { Bookmark, BookmarkCheck, ExternalLink, MapPin, Calendar } from "lucide-react";
 import { api } from "@convex/_generated/api";
+import type { WcaCompetition } from "@convex/competitions";
 import { useAuthStore } from "@/stores/authStore";
 import Loading from "@/components/Loading";
 import { COUNTRIES, DEFAULT_COUNTRY, findCountry } from "@/lib/countries";
-
-interface WcaCompetition {
-    id: string;
-    name: string;
-    short_name?: string;
-    city?: string;
-    country_iso2?: string;
-    start_date?: string;
-    end_date?: string;
-    registration_open?: string | null;
-    registration_close?: string | null;
-    website?: string | null;
-    venue?: string | null;
-}
 
 type Tab = "all" | "bookmarked";
 
