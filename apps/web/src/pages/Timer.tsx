@@ -98,8 +98,8 @@ const Timer = () => {
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
-            <div className="flex-1 flex flex-col items-center py-8 md:py-12 px-4 md:px-6 tracking-tight md:overflow-y-auto">
+        <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
+            <div className="flex-1 flex flex-col items-center py-8 md:py-12 px-4 md:px-6 tracking-tight lg:overflow-y-auto">
                 <div className={`w-full max-w-4xl transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     <ScrambleDisplay
                         scramble={currentScramble}
@@ -125,7 +125,7 @@ const Timer = () => {
                 </div>
             </div>
 
-            <aside className={`w-full md:w-96 shrink-0 border-t md:border-t-0 md:border-l border-foreground/5 max-h-80 md:max-h-none md:h-full transition-opacity duration-300 ${isTiming ? 'hidden md:block md:opacity-0 md:pointer-events-none' : 'opacity-100'}`}>
+            <aside className={`w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-foreground/5 max-h-80 lg:max-h-none lg:h-full transition-opacity duration-300 ${isTiming ? 'hidden lg:block lg:opacity-0 lg:pointer-events-none' : 'opacity-100'}`}>
                 <SolveHistory
                     solves={solves}
                     onSelectSolve={setSelectedSolve}
