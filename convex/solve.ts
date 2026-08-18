@@ -101,3 +101,28 @@ export const getStats = query({
     };
   },
 });
+
+export const importSolves = mutation({
+  args: {
+    token: v.string(),
+    solves: v.array(
+      v.object({
+        cubeType: v.string(),
+        time: v.number(),
+        scramble: v.string(),
+        dnf: v.boolean(),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    for (const solve of args.solves) {
+      await ctx.db.insert("solves", { ...solve, userId: decoded.userId });
+    }
+    return { imported: args.solves.length };
+  },
+});
