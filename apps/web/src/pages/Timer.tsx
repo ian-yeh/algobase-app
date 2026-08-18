@@ -101,7 +101,10 @@ const Timer = () => {
         <div className="flex h-full">
             <div className="flex-1 flex flex-col items-center py-12 px-6 tracking-tight overflow-y-auto">
                 <div className={`w-full max-w-4xl transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <ScrambleDisplay scramble={currentScramble} />
+                    <ScrambleDisplay
+                        scramble={currentScramble}
+                        onNewScramble={() => setCurrentScramble(generateScramble())}
+                    />
                 </div>
 
                 <div className="flex-1 flex flex-col items-center justify-center w-full">
@@ -122,7 +125,7 @@ const Timer = () => {
                 </div>
             </div>
 
-            <aside className={`w-80 shrink-0 border-l border-foreground/5 transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <aside className={`w-96 shrink-0 border-l border-foreground/5 transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <SolveHistory
                     solves={solves}
                     onSelectSolve={setSelectedSolve}
