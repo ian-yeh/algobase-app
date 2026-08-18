@@ -48,11 +48,11 @@ npm run convex:deploy  # deploy to production
 ```bash
 npx convex dev --configure   # interactive: pick existing or create new
 ```
-This rewrites `.env.local` (root) with `CONVEX_DEPLOYMENT`. Then also update `web/.env`'s `VITE_CONVEX_URL` to match — these two must point at the same deployment or the browser WebSocket will fail to connect.
+This rewrites `.env.local` (root) with `CONVEX_DEPLOYMENT`. Then also update `apps/web/.env`'s `VITE_CONVEX_URL` to match — these two must point at the same deployment or the browser WebSocket will fail to connect.
 
 ## Key File Structure
 
-### Frontend (`/web/src`)
+### Frontend (`/apps/web/src`)
 - `pages/` — Route components (`Landing`, `SignIn`, `Dashboard`, `Timer`)
 - `components/` — Generic UI (`Logo`, `Loading`)
 - `features/` — Feature folders (`timer/`, `layout/`)
@@ -61,8 +61,8 @@ This rewrites `.env.local` (root) with `CONVEX_DEPLOYMENT`. Then also update `we
 - `router.tsx` — Route definitions
 - `main.tsx` — `ConvexProvider` + router root
 
-Path aliases (configured in `web/tsconfig.app.json` and `web/vite.config.ts`):
-- `@/*` → `web/src/*`
+Path aliases (configured in `apps/web/tsconfig.app.json` and `apps/web/vite.config.ts`):
+- `@/*` → `apps/web/src/*`
 - `@convex/*` → `convex/*` (use for `@convex/_generated/api` and `@convex/_generated/dataModel`)
 
 ### Convex (`/convex`)
@@ -84,7 +84,7 @@ Path aliases (configured in `web/tsconfig.app.json` and `web/vite.config.ts`):
 - `CONVEX_DEPLOYMENT` — e.g., `dev:energized-fly-476`
 - `CONVEX_URL` / `CONVEX_SITE_URL` — informational
 
-### `/web/.env` (read by Vite, baked into the bundle)
+### `/apps/web/.env` (read by Vite, baked into the bundle)
 - `VITE_CONVEX_URL` — full cloud URL of the Convex deployment (must match `.env.local`)
 
 ### Convex dashboard (set per deployment, not in repo)
@@ -95,7 +95,7 @@ Path aliases (configured in `web/tsconfig.app.json` and `web/vite.config.ts`):
 - **Add a new field to a table**: edit `convex/schema.ts` → save (convex dev hot-reloads + applies the schema change). No migration files; Convex enforces the new shape going forward.
 - **Add a new Convex function**: create or extend a file in `convex/` and export `query` / `mutation` / `action`. `convex dev` regenerates `_generated/api` automatically, then the frontend can call it via `useQuery(api.module.fn, ...)` or `useMutation(api.module.fn)`.
 - **Add a protected function**: take a `token: v.string()` arg, call `await verifyToken(args.token)` first, throw on null. Mirror the pattern in `convex/solve.ts`.
-- **Update frontend styling**: Tailwind via `web/src/index.css`; classes inline on components.
+- **Update frontend styling**: Tailwind via `apps/web/src/index.css`; classes inline on components.
 
 ## Development Notes
 

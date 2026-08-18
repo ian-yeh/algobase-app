@@ -24,8 +24,8 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, runningAO5, runningA
     };
 
     return (
-        <div className="py-8 w-full max-w-lg mx-auto text-sm text-foreground/60 font-sans tracking-wide space-y-1">
-            <div className="flex justify-center space-x-8 uppercase font-bold">
+        <div className="py-8 w-full max-w-2xl mx-auto text-base sm:text-xl text-foreground/60 font-sans tracking-wide space-y-1">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:gap-x-10 uppercase font-bold">
                 <span>ao5: {formatTime(runningAO5)}</span>
                 <span>ao12: {formatTime(runningAO12)}</span>
                 <span>best: {formatTime(stats.best_time)}</span>

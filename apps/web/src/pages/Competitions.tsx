@@ -2,23 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { Bookmark, BookmarkCheck, ExternalLink, MapPin, Calendar } from "lucide-react";
 import { api } from "@convex/_generated/api";
+import type { WcaCompetition } from "@convex/competitions";
 import { useAuthStore } from "@/stores/authStore";
 import Loading from "@/components/Loading";
 import { COUNTRIES, DEFAULT_COUNTRY, findCountry } from "@/lib/countries";
-
-interface WcaCompetition {
-    id: string;
-    name: string;
-    short_name?: string;
-    city?: string;
-    country_iso2?: string;
-    start_date?: string;
-    end_date?: string;
-    registration_open?: string | null;
-    registration_close?: string | null;
-    website?: string | null;
-    venue?: string | null;
-}
 
 type Tab = "all" | "bookmarked";
 
@@ -197,7 +184,25 @@ const Competitions = () => {
                 )}
 
                 {isLoading ? (
-                    <div className="py-16 text-center text-foreground/30 text-sm">Loading competitions…</div>
+                    <ul className="space-y-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <li
+                                key={i}
+                                className="border border-foreground/10 rounded-xl p-5 animate-pulse"
+                            >
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="h-5 w-2/3 rounded bg-foreground/10" />
+                                        <div className="mt-3 flex gap-4">
+                                            <div className="h-3 w-32 rounded bg-foreground/10" />
+                                            <div className="h-3 w-24 rounded bg-foreground/10" />
+                                        </div>
+                                    </div>
+                                    <div className="shrink-0 w-9 h-9 rounded-lg bg-foreground/10" />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 ) : list.length === 0 ? (
                     <div className="py-16 text-center text-foreground/30 text-sm">
                         {tab === "bookmarked"

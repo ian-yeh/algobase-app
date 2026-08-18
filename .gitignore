@@ -43,34 +43,34 @@ __pycache__/
 # Web (Vite)
 # =========================
 # Dependencies
-/web/node_modules
-/web/.pnp
-/web/.pnp.*
+/apps/web/node_modules
+/apps/web/.pnp
+/apps/web/.pnp.*
 # Yarn (keep certain subfolders)
-/web/.yarn/*
-!/web/.yarn/patches
-!/web/.yarn/plugins
-!/web/.yarn/releases
-!/web/.yarn/versions
+/apps/web/.yarn/*
+!/apps/web/.yarn/patches
+!/apps/web/.yarn/plugins
+!/apps/web/.yarn/releases
+!/apps/web/.yarn/versions
 # Build output
-/web/dist
-/web/dist-ssr
-/web/build
+/apps/web/dist
+/apps/web/dist-ssr
+/apps/web/build
 # Vite cache
-/web/.vite
+/apps/web/.vite
 # Testing
-/web/coverage
+/apps/web/coverage
 # TypeScript
-/web/*.tsbuildinfo
+/apps/web/*.tsbuildinfo
 # Editor directories
-/web/.vscode/*
-!/web/.vscode/extensions.json
-/web/.idea
+/apps/web/.vscode/*
+!/apps/web/.vscode/extensions.json
+/apps/web/.idea
 # Temp files
-/web/*.local
-/web/*.temp
+/apps/web/*.local
+/apps/web/*.temp
 
-/web/.vercel
+/apps/web/.vercel
 .vercel
 # =========================
 # Backend (FastAPI)

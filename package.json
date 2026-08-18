@@ -2,7 +2,8 @@
   "name": "algobase",
   "private": true,
   "workspaces": [
-    "web"
+    "apps/*",
+    "packages/*"
   ],
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -10,10 +11,10 @@
     "jsonwebtoken": "^9.0.3"
   },
   "scripts": {
-    "web": "npm run --workspace=web",
-    "web:dev": "npm run dev --workspace=web",
-    "web:build": "npm run build --workspace=web",
-    "web:lint": "npm run lint --workspace=web",
+    "web": "npm run --workspace=@algobase/web",
+    "web:dev": "npm run dev --workspace=@algobase/web",
+    "web:build": "npm run build --workspace=@algobase/web",
+    "web:lint": "npm run lint --workspace=@algobase/web",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
     "dev": "concurrently \"npm run web:dev\" \"npm run convex:dev\"",

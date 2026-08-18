@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Logo from '@/components/Logo';
+import { useAuthStore } from '@/stores/authStore';
 
 const Layout = () => {
+    const token = useAuthStore((s) => s.token);
     const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
 
@@ -12,6 +14,8 @@ const Layout = () => {
     useEffect(() => {
         setMobileOpen(false);
     }, [location.pathname]);
+
+    if (!token) return <Navigate to="/signin" replace />;
 
     return (
         <div className="flex h-screen bg-background text-foreground font-sans">
