@@ -5,6 +5,13 @@ export interface ImportedSolve {
     dnf: boolean;
 }
 
+export interface CsTimerSession {
+    key: string; // "session1"
+    name: string; // user-given name in csTimer, falls back to the key
+    cubeType: string;
+    solves: ImportedSolve[];
+}
+
 // csTimer scramble types that aren't NxN cubes
 const PUZZLE_NAMES: Record<string, string> = {
     sq: 'Square-1',
@@ -23,27 +30,33 @@ const cubeTypeFor = (scrType?: string) => {
 
 // csTimer export: { session1: [[[penalty, ms], scramble, comment, unixDate], ...], properties: {...} }
 // penalty is 0 (none), 2000 (+2, already excluded from ms) or -1 (DNF).
-export const parseCsTimer = (text: string): ImportedSolve[] => {
+export const parseCsTimer = (text: string): CsTimerSession[] => {
     const data = JSON.parse(text);
     const sessionData = data?.properties?.sessionData
         ? JSON.parse(data.properties.sessionData)
         : {};
 
-    const solves: ImportedSolve[] = [];
+    const sessions: CsTimerSession[] = [];
     for (const [key, session] of Object.entries(data)) {
         const index = key.match(/^session(\d+)$/)?.[1];
         if (!index || !Array.isArray(session)) continue;
 
-        const cubeType = cubeTypeFor(sessionData[index]?.opt?.scrType);
-        for (const entry of session) {
-            const [penalty, ms] = entry[0];
-            solves.push({
-                cubeType,
-                time: (ms + (penalty > 0 ? penalty : 0)) / 1000,
-                scramble: String(entry[1] ?? '').trim(),
-                dnf: penalty === -1,
-            });
-        }
+        const meta = sessionData[index];
+        const cubeType = cubeTypeFor(meta?.opt?.scrType);
+        sessions.push({
+            key,
+            name: meta?.name || key,
+            cubeType,
+            solves: session.map((entry) => {
+                const [penalty, ms] = entry[0];
+                return {
+                    cubeType,
+                    time: (ms + (penalty > 0 ? penalty : 0)) / 1000,
+                    scramble: String(entry[1] ?? '').trim(),
+                    dnf: penalty === -1,
+                };
+            }),
+        });
     }
-    return solves;
+    return sessions.filter((s) => s.solves.length > 0);
 };
