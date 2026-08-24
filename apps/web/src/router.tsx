@@ -5,6 +5,7 @@ import DashboardPage from '@/pages/Dashboard';
 import TimerPage from "@/pages/Timer";
 import SignIn from "@/pages/SignIn";
 import Competitions from "@/pages/Competitions";
+import Training from "@/pages/Training";
 import Layout from "@/features/layout/Layout";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: '/home', element: <DashboardPage /> },
       { path: '/timer', element: <TimerPage /> },
       { path: '/competitions', element: <Competitions /> },
+      { path: '/training', element: <Training /> },
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }
