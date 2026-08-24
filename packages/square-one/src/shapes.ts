@@ -1,0 +1,36 @@
+// Named CSP shapes a Square-1 layer can take, per cubingapp.com/algorithms/SQ1-CSP.
+// A const object instead of `enum` - this repo builds with erasableSyntaxOnly,
+// which disallows real TS enums since they emit runtime code.
+export const Shape = {
+  Barrel: "Barrel",
+  Kite: "Kite",
+  LeftFist: "Left Fist",
+  RightFist: "Right Fist",
+  LeftPawn: "Left Pawn",
+  RightPawn: "Right Pawn",
+  Muffin: "Muffin",
+  Scallop: "Scallop",
+  Shield: "Shield",
+  Square: "Square",
+  Star: "Star",
+  PairedEdges: "Paired Edges",
+  ParallelEdges: "Parallel Edges",
+  PerpendicularEdges: "Perpendicular Edges",
+  Left42: "Left 4-2",
+  Right42: "Right 4-2",
+  Left51: "Left 5-1",
+  Right51: "Right 5-1",
+  FourOneOne: "4-1-1",
+  ThreeThree: "3-3",
+  ThreeOneTwo: "3-1-2",
+  ThreeTwoOne: "3-2-1",
+  TwoTwoTwo: "2-2-2",
+  FourFour: "4-4",
+  FiveThree: "5-3",
+  SevenOne: "7-1",
+  Six: "6",
+  SixTwo: "6-2",
+  Eight: "8",
+} as const;
+
+export type Shape = (typeof Shape)[keyof typeof Shape];

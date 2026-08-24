@@ -1,0 +1,19 @@
+{
+  "name": "@algobase/square-one",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@algobase/data": "*",
+    "three": "^0.185.1"
+  },
+  "peerDependencies": {
+    "react": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.16",
+    "@types/three": "^0.185.4"
+  }
+}
