@@ -1,5 +1,6 @@
 import { PRESET_ALGORITHMS_JSON } from "@algobase/data";
 import type { Square } from "./square1";
+import { physicalToEngineD } from "./square1.utils";
 
 export interface PresetAlgorithm {
   label: string;
@@ -24,10 +25,10 @@ export function generateScrambleSequence(startState: Square, slices: number = 12
       u = Math.floor(Math.random() * 12) - 5; // -5..6, all distinct 30° steps
       d = Math.floor(Math.random() * 12) - 5;
       if (u === 0 && d === 0) continue;
-      found = state.clone().rotate(u, -d).canSlice();
+      found = state.clone().rotate(u, physicalToEngineD(d)).canSlice();
     }
 
-    state.rotate(u, -d);
+    state.rotate(u, physicalToEngineD(d));
     tokens.push(`(${u}, ${d})`);
     state.slice();
     tokens.push("/");

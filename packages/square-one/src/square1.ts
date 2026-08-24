@@ -1,15 +1,4 @@
-// Square-1 pure state engine (no Three.js).
-//
-// Vocabulary:
-// - A "layer" is the top or bottom face of the cube. It has 12 angular positions,
-//   30° apart, called LayerCells. An edge piece fills exactly 1 cell. A corner piece
-//   fills 2 adjacent cells - cell.pieceHalf marks which half of the corner sits there
-//   (0 = first half, 1 = second half; always 0 for an edge).
-// - The "equator" is the middle layer: two trapezoid halves, identified as 'M1' and
-//   'M2'. Which one currently sits in the front vs. back position is what a slice
-//   move swaps.
-// - A slice ("/") is only legal when no corner straddles cell boundary 0 (cells 11|0)
-//   or 6 (cells 5|6) in either layer - that corner would have to pass through itself.
+// Square-1 pure state engine (no Three.js). Vocabulary: a "layer" is the top or bottom face, with 12 angular positions 30° apart called LayerCells - an edge piece fills 1 cell, a corner fills 2 adjacent cells (cell.pieceHalf marks which half, always 0 for an edge); the "equator" is the middle layer, two trapezoid halves 'M1'/'M2' whose front-vs-back position a slice move swaps; a slice ("/") is only legal when no corner straddles cell boundary 0 (cells 11|0) or 6 (cells 5|6) in either layer, since that corner would have to pass through itself.
 
 import {
   cloneLayerCells,

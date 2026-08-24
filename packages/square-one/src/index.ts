@@ -1,5 +1,5 @@
 export { Square, type PieceKind, type EquatorHalfId, type Piece, type LayerCell } from "./square1";
-export { parseSequenceTokens, invertSequence } from "./square1.utils";
+export { parseSequenceTokens, invertSequence, toEngineConvention, physicalToEngineD } from "./square1.utils";
 export {
   createCornerGeometry,
   createEdgeGeometry,
@@ -18,7 +18,6 @@ export { CSP_CASES, type CspCase } from "./csp-cases";
 export { Shape, shapeFromLayerKinds } from "./shapes";
 export {
   identifyCspCase,
-  toEngineConvention,
   getReferenceSetup,
   getCspAlg,
   type CspIdentification,

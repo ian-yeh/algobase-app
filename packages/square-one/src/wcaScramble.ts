@@ -1,19 +1,4 @@
-// WCA-regulated Square-1 scramble generation.
-//
-// Ported from cstimer's Square-1 solver (cs0x7f/cstimer,
-// src/js/scramble/scramble_sq1_new.js), which implements the same
-// random-state + two-phase-solve-then-invert approach as the official WCA
-// scrambler (thewca/tnoodle-lib, cs.sq12phase). A "WCA scramble" is NOT a
-// random walk: it samples a uniformly random *reachable* Square-1 state,
-// finds a near-optimal solution to it with a two-phase IDA* search, and the
-// inverse of that solution is the scramble (so applying it from solved
-// lands on that uniformly random state). We additionally reroll any
-// scramble shorter than the WCA minimum of 11 moves (Regulation 12c4 /
-// tnoodle's wcaMinScrambleDistance), matching official behavior.
-//
-// The bitwise tricks below rely on 32-bit two's-complement semantics, which
-// JS's bitwise operators share with Java's - so this is a close, faithful
-// port rather than a reimplementation from first principles.
+// WCA-regulated Square-1 scramble generation, ported from cstimer's Square-1 solver (cs0x7f/cstimer, src/js/scramble/scramble_sq1_new.js): samples a uniformly random *reachable* state, finds a near-optimal solution with two-phase IDA* search, and inverts it (that's the scramble), rerolling anything shorter than the WCA minimum of 11 moves (Regulation 12c4) - matching the official TNoodle scrambler. The bitwise tricks below rely on 32-bit two's-complement semantics (JS shares this with Java), so this is a close port, not a reimplementation from first principles.
 
 const WCA_MIN_SCRAMBLE_DISTANCE = 11;
 
@@ -63,8 +48,7 @@ function getPerm8(arr: number[]): number {
   return idx;
 }
 
-// Cyclic rotation matching mathlib's circle(): each listed index takes the
-// value the previous listed index held; the first takes the last's.
+// Cyclic rotation matching mathlib's circle(): each listed index takes the value the previous listed index held; the first takes the last's.
 function circle(arr: number[], ...indices: number[]): void {
   const last = indices.length - 1;
   const temp = arr[indices[last]];
@@ -100,9 +84,7 @@ function randInt(n: number): number {
   return Math.floor(Math.random() * n);
 }
 
-// --- SqCubie: the 24-piece bit-packed Square-1 state ----------------------
-// ul/ur/dl/dr each pack 6 pieces as 4-bit ids (24 bits); ml is the middle
-// slice orientation (0/1). Piece ids 0-15: even = edge, odd = corner-half.
+// --- SqCubie: the 24-piece bit-packed Square-1 state - ul/ur/dl/dr each pack 6 pieces as 4-bit ids (24 bits); ml is the middle slice orientation (0/1); piece ids 0-15: even = edge, odd = corner-half ---
 
 class SqCubie {
   ul = 0x011233;
@@ -685,17 +667,7 @@ class Search {
     return false;
   }
 
-  // Builds the *inverse* of the found solution, in this repo's "u,d / u,d /"
-  // notation - i.e. the scramble that reaches the state we solved from solved.
-  //
-  // The bottom value is negated relative to cstimer's own move2string: this
-  // port's SqCubie.doMove shifts the top and bottom 12-piece rings in the
-  // same internal bit direction, but this repo's Square.rotate(top, bottom)
-  // treats a positive bottom rotation as the mirror of a positive top
-  // rotation (each layer's turn direction is measured looking at that layer
-  // from outside the puzzle, so "positive" flips between top and bottom) -
-  // confirmed empirically against Square.executeSequence's slice-legality
-  // checks across many generated scrambles.
+  // Builds the *inverse* of the found solution in this repo's "u,d / u,d /" notation - the bottom value is negated once relative to cstimer's move2string (Square.rotate's positive bottom is the mirror of positive top) and negated again by square1.utils.physicalToEngineD at the Square1Queue boundary every sequence in this app goes through, so the two cancel and bottom is left as-is here (confirmed empirically against the queue's physical-convention simulation).
   private moveToInverseString(len: number): string {
     const tokens: string[] = [];
     let top = 0;
@@ -707,7 +679,7 @@ class Search {
         top = inv > 6 ? inv - 12 : inv;
       } else if (val < 0) {
         const inv = 12 + val;
-        bottom = -(inv > 6 ? inv - 12 : inv);
+        bottom = inv > 6 ? inv - 12 : inv;
       } else {
         if (top !== 0 || bottom !== 0) tokens.push(`${top},${bottom}`);
         tokens.push('/');
@@ -725,13 +697,6 @@ function wcaMoveCost(scramble: string): number {
   return scramble.split(/\s+/).filter(Boolean).length;
 }
 
-/**
- * Generates a WCA-regulated Square-1 scramble: samples a uniformly random
- * reachable state and returns the (near-optimal, two-phase-solved) inverse
- * scramble that reaches it from solved, rerolling if it's shorter than the
- * WCA minimum of 11 moves - matching the official TNoodle scrambler
- * (thewca/tnoodle-lib) and cstimer's implementation.
- */
 export function generateWCASquareOneScramble(): string {
   const t = ensureTables();
   const search = new Search();

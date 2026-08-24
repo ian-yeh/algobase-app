@@ -3,8 +3,7 @@ import { useSquare1Scene, invertSequence, getCspAlg, type CspIdentification, typ
 
 const noop = () => {};
 
-// Modal overlay with a small secondary 3D viewer showing the identified CSP case in
-// its canonical (unrotated) orientation.
+// Modal overlay with a small secondary 3D viewer showing the identified CSP case in its canonical (unrotated) orientation.
 export const CspCasePopup: React.FC<{
   result: CspIdentification;
   onPlayAlg: (sequence: string) => void;
@@ -13,20 +12,24 @@ export const CspCasePopup: React.FC<{
 }> = ({ result, onPlayAlg, onClose, playDisabled }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [parityChoice, setParityChoice] = useState<CspParity>(result.parity);
+  const [previewBusy, setPreviewBusy] = useState(false);
 
   const alg = getCspAlg(result.cspCase, parityChoice);
 
-  // The scene's queue negates D per token (renderer.turnBottom's physical convention),
-  // so feed the raw inverse of the alg, not getReferenceSetup's engine-convention one -
-  // the queue's negation turns it into exactly that.
-  useSquare1Scene(containerRef, {
+  // The queue negates D per token (see square1.utils.physicalToEngineD), so feed the raw inverse of the alg, not getReferenceSetup's engine-convention one - the queue's negation turns it into exactly that.
+  const { queueRef: previewQueueRef } = useSquare1Scene(containerRef, {
     autoRotate: true,
     initialSequence: invertSequence(alg.sequence),
-    onMoveStart: noop,
+    onMoveStart: () => setPreviewBusy(true),
     onMoveComplete: noop,
-    onQueueEmpty: noop,
+    onQueueEmpty: () => setPreviewBusy(false),
     onSliceBlocked: noop,
   });
+
+  // The preview model is already set up in the case state (via the inverted alg above), so playing the alg forward here just solves it back down, same as it would on a real cube.
+  const handlePlayOnPreview = () => {
+    previewQueueRef.current?.enqueueSequence(alg.sequence, 220);
+  };
 
   return (
     <div className="flex flex-col w-full max-w-md rounded-md border border-foreground/10 bg-background/95 p-3 text-xs font-mono space-y-2 mb-12">
@@ -69,11 +72,18 @@ export const CspCasePopup: React.FC<{
           {alg.label}: {alg.sequence}
         </span>
         <button
-          onClick={() => onPlayAlg(alg.sequence)}
-          disabled={playDisabled || !alg.sequence}
+          onClick={handlePlayOnPreview}
+          disabled={previewBusy || !alg.sequence}
           className="shrink-0 rounded border border-accent/30 text-accent px-1.5 py-0.5 hover:bg-accent/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Play
+        </button>
+        <button
+          onClick={() => onPlayAlg(alg.sequence)}
+          disabled={playDisabled || !alg.sequence}
+          className="shrink-0 rounded border border-foreground/20 text-foreground/70 px-1.5 py-0.5 hover:bg-foreground/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Play on cube
         </button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import {
   useSquare1Scene,
-  generateScrambleSequence,
+  generateWCASquareOneScramble,
   identifyCspCase,
   shapeFromLayerKinds,
   type MoveTask,
@@ -31,7 +31,7 @@ export const SquareOne: React.FC<SquareOneProps> = ({
   const [scrambleSequence, setScrambleSequence] = useState<string>("");
   const [scrambleCopied, setScrambleCopied] = useState(false);
 
-  const { rendererRef, queueRef } = useSquare1Scene(containerRef, {
+  const { queueRef } = useSquare1Scene(containerRef, {
     autoRotate,
     initialSequence,
     onMoveStart: () => setIsBusy(true),
@@ -40,9 +40,7 @@ export const SquareOne: React.FC<SquareOneProps> = ({
       setIsBusy(queueRef.current?.isBusy() ?? false);
       setCspRevealed(null);
 
-      // Debug: log what the scramble actually left the puzzle in, read straight off the
-      // real Square state machine after the scramble has actually been applied - not a
-      // separately-simulated copy.
+      // Debug: log what the scramble actually left the puzzle in, read straight off the real Square state machine after the scramble has actually been applied - not a separately-simulated copy.
       if (task.type === "sequence" && pendingScrambleLogRef.current) {
         pendingScrambleLogRef.current = false;
         const topKinds = currentState.getTopLayerKinds();
@@ -76,11 +74,18 @@ export const SquareOne: React.FC<SquareOneProps> = ({
   };
 
   const handleScramble = () => {
-    if (!rendererRef.current) return;
-    const scramble = generateScrambleSequence(rendererRef.current.getState());
+    const queue = queueRef.current;
+    if (!queue) return;
+    // WCA scrambles are generated as the inverse of a solve from the solved state, so the puzzle must actually be solved before applying one.
+    queue.clear();
+    queue.resetState();
+    setCanSlice(true);
+    setCspRevealed(null);
+
+    const scramble = generateWCASquareOneScramble();
     pendingScrambleLogRef.current = true;
     setScrambleSequence(scramble);
-    queueRef.current?.enqueueSequence(scramble, 180);
+    queue.enqueueSequence(scramble, 180);
   };
 
   const handleRunPreset = (sequence: string) => {
@@ -88,17 +93,18 @@ export const SquareOne: React.FC<SquareOneProps> = ({
   };
 
   const handleReset = () => {
-    if (!rendererRef.current) return;
-    queueRef.current?.clear();
-    rendererRef.current.resetState();
+    const queue = queueRef.current;
+    if (!queue) return;
+    queue.clear();
+    queue.resetState();
     setCanSlice(true);
     setCspRevealed(null);
     setScrambleSequence("");
   };
 
   const handleRevealCsp = () => {
-    if (!rendererRef.current) return;
-    const result = identifyCspCase(rendererRef.current.getState());
+    if (!queueRef.current) return;
+    const result = identifyCspCase(queueRef.current.getState());
     setCspRevealed(result);
   };
 

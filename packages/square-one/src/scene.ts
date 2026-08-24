@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { Square } from "./square1";
+import type { Square } from "./square1";
 import { Square1Renderer } from "./renderer";
 import { Square1Queue, type MoveTask, type QueueOptions } from "./queue";
 
@@ -14,12 +14,11 @@ export interface UseSquare1SceneOptions {
   onSliceBlocked: () => void;
 }
 
-// Sets up the Three.js scene/camera/lights/controls for a Square1Renderer inside
-// containerRef, wires it to a Square1Queue, and tears everything down on unmount.
+// Sets up the Three.js scene/camera/lights/controls for a Square1Renderer (view) inside containerRef, wires it to a Square1Queue (state machine), and tears everything down on unmount. Callers should only ever talk to the returned queue - it's the sole source of truth for puzzle state.
 export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | null>, options: UseSquare1SceneOptions) {
-  const rendererRef = useRef<Square1Renderer | null>(null);
   const queueRef = useRef<Square1Queue | null>(null);
   const optionsRef = useRef(options);
+  const hasAppliedInitialRef = useRef(false);
 
   useEffect(() => {
     optionsRef.current = options;
@@ -39,9 +38,7 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     camera.position.set(3.5, 3.0, 5.2);
 
-    // Render at a fraction of the container's resolution and let the browser scale the
-    // canvas back up with nearest-neighbor sampling: chunky, PS1-era pixels instead of a
-    // smooth render, matching this being a dev site rather than a product shot.
+    // Render at a fraction of the container's resolution and let the browser scale the canvas back up with nearest-neighbor sampling: chunky, PS1-era pixels instead of a smooth render, matching this being a dev site rather than a product shot.
     const PIXEL_SCALE = 0.7;
     const webglRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
     webglRenderer.setPixelRatio(1);
@@ -62,8 +59,7 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     controls.autoRotate = optionsRef.current.autoRotate;
     controls.autoRotateSpeed = 1.0;
 
-    // Flat base level so no face - whichever way the puzzle is turned - ever reads
-    // as near-black; the directional lights below add shape on top of this.
+    // Flat base level so no face - whichever way the puzzle is turned - ever reads as near-black; the directional lights below add shape on top of this.
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
     scene.add(ambientLight);
 
@@ -78,21 +74,17 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     fillLight.position.set(-5, 2, -4);
     scene.add(fillLight);
 
-    // keyLight/fillLight both sit on the left/front, leaving the right/back side
-    // dark whenever the puzzle turns that way into view - light it directly.
+    // keyLight/fillLight both sit on the left/front, leaving the right/back side dark whenever the puzzle turns that way into view - light it directly.
     const rightFillLight = new THREE.DirectionalLight(0xffffff, 0.9);
     rightFillLight.position.set(6, 3, -3);
     scene.add(rightFillLight);
 
-    // Every other light sits above the puzzle, so the downward-facing bottom cap
-    // never catches a direct hit — bounce a soft light up from below to fill it.
+    // Every other light sits above the puzzle, so the downward-facing bottom cap never catches a direct hit — bounce a soft light up from below to fill it.
     const bottomFillLight = new THREE.DirectionalLight(0xffffff, 0.9);
     bottomFillLight.position.set(0, -6, 3);
     scene.add(bottomFillLight);
 
-    const state = Square.createSolved();
-    const sqRenderer = new Square1Renderer(state);
-    rendererRef.current = sqRenderer;
+    const sqRenderer = new Square1Renderer();
     sqRenderer.rootGroup.rotation.y = THREE.MathUtils.degToRad(135);
     scene.add(sqRenderer.rootGroup);
 
@@ -107,8 +99,14 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     queueRef.current = queue;
 
     if (optionsRef.current.initialSequence) {
-      queue.enqueueSequence(optionsRef.current.initialSequence);
+      // First build (e.g. the popup opening) sets up the starting position instantly; later rebuilds (e.g. toggling even/odd, which changes initialSequence) play it.
+      if (hasAppliedInitialRef.current) {
+        queue.enqueueSequence(optionsRef.current.initialSequence);
+      } else {
+        queue.applyInstant(optionsRef.current.initialSequence);
+      }
     }
+    hasAppliedInitialRef.current = true;
 
     let animFrameId: number;
     const animate = () => {
@@ -139,5 +137,5 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     };
   }, [containerRef, options.autoRotate, options.initialSequence]);
 
-  return { rendererRef, queueRef };
+  return { queueRef };
 }

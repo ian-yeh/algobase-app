@@ -29,8 +29,7 @@ export function buildSolvedLayer(prefix: 'top' | 'bot'): LayerCell[] {
   return cells;
 }
 
-// Groups an array like ['corner','corner','edge',...] into piece/cell objects,
-// including wrap-around at 11-0.
+// Groups an array like ['corner','corner','edge',...] into piece/cell objects, including wrap-around at 11-0.
 export function buildLayerFromPieceKinds(kinds: PieceKind[], prefix: string): LayerCell[] {
   if (kinds.length !== 12) {
     throw new Error(`Layer array must be of length 12, got ${kinds.length}`);
@@ -75,8 +74,7 @@ export function buildLayerFromPieceKinds(kinds: PieceKind[], prefix: string): La
   return cells;
 }
 
-// A slice is blocked if the same corner piece straddles cell boundary 0 (cells 11|0)
-// or 6 (cells 5|6) - that corner would have to pass through itself.
+// A slice is blocked if the same corner piece straddles cell boundary 0 (cells 11|0) or 6 (cells 5|6) - that corner would have to pass through itself.
 export function isSliceClear(cells: LayerCell[]): boolean {
   return cells[11].piece.id !== cells[0].piece.id && cells[5].piece.id !== cells[6].piece.id;
 }
@@ -86,6 +84,21 @@ export function rotateArrayRight<T>(arr: T[], shift: number): T[] {
   const k = ((shift % n) + n) % n;
   if (k === 0) return arr;
   return arr.map((_, i) => arr[(i - k + n) % n]);
+}
+
+// External Square-1 notation ("physical" D - positive D turns the bottom layer clockwise as viewed from below, the way you'd grip it) is the mirror of this engine's D (Square.rotate/rotateBottom treat D the same sign as U). Every physical sequence (button presses, presets, CSP algs, WCA scrambles) gets converted through this one function before it reaches Square or the renderer.
+export function physicalToEngineD(d: number): number {
+  return -d;
+}
+
+export function toEngineConvention(sequence: string): string {
+  return parseSequenceTokens(sequence)
+    .map((token) => {
+      if (token === '/') return token;
+      const [u, d] = token.split(',').map(Number);
+      return `${u},${physicalToEngineD(d)}`;
+    })
+    .join(' ');
 }
 
 // Splits "(1, 0) / (-3, 3) / (0, -1)" into ["(1, 0)", "/", "(-3, 3)", "/", "(0, -1)"].
@@ -112,12 +125,7 @@ export function parseSequenceTokens(seq: string): string[] {
   return tokens;
 }
 
-// Inverts a move sequence: reverse the token order, negate each rotation's
-// (u, d), and leave slices ('/') as-is since a slice is its own inverse.
-//
-// A CSP case's setup (the scramble that reaches it from solved) is the
-// inverse of its solving algorithm - e.g. inverse of "3,-3 / 2,2" is
-// "-2,-2 / -3,3", inverse of "/ -6,0 /" is "/ 6,0 /".
+// Inverts a move sequence: reverse the token order, negate each rotation's (u, d), and leave slices ('/') as-is since a slice is its own inverse - e.g. inverse of "3,-3 / 2,2" is "-2,-2 / -3,3", inverse of "/ -6,0 /" is "/ 6,0 /". A CSP case's setup (the scramble that reaches it from solved) is the inverse of its solving algorithm.
 export function invertSequence(seq: string): string {
   const tokens = parseSequenceTokens(seq);
 

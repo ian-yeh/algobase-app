@@ -1,7 +1,8 @@
 import { Square, parseSequenceTokens } from "./square1";
+import { physicalToEngineD } from "./square1.utils";
 import { Square1Renderer } from "./renderer";
 
-// Async move/animation queue so rapid inputs, sequences, and scrambles don't glitch or desync.
+// The Square-1 state machine: owns the canonical Square state and decides every transition. Moves are queued so rapid input/sequences/scrambles can't glitch or desync; each move plays out on the (purely visual) renderer before being committed to state. All `d` here is "physical" notation - see square1.utils.physicalToEngineD.
 
 export type MoveTask =
   | { type: "turn"; u: number; d: number; durationMs?: number }
@@ -17,6 +18,7 @@ export interface QueueOptions {
 }
 
 export class Square1Queue {
+  private state: Square = Square.createSolved();
   private renderer: Square1Renderer;
   private queue: MoveTask[] = [];
   private isProcessing: boolean = false;
@@ -28,6 +30,25 @@ export class Square1Queue {
       defaultDurationMs: 300,
       ...options,
     };
+    this.renderer.applyState(this.state);
+  }
+
+  public getState(): Square {
+    return this.state;
+  }
+
+  // Resets to solved and redraws instantly - no animation, no queueing.
+  public resetState(): void {
+    this.state = Square.createSolved();
+    this.renderer.applyState(this.state);
+  }
+
+  // Applies a sequence directly to state and redraws once, instantly - for setting up a starting position rather than "playing" it.
+  public applyInstant(sequenceStr: string): void {
+    for (const token of parseSequenceTokens(sequenceStr)) {
+      this.applyTokenToState(token);
+    }
+    this.renderer.applyState(this.state);
   }
 
   public enqueueTurn(u: number, d: number, durationMs?: number): void {
@@ -67,24 +88,17 @@ export class Square1Queue {
     while (this.queue.length > 0) {
       const task = this.queue.shift()!;
       this.options.onMoveStart?.(task);
-
-      const defaultDur = this.options.defaultDurationMs || 300;
+      const defaultDur = this.options.defaultDurationMs ?? 300;
 
       if (task.type === "turn") {
-        const duration = task.durationMs ?? defaultDur;
-        await this.renderer.turnBoth(task.u, task.d, duration);
-        this.options.onMoveComplete?.(task, this.renderer.getState());
+        await this.turn(task.u, task.d, task.durationMs ?? defaultDur);
+        this.options.onMoveComplete?.(task, this.state);
       } else if (task.type === "slice") {
-        const duration = task.durationMs ?? defaultDur;
-        if (!this.renderer.getState().canSlice()) {
-          this.options.onSliceBlocked?.();
-        } else {
-          await this.renderer.slice(duration);
-          this.options.onMoveComplete?.(task, this.renderer.getState());
-        }
+        await this.slice(task.durationMs ?? defaultDur);
+        this.options.onMoveComplete?.(task, this.state);
       } else if (task.type === "sequence") {
-        await this.processSequence(task.sequenceStr, task.durationPerMoveMs ?? defaultDur);
-        this.options.onMoveComplete?.(task, this.renderer.getState());
+        await this.runSequence(task.sequenceStr, task.durationPerMoveMs ?? defaultDur);
+        this.options.onMoveComplete?.(task, this.state);
       }
     }
 
@@ -92,21 +106,44 @@ export class Square1Queue {
     this.options.onQueueEmpty?.();
   }
 
-  private async processSequence(sequenceStr: string, durationMs: number): Promise<void> {
-    const tokens = parseSequenceTokens(sequenceStr);
-    for (const token of tokens) {
+  private async runSequence(sequenceStr: string, durationMs: number): Promise<void> {
+    for (const token of parseSequenceTokens(sequenceStr)) {
       if (token === '/') {
-        if (this.renderer.getState().canSlice()) {
-          await this.renderer.slice(durationMs);
-        } else {
-          this.options.onSliceBlocked?.();
-        }
-      } else {
-        const match = token.match(/^\(?\s*(-?\d+)\s*,\s*(-?\d+)\s*\)?$/);
-        if (match) {
-          await this.renderer.turnBoth(parseInt(match[1], 10), parseInt(match[2], 10), durationMs);
-        }
+        await this.slice(durationMs);
+        continue;
       }
+      const match = token.match(/^\(?\s*(-?\d+)\s*,\s*(-?\d+)\s*\)?$/);
+      if (match) {
+        await this.turn(parseInt(match[1], 10), parseInt(match[2], 10), durationMs);
+      }
+    }
+  }
+
+  // Plays the turn on the renderer (reading the pre-move state to find the moving meshes), then - and only then - commits it to state.
+  private async turn(u: number, d: number, durationMs: number): Promise<void> {
+    const dEngine = physicalToEngineD(d);
+    if (u === 0 && dEngine === 0) return;
+    await this.renderer.animateTurn(this.state, u, dEngine, durationMs);
+    this.state.rotate(u, dEngine);
+  }
+
+  private async slice(durationMs: number): Promise<void> {
+    if (!this.state.canSlice()) {
+      this.options.onSliceBlocked?.();
+      return;
+    }
+    await this.renderer.animateSlice(this.state, durationMs);
+    this.state.slice();
+  }
+
+  private applyTokenToState(token: string): void {
+    if (token === '/') {
+      this.state.slice();
+      return;
+    }
+    const match = token.match(/^\(?\s*(-?\d+)\s*,\s*(-?\d+)\s*\)?$/);
+    if (match) {
+      this.state.rotate(parseInt(match[1], 10), physicalToEngineD(parseInt(match[2], 10)));
     }
   }
 }

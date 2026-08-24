@@ -44,7 +44,8 @@ export function renderStaticSquare1(container: HTMLDivElement, sequence: string)
 
   const state = Square.createSolved();
   state.executeSequence(sequence);
-  const sqRenderer = new Square1Renderer(state);
+  const sqRenderer = new Square1Renderer();
+  sqRenderer.applyState(state);
   sqRenderer.rootGroup.rotation.y = THREE.MathUtils.degToRad(135);
   scene.add(sqRenderer.rootGroup);
 

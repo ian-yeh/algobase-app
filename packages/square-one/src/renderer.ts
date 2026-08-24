@@ -13,25 +13,18 @@ import {
   faceColorForSlot,
 } from "./constants";
 
-// Scene graph: rootGroup > staticGroup (stationary pieces) + pivotGroup (turn/slice animator).
-// Turns/slices re-parent target meshes into pivotGroup, animate its rotation (Y for layer
-// turns, Z for slices), then re-parent back to staticGroup, preserving world transforms.
-
+// Pure view: draws a Square-1 from a Square snapshot and plays the visual animation for a move, but never decides what a move is or mutates any Square - that's Square1Queue's job (the state machine). All `u`/`d` here is engine convention; the queue converts physical D before calling in (see square1.utils.physicalToEngineD). Scene graph: rootGroup > staticGroup (stationary pieces) + pivotGroup (turn/slice animator) - turns/slices re-parent target meshes into pivotGroup, animate its rotation (Y for layer turns, Z for slices), then re-parent back to staticGroup, preserving world transforms.
 export class Square1Renderer {
   public rootGroup: THREE.Group;
   public staticGroup: THREE.Group;
   public pivotGroup: THREE.Group;
 
-  private state: Square;
   private geometries: Square1BaseGeometries;
   private outlineGeometries: Map<THREE.BufferGeometry, THREE.EdgesGeometry>;
   private outlineMaterial: THREE.LineBasicMaterial;
   private meshMap: Map<string, THREE.Mesh> = new Map();
-  private isAnimating: boolean = false;
 
-  constructor(state: Square = Square.createSolved()) {
-    this.state = state;
-
+  constructor() {
     this.rootGroup = new THREE.Group();
     this.rootGroup.name = "Square1_Root";
 
@@ -48,171 +41,92 @@ export class Square1Renderer {
     this.outlineGeometries = new Map(
       Object.values(this.geometries).map((geom) => [geom, new THREE.EdgesGeometry(geom, 15)])
     );
-
-    this.buildScene();
   }
 
-  public getState(): Square {
-    return this.state;
-  }
-
-  // Resets to a solved state and rebuilds the scene from it.
-  public resetState(): void {
-    this.state = Square.createSolved();
-    this.buildScene();
-  }
-
-  public getIsAnimating(): boolean {
-    return this.isAnimating;
-  }
-
-  // Builds piece meshes for top, bottom, and middle layers and attaches them to staticGroup.
-  public buildScene(): void {
+  // Redraws every piece mesh from `state`, instantly - no animation.
+  public applyState(state: Square): void {
     this.meshMap.forEach((mesh) => {
       this.staticGroup.remove(mesh);
       mesh.geometry.dispose();
     });
     this.meshMap.clear();
 
-    const topLayer = this.state.getTopLayer();
-    const bottomLayer = this.state.getBottomLayer();
-
-    this.createLayerMeshes(topLayer, 'top', HEIGHT_TOP / 2 + HEIGHT_MID / 2);
-    this.createLayerMeshes(bottomLayer, 'bot', -(HEIGHT_BOTTOM / 2 + HEIGHT_MID / 2));
+    this.createLayerMeshes(state.getTopLayer(), 'top', HEIGHT_TOP / 2 + HEIGHT_MID / 2);
+    this.createLayerMeshes(state.getBottomLayer(), 'bot', -(HEIGHT_BOTTOM / 2 + HEIGHT_MID / 2));
     this.createEquatorMeshes();
   }
 
-  // Top layer turn by `u` slots (multiples of 30°).
-  public async turnTop(u: number, durationMs: number = 300): Promise<void> {
-    if (u === 0 || this.isAnimating) return;
-    this.isAnimating = true;
-
-    const topMeshes = this.getLayerMeshes('top');
-    this.attachToPivot(topMeshes);
-
-    const targetAngleY = -THREE.MathUtils.degToRad(u * 30);
-    await this.animatePivotRotationY(targetAngleY, durationMs);
-
-    this.detachFromPivot(topMeshes);
-    this.state.rotateTop(u);
-
-    this.isAnimating = false;
-  }
-
-  // Bottom layer turn by `d` slots (multiples of 30°). D's +/- is inverted relative to
-  // U: physically turning the bottom layer clockwise (as viewed from below, the way you'd
-  // naturally grip it) is a negative step in this engine's shared top/bottom sign convention.
-  public async turnBottom(d: number, durationMs: number = 300): Promise<void> {
-    d = -d;
-    if (d === 0 || this.isAnimating) return;
-    this.isAnimating = true;
-
-    const botMeshes = this.getLayerMeshes('bot');
-    this.attachToPivot(botMeshes);
-
-    const targetAngleY = -THREE.MathUtils.degToRad(d * 30);
-    await this.animatePivotRotationY(targetAngleY, durationMs);
-
-    this.detachFromPivot(botMeshes);
-    this.state.rotateBottom(d);
-
-    this.isAnimating = false;
-  }
-
-  // Top (u) and bottom (d) turns simultaneously, each on its own temporary pivot.
-  public async turnBoth(u: number, d: number, durationMs: number = 300): Promise<void> {
+  // Animates a combined top (u) / bottom (d) turn. `before` is read only to find which meshes currently occupy the moving layer(s) - never mutated.
+  public async animateTurn(before: Square, u: number, d: number, durationMs: number = 300): Promise<void> {
+    if (u !== 0 && d === 0) return this.animateSingleLayerTurn(before, 'top', u, durationMs);
+    if (u === 0 && d !== 0) return this.animateSingleLayerTurn(before, 'bot', d, durationMs);
     if (u === 0 && d === 0) return;
-    if (u !== 0 && d === 0) return this.turnTop(u, durationMs);
-    if (u === 0 && d !== 0) return this.turnBottom(d, durationMs);
-
-    d = -d;
-    this.isAnimating = true;
 
     const tempTopPivot = new THREE.Group();
     const tempBotPivot = new THREE.Group();
     this.rootGroup.add(tempTopPivot);
     this.rootGroup.add(tempBotPivot);
 
-    const topMeshes = this.getLayerMeshes('top');
-    const botMeshes = this.getLayerMeshes('bot');
-
+    const topMeshes = this.getLayerMeshes(before, 'top');
+    const botMeshes = this.getLayerMeshes(before, 'bot');
     topMeshes.forEach((m) => tempTopPivot.attach(m));
     botMeshes.forEach((m) => tempBotPivot.attach(m));
 
     const targetTopY = -THREE.MathUtils.degToRad(u * 30);
     const targetBotY = -THREE.MathUtils.degToRad(d * 30);
-
     const startTime = performance.now();
 
     await new Promise<void>((resolve) => {
       const step = (now: number) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / durationMs);
+        const progress = Math.min(1, (now - startTime) / durationMs);
         const ease = easeInOutCubic(progress);
-
         tempTopPivot.rotation.y = targetTopY * ease;
         tempBotPivot.rotation.y = targetBotY * ease;
 
         if (progress < 1) {
           safeRequestAnimationFrame(step);
-        } else {
-          tempTopPivot.rotation.y = targetTopY;
-          tempBotPivot.rotation.y = targetBotY;
-
-          topMeshes.forEach((m) => this.staticGroup.attach(m));
-          botMeshes.forEach((m) => this.staticGroup.attach(m));
-
-          this.rootGroup.remove(tempTopPivot);
-          this.rootGroup.remove(tempBotPivot);
-
-          this.state.rotate(u, d);
-          this.isAnimating = false;
-          resolve();
+          return;
         }
+
+        tempTopPivot.rotation.y = targetTopY;
+        tempBotPivot.rotation.y = targetBotY;
+        topMeshes.forEach((m) => this.staticGroup.attach(m));
+        botMeshes.forEach((m) => this.staticGroup.attach(m));
+        this.rootGroup.remove(tempTopPivot);
+        this.rootGroup.remove(tempBotPivot);
+        resolve();
       };
       safeRequestAnimationFrame(step);
     });
   }
 
-  // Slice move (/): swaps right-half meshes (slots 0..5) of top/bottom and flips which
-  // equator half is in front.
-  public async slice(durationMs: number = 400): Promise<boolean> {
-    if (this.isAnimating) return false;
-    if (!this.state.canSlice()) return false;
+  private async animateSingleLayerTurn(before: Square, layer: 'top' | 'bot', steps: number, durationMs: number): Promise<void> {
+    const meshes = this.getLayerMeshes(before, layer);
+    this.attachToPivot(meshes);
+    await this.animatePivotRotationY(-THREE.MathUtils.degToRad(steps * 30), durationMs);
+    this.detachFromPivot(meshes);
+  }
 
-    this.isAnimating = true;
-
-    const sliceMoveMeshes = this.getSliceMoveMeshes();
-    this.attachToPivot(sliceMoveMeshes);
-
-    const targetAngleZ = Math.PI; // 180° around the slice axis (Z)
-    await this.animatePivotRotationZ(targetAngleZ, durationMs);
-
-    this.detachFromPivot(sliceMoveMeshes);
-    this.state.slice();
-
-    this.isAnimating = false;
-    return true;
+  // Animates a slice move: swaps right-half meshes (slots 0..5) of top/bottom and flips which equator half is in front. Caller (Square1Queue) must have already checked `before.canSlice()`.
+  public async animateSlice(before: Square, durationMs: number = 400): Promise<void> {
+    const meshes = this.getSliceMoveMeshes(before);
+    this.attachToPivot(meshes);
+    await this.animatePivotRotationZ(Math.PI, durationMs);
+    this.detachFromPivot(meshes);
   }
 
   // Attaches meshes to pivotGroup, preserving world transforms.
-  public attachToPivot(meshes: THREE.Mesh[]): void {
+  private attachToPivot(meshes: THREE.Mesh[]): void {
     this.pivotGroup.rotation.set(0, 0, 0);
     this.pivotGroup.position.set(0, 0, 0);
     this.pivotGroup.scale.set(1, 1, 1);
     this.pivotGroup.updateMatrixWorld(true);
-
-    meshes.forEach((mesh) => {
-      this.pivotGroup.attach(mesh);
-    });
+    meshes.forEach((mesh) => this.pivotGroup.attach(mesh));
   }
 
   // Re-attaches meshes from pivotGroup back to staticGroup.
-  public detachFromPivot(meshes: THREE.Mesh[]): void {
-    meshes.forEach((mesh) => {
-      this.staticGroup.attach(mesh);
-    });
-
+  private detachFromPivot(meshes: THREE.Mesh[]): void {
+    meshes.forEach((mesh) => this.staticGroup.attach(mesh));
     this.pivotGroup.rotation.set(0, 0, 0);
     this.pivotGroup.position.set(0, 0, 0);
     this.pivotGroup.scale.set(1, 1, 1);
@@ -223,8 +137,8 @@ export class Square1Renderer {
   // Mesh Identification & Creation Helpers
   // --------------------------------------------------------------------------
 
-  private getLayerMeshes(layer: 'top' | 'bot'): THREE.Mesh[] {
-    const cells = layer === 'top' ? this.state.getTopLayer() : this.state.getBottomLayer();
+  private getLayerMeshes(state: Square, layer: 'top' | 'bot'): THREE.Mesh[] {
+    const cells = layer === 'top' ? state.getTopLayer() : state.getBottomLayer();
     const seenIds = new Set<string>();
     const meshes: THREE.Mesh[] = [];
 
@@ -239,9 +153,9 @@ export class Square1Renderer {
     return meshes;
   }
 
-  private getSliceMoveMeshes(): THREE.Mesh[] {
-    const topLayer = this.state.getTopLayer();
-    const bottomLayer = this.state.getBottomLayer();
+  private getSliceMoveMeshes(state: Square): THREE.Mesh[] {
+    const topLayer = state.getTopLayer();
+    const bottomLayer = state.getBottomLayer();
     const seenIds = new Set<string>();
     const meshes: THREE.Mesh[] = [];
 
@@ -329,17 +243,14 @@ export class Square1Renderer {
     const matCapHigh = new THREE.MeshStandardMaterial({ color: capColor, roughness: 0.3, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
     const matInner = new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.8, side: THREE.DoubleSide, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
 
-    // matSideA covers the wedge's higher-angle half (slotIndex+1), matSideB
-    // the lower-angle half (slotIndex) - see setupWedgeMaterialGroups
+    // matSideA covers the wedge's higher-angle half (slotIndex+1), matSideB the lower-angle half (slotIndex) - see createLayerMeshes
     const matSideA = new THREE.MeshStandardMaterial({ color: colorSideA, roughness: 0.3, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
     const matSideB = new THREE.MeshStandardMaterial({ color: colorSideB, roughness: 0.3, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
 
     return [matCapLow, matCapHigh, matInner, matSideA, matSideB];
   }
 
-  // angleOffsetDeg is 0 for M1 (world 0-180) and 180 for M2 (world 180-360);
-  // outer wall segments are colored per their real face position so the band
-  // reads as a continuation of the top/bottom stickers, not a flat dark wall
+  // angleOffsetDeg is 0 for M1 (world 0-180) and 180 for M2 (world 180-360); outer wall segments are colored per their real face position so the band reads as a continuation of the top/bottom stickers, not a flat dark wall.
   private createTrapezoidMaterials(angleOffsetDeg: number): THREE.Material[] {
     const matCap = new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.8, side: THREE.DoubleSide, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
     const matInner = new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.8, side: THREE.DoubleSide, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
@@ -362,11 +273,8 @@ export class Square1Renderer {
     return new Promise((resolve) => {
       const startTime = performance.now();
       const step = (now: number) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / durationMs);
-        const ease = easeInOutCubic(progress);
-
-        this.pivotGroup.rotation.y = targetAngleY * ease;
+        const progress = Math.min(1, (now - startTime) / durationMs);
+        this.pivotGroup.rotation.y = targetAngleY * easeInOutCubic(progress);
 
         if (progress < 1) {
           safeRequestAnimationFrame(step);
@@ -383,11 +291,8 @@ export class Square1Renderer {
     return new Promise((resolve) => {
       const startTime = performance.now();
       const step = (now: number) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / durationMs);
-        const ease = easeInOutCubic(progress);
-
-        this.pivotGroup.rotation.z = targetAngleZ * ease;
+        const progress = Math.min(1, (now - startTime) / durationMs);
+        this.pivotGroup.rotation.z = targetAngleZ * easeInOutCubic(progress);
 
         if (progress < 1) {
           safeRequestAnimationFrame(step);
