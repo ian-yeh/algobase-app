@@ -12,7 +12,8 @@ export const Toolbar: React.FC<{
   onScramble: () => void;
   onReset: () => void;
   onRunPreset: (sequence: string) => void;
-}> = ({ isBusy, canSlice, onTurnTop, onTurnBottom, onSlice, onScramble, onReset, onRunPreset }) => (
+  onRevealCsp: () => void;
+}> = ({ isBusy, canSlice, onTurnTop, onTurnBottom, onSlice, onScramble, onReset, onRunPreset, onRevealCsp }) => (
   <div className="absolute inset-x-0 bottom-0 border-t border-foreground/10 bg-background/85 backdrop-blur-md px-3 py-2 sm:px-4">
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <MoveGroup label="U">
@@ -36,7 +37,7 @@ export const Toolbar: React.FC<{
       <button
         onClick={onSlice}
         disabled={!canSlice}
-        title="Slice"
+        title={canSlice ? "Slice" : "Slice Blocked! Seam misaligned."}
         className={`font-mono text-[13px] leading-none rounded-md border px-2.5 py-1.5 transition-colors ${
           canSlice
             ? "border-accent/30 text-accent hover:bg-accent/10 cursor-pointer"
@@ -59,6 +60,13 @@ export const Toolbar: React.FC<{
         className="text-xs font-medium text-foreground/45 hover:text-foreground px-1 py-1.5 transition-colors"
       >
         Reset
+      </button>
+
+      <button
+        onClick={onRevealCsp}
+        className="text-xs font-medium text-foreground/45 hover:text-foreground px-1 py-1.5 transition-colors"
+      >
+        Reveal Case
       </button>
 
       <PresetMenu disabled={isBusy} onRunPreset={onRunPreset} />

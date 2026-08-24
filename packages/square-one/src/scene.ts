@@ -90,14 +90,6 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     bottomFillLight.position.set(0, -6, 3);
     scene.add(bottomFillLight);
 
-    // A grid floor gives the puzzle a sense of ground without boxing it in.
-    const gridSize = 16;
-    const gridDivisions = 16;
-    const gridColor = 0xd8dce3;
-    const floorGrid = new THREE.GridHelper(gridSize, gridDivisions, gridColor, gridColor);
-    floorGrid.position.y = -1.79;
-    scene.add(floorGrid);
-
     const state = Square.createSolved();
     const sqRenderer = new Square1Renderer(state);
     rendererRef.current = sqRenderer;
