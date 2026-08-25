@@ -7,7 +7,8 @@ import SignIn from "@/pages/SignIn";
 import Competitions from "@/pages/Competitions";
 import Training from "@/pages/Training";
 import SquareOneCsp from "@/pages/SquareOneCsp";
-import SquareOneCspCases from "@/pages/SquareOneCspCases";
+import SquareOneCspSandbox from "@/pages/SquareOneCspSandbox";
+import SquareOneCspRecall from "@/pages/SquareOneCspRecall";
 import Layout from "@/features/layout/Layout";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -37,7 +38,8 @@ export const router = createBrowserRouter([
       { path: '/competitions', element: <Competitions /> },
       { path: '/training', element: <Training /> },
       { path: '/training/square1-csp', element: <SquareOneCsp /> },
-      { path: '/training/square1-csp/cases', element: <SquareOneCspCases /> },
+      { path: '/training/square1-csp/sandbox', element: <SquareOneCspSandbox /> },
+      { path: '/training/square1-csp/recall', element: <SquareOneCspRecall /> },
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }
