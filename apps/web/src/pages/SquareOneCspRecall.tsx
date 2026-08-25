@@ -50,10 +50,14 @@ function freshBag(pool: CspCase[], weight: (cspCase: CspCase) => number = () => 
   return shuffle(entries);
 }
 
-// A non-zero rotation of the top/bottom layers, prepended to a case's setup so
-// the printed sequence isn't recognizable as "the reverse of algorithm X" to
-// someone who has that algorithm memorized. Rotating a solved cube is always
-// legal and doesn't change the shape/parity a scramble reaches.
+// A non-zero rotation of the top/bottom layers, appended after a case's setup
+// so the printed sequence isn't recognizable as "the reverse of algorithm X"
+// to someone who has that algorithm memorized. Must come *after* the setup,
+// not before: turns before a slice combine additively, so a rotation
+// prepended before the setup's first move would shift the turn amount at its
+// first slice point and could reach the wrong shape or block the slice
+// entirely. A trailing rotation with no slice after it can never affect
+// legality and doesn't change the shape/parity (both rotation-invariant).
 function randomSetupRotation(): string {
   let u = 0;
   let d = 0;
@@ -353,10 +357,10 @@ const TracePracticeCard: React.FC<{ round: Round; customization: CspCustomizatio
   const swapped = customization?.swapped ?? false;
   const alg = getEffectiveCspAlg(round.cspCase, round.parity, customization);
   // Setup sequence in physical convention, exactly as the user would perform it on their own
-  // cube - prefixed with a random rotation so it doesn't just read as "invert(alg)" to anyone
+  // cube - suffixed with a random rotation so it doesn't just read as "invert(alg)" to anyone
   // who has the algorithm memorized.
   const setupSequence = useMemo(
-    () => `${randomSetupRotation()} ${invertSequence(alg.sequence)}`.trim(),
+    () => `${invertSequence(alg.sequence)} ${randomSetupRotation()}`.trim(),
     [alg.sequence]
   );
 
