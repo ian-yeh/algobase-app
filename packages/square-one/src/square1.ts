@@ -16,6 +16,8 @@ export type EquatorHalfId = 'M1' | 'M2';
 export interface Piece {
   id: string;
   type: PieceKind;
+  // Cell index (0-11, within the layer it was created in) this piece's stickers were painted at - fixed for the piece's lifetime, independent of where it currently sits. Colors are looked up from this, never from the piece's current slot, so a piece keeps its own stickers as it moves.
+  homeSlot: number;
 }
 
 // One of the 12 angular positions (30° each) in a top or bottom layer.

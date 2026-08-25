@@ -23,6 +23,10 @@ export const ORANGE = "#d1352b";
 export const DARK = "#161616";
 export const OUTLINE = "#101010";
 
+// Neutral sticker color for a monochrome (no color bias) render - see
+// Square1Renderer's `monochrome` option.
+export const GREY = "#c7c7c7";
+
 // the four vertical faces of the cube, in order around the perimeter; each is
 // 90deg wide and is covered by one edge plus half of the corner either side
 export const FACE_COLORS = [GREEN, ORANGE, BLUE, RED];

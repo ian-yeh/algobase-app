@@ -18,11 +18,11 @@ export function buildSolvedLayer(prefix: 'top' | 'bot'): LayerCell[] {
   let edgeIdx = 1;
 
   for (let i = 0; i < 4; i++) {
-    const cornerPiece: Piece = { id: `${prefix}-C${cornerIdx++}`, type: 'corner' };
+    const cornerPiece: Piece = { id: `${prefix}-C${cornerIdx++}`, type: 'corner', homeSlot: i * 3 };
     cells.push({ piece: cornerPiece, pieceHalf: 0 });
     cells.push({ piece: cornerPiece, pieceHalf: 1 });
 
-    const edgePiece: Piece = { id: `${prefix}-E${edgeIdx++}`, type: 'edge' };
+    const edgePiece: Piece = { id: `${prefix}-E${edgeIdx++}`, type: 'edge', homeSlot: i * 3 + 2 };
     cells.push({ piece: edgePiece, pieceHalf: 0 });
   }
 
@@ -41,7 +41,7 @@ export function buildLayerFromPieceKinds(kinds: PieceKind[], prefix: string): La
 
   if (firstEdgeIdx === -1) {
     for (let i = 0; i < 12; i += 2) {
-      const piece: Piece = { id: `${prefix}-C${pieceCounter++}`, type: 'corner' };
+      const piece: Piece = { id: `${prefix}-C${pieceCounter++}`, type: 'corner', homeSlot: i };
       cells[i] = { piece, pieceHalf: 0 };
       cells[i + 1] = { piece, pieceHalf: 1 };
     }
@@ -56,7 +56,7 @@ export function buildLayerFromPieceKinds(kinds: PieceKind[], prefix: string): La
     const kind = kinds[idx];
 
     if (kind === 'edge') {
-      const piece: Piece = { id: `${prefix}-E${pieceCounter++}`, type: 'edge' };
+      const piece: Piece = { id: `${prefix}-E${pieceCounter++}`, type: 'edge', homeSlot: idx };
       cells[idx] = { piece, pieceHalf: 0 };
       step += 1;
     } else if (kind === 'corner') {
@@ -64,7 +64,7 @@ export function buildLayerFromPieceKinds(kinds: PieceKind[], prefix: string): La
       if (kinds[nextIdx] !== 'corner') {
         throw new Error(`Invalid layer: corner at index ${idx} must be 2 adjacent 'corner' cells.`);
       }
-      const piece: Piece = { id: `${prefix}-C${pieceCounter++}`, type: 'corner' };
+      const piece: Piece = { id: `${prefix}-C${pieceCounter++}`, type: 'corner', homeSlot: idx };
       cells[idx] = { piece, pieceHalf: 0 };
       cells[nextIdx] = { piece, pieceHalf: 1 };
       step += 2;

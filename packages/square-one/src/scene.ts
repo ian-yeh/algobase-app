@@ -8,6 +8,9 @@ import { Square1Queue, type MoveTask, type QueueOptions } from "./queue";
 export interface UseSquare1SceneOptions {
   autoRotate: boolean;
   initialSequence: string;
+  // Grey-out all stickers - no color bias when the render's only job is
+  // showing shape/parity, not matching colors to a physical cube.
+  monochrome?: boolean;
   onMoveStart: () => void;
   onMoveComplete: (task: MoveTask, currentState: Square) => void;
   onQueueEmpty: () => void;
@@ -18,7 +21,6 @@ export interface UseSquare1SceneOptions {
 export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | null>, options: UseSquare1SceneOptions) {
   const queueRef = useRef<Square1Queue | null>(null);
   const optionsRef = useRef(options);
-  const hasAppliedInitialRef = useRef(false);
 
   useEffect(() => {
     optionsRef.current = options;
@@ -84,7 +86,7 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     bottomFillLight.position.set(0, -6, 3);
     scene.add(bottomFillLight);
 
-    const sqRenderer = new Square1Renderer();
+    const sqRenderer = new Square1Renderer(optionsRef.current.monochrome ?? false);
     sqRenderer.rootGroup.rotation.y = THREE.MathUtils.degToRad(135);
     scene.add(sqRenderer.rootGroup);
 
@@ -99,14 +101,9 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     queueRef.current = queue;
 
     if (optionsRef.current.initialSequence) {
-      // First build (e.g. the popup opening) sets up the starting position instantly; later rebuilds (e.g. toggling even/odd, which changes initialSequence) play it.
-      if (hasAppliedInitialRef.current) {
-        queue.enqueueSequence(optionsRef.current.initialSequence);
-      } else {
-        queue.applyInstant(optionsRef.current.initialSequence);
-      }
+      // Setup is always instant - callers that want an animated play use queue.enqueueSequence directly.
+      queue.applyInstant(optionsRef.current.initialSequence);
     }
-    hasAppliedInitialRef.current = true;
 
     let animFrameId: number;
     const animate = () => {
@@ -135,7 +132,7 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
         container.removeChild(webglRenderer.domElement);
       }
     };
-  }, [containerRef, options.autoRotate, options.initialSequence]);
+  }, [containerRef, options.autoRotate, options.initialSequence, options.monochrome]);
 
   return { queueRef };
 }

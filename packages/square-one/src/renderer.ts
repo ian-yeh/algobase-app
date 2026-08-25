@@ -10,6 +10,7 @@ import {
   YELLOW,
   DARK,
   OUTLINE,
+  GREY,
   faceColorForSlot,
 } from "./constants";
 
@@ -23,8 +24,10 @@ export class Square1Renderer {
   private outlineGeometries: Map<THREE.BufferGeometry, THREE.EdgesGeometry>;
   private outlineMaterial: THREE.LineBasicMaterial;
   private meshMap: Map<string, THREE.Mesh> = new Map();
+  private readonly monochrome: boolean;
 
-  constructor() {
+  constructor(monochrome: boolean = false) {
+    this.monochrome = monochrome;
     this.rootGroup = new THREE.Group();
     this.rootGroup.name = "Square1_Root";
 
@@ -184,7 +187,8 @@ export class Square1Renderer {
 
   private createLayerMeshes(cells: ReadonlyArray<LayerCell>, layer: 'top' | 'bot', yPos: number): void {
     const seenIds = new Set<string>();
-    const capColor = layer === 'top' ? WHITE : YELLOW;
+    const capColor = this.monochrome ? GREY : layer === 'top' ? WHITE : YELLOW;
+    const sideColorForSlot = (slot: number) => (this.monochrome ? GREY : faceColorForSlot(slot));
 
     cells.forEach((cell, slotIndex) => {
       const { piece } = cell;
@@ -197,8 +201,8 @@ export class Square1Renderer {
         : layer === 'top' ? this.geometries.edgeTop : this.geometries.edgeBottom;
 
       const materials = isCorner
-        ? this.createWedgeMaterials(capColor, faceColorForSlot(slotIndex), faceColorForSlot(slotIndex + 1))
-        : this.createWedgeMaterials(capColor, faceColorForSlot(slotIndex), faceColorForSlot(slotIndex));
+        ? this.createWedgeMaterials(capColor, sideColorForSlot(piece.homeSlot), sideColorForSlot(piece.homeSlot + 1))
+        : this.createWedgeMaterials(capColor, sideColorForSlot(piece.homeSlot), sideColorForSlot(piece.homeSlot));
       const mesh = new THREE.Mesh(geom, materials);
       mesh.name = piece.id;
       mesh.add(this.createOutline(geom));
@@ -257,7 +261,7 @@ export class Square1Renderer {
 
     const materials: THREE.Material[] = [matCap, matCap, matInner];
     EQUATOR_EDGE_ANGLE_SPANS.forEach(([a0, a1], i) => {
-      const color = faceColorForSlot(Math.floor((angleOffsetDeg + (a0 + a1) / 2) / 30));
+      const color = this.monochrome ? GREY : faceColorForSlot(Math.floor((angleOffsetDeg + (a0 + a1) / 2) / 30));
       const k = i + 1;
       materials[3 + (k % EQUATOR_OUTER_SEGMENTS)] = new THREE.MeshStandardMaterial({ color, roughness: 0.3, flatShading: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
     });
