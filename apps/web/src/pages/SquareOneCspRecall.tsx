@@ -9,6 +9,7 @@ import { cspCaseWeight, loadCspStats, recordCspResult, type CspStatsMap } from "
 import {
   CSP_CASES,
   invertSequence,
+  parseSequenceTokens,
   useSquare1Scene,
   type CspCase,
   type CspParity,
@@ -58,14 +59,32 @@ function freshBag(pool: CspCase[], weight: (cspCase: CspCase) => number = () => 
 // first slice point and could reach the wrong shape or block the slice
 // entirely. A trailing rotation with no slice after it can never affect
 // legality and doesn't change the shape/parity (both rotation-invariant).
-function randomSetupRotation(): string {
+function randomSetupRotation(): [u: number, d: number] {
   let u = 0;
   let d = 0;
   while (u === 0 && d === 0) {
     u = Math.floor(Math.random() * 12) - 5;
     d = Math.floor(Math.random() * 12) - 5;
   }
-  return `${u},${d}`;
+  return [u, d];
+}
+
+// Appends the disguise rotation to a setup sequence. If the sequence already
+// ends in a bare turn (no slice after it), merges into that turn instead of
+// printing a second turn token right after it with nothing between them -
+// two turns with no slice between them are one physical move, so they should
+// read as one combined number, not an ambiguous pair.
+function appendDisguiseRotation(setupSequence: string): string {
+  const tokens = parseSequenceTokens(setupSequence);
+  const [du, dd] = randomSetupRotation();
+  const last = tokens[tokens.length - 1];
+  const match = last?.match(/^(-?\d+),(-?\d+)$/);
+  if (match) {
+    tokens[tokens.length - 1] = `${Number(match[1]) + du},${Number(match[2]) + dd}`;
+  } else {
+    tokens.push(`${du},${dd}`);
+  }
+  return tokens.join(' ');
 }
 
 const algText = (alg: PresetAlgorithm) => alg.sequence || alg.label;
@@ -364,10 +383,7 @@ const TracePracticeCard: React.FC<{ round: Round; customization: CspCustomizatio
   // Setup sequence in physical convention, exactly as the user would perform it on their own
   // cube - suffixed with a random rotation so it doesn't just read as "invert(alg)" to anyone
   // who has the algorithm memorized.
-  const setupSequence = useMemo(
-    () => `${invertSequence(alg.sequence)} ${randomSetupRotation()}`.trim(),
-    [alg.sequence]
-  );
+  const setupSequence = useMemo(() => appendDisguiseRotation(invertSequence(alg.sequence)), [alg.sequence]);
 
   const [revealed, setRevealed] = useState(false);
   const displayedParity = swapped ? flipParity(round.parity) : round.parity;
