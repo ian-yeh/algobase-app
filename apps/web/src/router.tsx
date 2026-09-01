@@ -5,6 +5,10 @@ import DashboardPage from '@/pages/Dashboard';
 import TimerPage from "@/pages/Timer";
 import SignIn from "@/pages/SignIn";
 import Competitions from "@/pages/Competitions";
+import Training from "@/pages/Training";
+import SquareOneCsp from "@/pages/SquareOneCsp";
+import SquareOneCspSandbox from "@/pages/SquareOneCspSandbox";
+import SquareOneCspRecall from "@/pages/SquareOneCspRecall";
 import Layout from "@/features/layout/Layout";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -32,6 +36,10 @@ export const router = createBrowserRouter([
       { path: '/home', element: <DashboardPage /> },
       { path: '/timer', element: <TimerPage /> },
       { path: '/competitions', element: <Competitions /> },
+      { path: '/training', element: <Training /> },
+      { path: '/training/square1-csp', element: <SquareOneCsp /> },
+      { path: '/training/square1-csp/sandbox', element: <SquareOneCspSandbox /> },
+      { path: '/training/square1-csp/recall', element: <SquareOneCspRecall /> },
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }

@@ -1,0 +1,1168 @@
+[
+  {
+    "id": "kite-kite",
+    "topShape": "Kite",
+    "bottomShape": "Kite",
+    "evenAlg": {
+      "label": "Kite / Kite (Even)",
+      "sequence": "0,6 /"
+    },
+    "oddAlg": {
+      "label": "Kite / Kite (Odd)",
+      "sequence": "-3,3 / -2,-1 / 2,-2 / -2,2 / -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "left-fist-right-fist",
+    "topShape": "Left Fist",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Left Fist / Right Fist (Even)",
+      "sequence": "-2,-4 / 2,-2 / -2,2 / -4,1 / 3,0 /"
+    },
+    "oddAlg": {
+      "label": "Left Fist / Right Fist (Odd)",
+      "sequence": "0,3 / 0,3 /"
+    }
+  },
+  {
+    "id": "barrel-barrel",
+    "topShape": "Barrel",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Barrel / Barrel (Even)",
+      "sequence": "-2,2 / 2,-2 / -2,2 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Barrel / Barrel (Odd)",
+      "sequence": "-3,0 / -3,-3 /"
+    }
+  },
+  {
+    "id": "scallop-kite",
+    "topShape": "Scallop",
+    "bottomShape": "Kite",
+    "evenAlg": {
+      "label": "Scallop / Kite (Even)",
+      "sequence": "2,0 / 2,-2 / 2,0 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Scallop / Kite (Odd)",
+      "sequence": "/ -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "scallop-scallop",
+    "topShape": "Scallop",
+    "bottomShape": "Scallop",
+    "evenAlg": {
+      "label": "Scallop / Scallop (Even)",
+      "sequence": "2,-2 / -2,2 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Scallop (Odd)",
+      "sequence": "/ -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "shield-shield",
+    "topShape": "Shield",
+    "bottomShape": "Shield",
+    "evenAlg": {
+      "label": "Shield / Shield (Even)",
+      "sequence": "4,-2 / -4,2 / -1,0 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Shield / Shield (Odd)",
+      "sequence": "/ -1,0 / -3,-3 /"
+    }
+  },
+  {
+    "id": "left-pawn-right-pawn",
+    "topShape": "Left Pawn",
+    "bottomShape": "Right Pawn",
+    "evenAlg": {
+      "label": "Left Pawn / Right Pawn (Even)",
+      "sequence": "/ -4,1 / 3,0 /"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Right Pawn (Odd)",
+      "sequence": "2,-2 / -2,2 / -4,1 / 3,0 /"
+    }
+  },
+  {
+    "id": "kite-barrel",
+    "topShape": "Kite",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Kite / Barrel (Even)",
+      "sequence": "/ 0,3 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Kite / Barrel (Odd)",
+      "sequence": "/ 4,2 / -2,2 / -2,2 / 4,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "shield-square",
+    "topShape": "Shield",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Shield / Square (Even)",
+      "sequence": "0,1 / 0,-4 / -2,2 / -2,2 / 4,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Shield / Square (Odd)",
+      "sequence": "0,1 / -1,0 / -3,0 /"
+    }
+  },
+  {
+    "id": "muffin-muffin",
+    "topShape": "Muffin",
+    "bottomShape": "Muffin",
+    "evenAlg": {
+      "label": "Muffin / Muffin (Even)",
+      "sequence": "6,0 / 0,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Muffin / Muffin (Odd)",
+      "sequence": "6,0 / 1,0 / 2,-2 / -2,2 / -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "muffin-square",
+    "topShape": "Muffin",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Muffin / Square (Even)",
+      "sequence": "1,1 / 5,0 / -2,2 / 2,-2 / 4,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Muffin / Square (Odd)",
+      "sequence": "/ -2,0 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "left-4-2-paired-edges",
+    "topShape": "Left 4-2",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "Left 4-2 / Paired Edges (Even)",
+      "sequence": "-2,-4 / 2,-2 / 0,-1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "Left 4-2 / Paired Edges (Odd)",
+      "sequence": "0,-2 / -2,0 / -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "right-4-2-paired-edges",
+    "topShape": "Right 4-2",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "Right 4-2 / Paired Edges (Even)",
+      "sequence": "0,6 / 2,0 / -2,-1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "Right 4-2 / Paired Edges (Odd)",
+      "sequence": "2,-4 / -2,2 / 0,1 / 3,3 /"
+    }
+  },
+  {
+    "id": "4-1-1-paired-edges",
+    "topShape": "4-1-1",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "4-1-1 / Paired Edges (Even)",
+      "sequence": "2,2 / 0,4 / 4,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "4-1-1 / Paired Edges (Odd)",
+      "sequence": "0,-2 / -4,0 / -1,4 / -3,0 /"
+    }
+  },
+  {
+    "id": "6-paired-edges",
+    "topShape": "6",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "6 / Paired Edges (Even)",
+      "sequence": "0,-2 / -4,0 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "6 / Paired Edges (Odd)",
+      "sequence": "2,0 / 0,4 / -2,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "left-5-1-paired-edges",
+    "topShape": "Left 5-1",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "Left 5-1 / Paired Edges (Even)",
+      "sequence": "3,2 / 3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Left 5-1 / Paired Edges (Odd)",
+      "sequence": "3,2 / 3,0 / 2,-2 / 0,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "right-5-1-paired-edges",
+    "topShape": "Right 5-1",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "Right 5-1 / Paired Edges (Even)",
+      "sequence": "3,2 / -3,0 / -2,2 / 0,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Right 5-1 / Paired Edges (Odd)",
+      "sequence": "3,2 / -3,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "4-1-1-perpendicular-edges",
+    "topShape": "4-1-1",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "4-1-1 / Perpendicular Edges (Even)",
+      "sequence": "5,0 / 0,2 / -2,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "4-1-1 / Perpendicular Edges (Odd)",
+      "sequence": "3,2 / 0,-2 / 2,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "left-5-1-perpendicular-edges",
+    "topShape": "Left 5-1",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "Left 5-1 / Perpendicular Edges (Even)",
+      "sequence": "0,2 / -2,4 / -2,0 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Left 5-1 / Perpendicular Edges (Odd)",
+      "sequence": "0,-4 / -4,0 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "right-5-1-perpendicular-edges",
+    "topShape": "Right 5-1",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "Right 5-1 / Perpendicular Edges (Even)",
+      "sequence": "6,0 / 2,4 / 2,0 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Right 5-1 / Perpendicular Edges (Odd)",
+      "sequence": "/ 0,4 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "3-3-perpendicular-edges",
+    "topShape": "3-3",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "3-3 / Perpendicular Edges (Even)",
+      "sequence": "-2,0 / 0,2 / 4,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "3-3 / Perpendicular Edges (Odd)",
+      "sequence": "0,2 / 0,-2 / -1,4 / -3,0 /"
+    }
+  },
+  {
+    "id": "3-1-2-perpendicular-edges",
+    "topShape": "3-1-2",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "3-1-2 / Perpendicular Edges (Even)",
+      "sequence": "-2,2 / 0,-4 / -2,0 / 0,1 / 3,0 /"
+    },
+    "oddAlg": {
+      "label": "3-1-2 / Perpendicular Edges (Odd)",
+      "sequence": "4,0 / 0,2 / 0,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "3-2-1-perpendicular-edges",
+    "topShape": "3-2-1",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "3-2-1 / Perpendicular Edges (Even)",
+      "sequence": "-1,0 / 0,4 / 2,0 / 0,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "3-2-1 / Perpendicular Edges (Odd)",
+      "sequence": "-1,-4 / -2,0 / 0,1 / 3,0 /"
+    }
+  },
+  {
+    "id": "scallop-barrel",
+    "topShape": "Scallop",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Scallop / Barrel (Even)",
+      "sequence": "/ 4,0 / -1,0 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Barrel (Odd)",
+      "sequence": "4,2 / -4,0 / 2,0 / -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "right-pawn-left-fist",
+    "topShape": "Right Pawn",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Right Pawn / Left Fist (Even)",
+      "sequence": "-2,-2 / 4,0 / -4,0 / 4,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Left Fist (Odd)",
+      "sequence": "/ 0,1 / -1,0 / -3,0 /"
+    }
+  },
+  {
+    "id": "left-pawn-right-fist",
+    "topShape": "Left Pawn",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Left Pawn / Right Fist (Even)",
+      "sequence": "2,2 / 0,-4 / 4,0 / 4,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Right Fist (Odd)",
+      "sequence": "/ -1,0 / 1,0 / 0,3 / -1,1"
+    }
+  },
+  {
+    "id": "shield-muffin",
+    "topShape": "Shield",
+    "bottomShape": "Muffin",
+    "evenAlg": {
+      "label": "Shield / Muffin (Even)",
+      "sequence": "-2,1 / 4,0 / 2,0 / 0,-3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Shield / Muffin (Odd)",
+      "sequence": "0,6 / 0,-3 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "left-4-2-parallel-edges",
+    "topShape": "Left 4-2",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "Left 4-2 / Parallel Edges (Even)",
+      "sequence": "/ 0,-4 / -2,3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Left 4-2 / Parallel Edges (Odd)",
+      "sequence": "-4,0 / 3,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "right-4-2-parallel-edges",
+    "topShape": "Right 4-2",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "Right 4-2 / Parallel Edges (Even)",
+      "sequence": "4,0 / -3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Right 4-2 / Parallel Edges (Odd)",
+      "sequence": "/ 0,4 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "3-2-1-parallel-edges",
+    "topShape": "3-2-1",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "3-2-1 / Parallel Edges (Even)",
+      "sequence": "3,0 / -1,4 / 2,0 / -2,-1 / 3,3"
+    },
+    "oddAlg": {
+      "label": "3-2-1 / Parallel Edges (Odd)",
+      "sequence": "6,0 / 0,-2 / -1,0 / 3,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "2-2-2-paired-edges",
+    "topShape": "2-2-2",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "2-2-2 / Paired Edges (Even)",
+      "sequence": "0,-2 / -2,0 / 0,1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "2-2-2 / Paired Edges (Odd)",
+      "sequence": "-2,0 / 0,2 / 0,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "8-star",
+    "topShape": "8",
+    "bottomShape": "Star",
+    "evenAlg": {
+      "label": "8 / Star (Even)",
+      "sequence": "0,2 / 2,4 / -2,-1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "8 / Star (Odd)",
+      "sequence": "/ 2,4 / -2,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "6-2-star",
+    "topShape": "6-2",
+    "bottomShape": "Star",
+    "evenAlg": {
+      "label": "6-2 / Star (Even)",
+      "sequence": "0,2 / 2,4 / 4,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "6-2 / Star (Odd)",
+      "sequence": "/ 2,4 / 4,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "4-4-star",
+    "topShape": "4-4",
+    "bottomShape": "Star",
+    "evenAlg": {
+      "label": "4-4 / Star (Even)",
+      "sequence": "0,2 / -2,-2 / 0,1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "4-4 / Star (Odd)",
+      "sequence": "/ -2,-2 / 0,1 / 3,3 /"
+    }
+  },
+  {
+    "id": "3-3-paired-edges",
+    "topShape": "3-3",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "3-3 / Paired Edges (Even)",
+      "sequence": "-1,0 / 0,-2 / 3,0 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "3-3 / Paired Edges (Odd)",
+      "sequence": "-1,4 / 0,2 / -3,0 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "3-1-2-paired-edges",
+    "topShape": "3-1-2",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "3-1-2 / Paired Edges (Even)",
+      "sequence": "-3,2 / 2,0 / 0,-2 / 0,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "3-1-2 / Paired Edges (Odd)",
+      "sequence": "0,-2 / 0,-5 / 3,-2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "3-2-1-paired-edges",
+    "topShape": "3-2-1",
+    "bottomShape": "Paired Edges",
+    "evenAlg": {
+      "label": "3-2-1 / Paired Edges (Even)",
+      "sequence": "0,2 / -2,0 / 0,2 / 0,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "3-2-1 / Paired Edges (Odd)",
+      "sequence": "3,0 / 5,0 / -3,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "scallop-shield",
+    "topShape": "Scallop",
+    "bottomShape": "Shield",
+    "evenAlg": {
+      "label": "Scallop / Shield (Even)",
+      "sequence": "2,0 / 0,2 / -2,0 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Shield (Odd)",
+      "sequence": "4,-4 / 0,-2 / 2,0 / -2,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "scallop-left-fist",
+    "topShape": "Scallop",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Scallop / Left Fist (Even)",
+      "sequence": "-4,0 / 0,3 / 2,-3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Left Fist (Odd)",
+      "sequence": "-2,-2 / 2,-3 / -2,3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "scallop-right-fist",
+    "topShape": "Scallop",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Scallop / Right Fist (Even)",
+      "sequence": "4,0 / -3,0 / -2,3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Right Fist (Odd)",
+      "sequence": "2,2 / 3,-2 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "shield-left-fist",
+    "topShape": "Shield",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Shield / Left Fist (Even)",
+      "sequence": "-2,3 / -2,-1 / 2,0 / -1,4 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Shield / Left Fist (Odd)",
+      "sequence": "-2,3 / 0,1 / -2,0 / 4,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "shield-right-fist",
+    "topShape": "Shield",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Shield / Right Fist (Even)",
+      "sequence": "-2,3 / 0,-1 / 2,0 / -1,4 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Shield / Right Fist (Odd)",
+      "sequence": "-2,3 / 2,1 / -2,0 / 4,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "left-4-2-perpendicular-edges",
+    "topShape": "Left 4-2",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "Left 4-2 / Perpendicular Edges (Even)",
+      "sequence": "2,0 / 3,0 / 3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Left 4-2 / Perpendicular Edges (Odd)",
+      "sequence": "0,2 / -3,2 / -3,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "right-4-2-perpendicular-edges",
+    "topShape": "Right 4-2",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "Right 4-2 / Perpendicular Edges (Even)",
+      "sequence": "/ 3,-2 / 3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Right 4-2 / Perpendicular Edges (Odd)",
+      "sequence": "-2,2 / -3,0 / -3,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "6-perpendicular-edges",
+    "topShape": "6",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "6 / Perpendicular Edges (Even)",
+      "sequence": "/ 3,2 / 3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "6 / Perpendicular Edges (Odd)",
+      "sequence": "2,-4 / -2,-3 / -3,2 / 2,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "scallop-right-pawn",
+    "topShape": "Scallop",
+    "bottomShape": "Right Pawn",
+    "evenAlg": {
+      "label": "Scallop / Right Pawn (Even)",
+      "sequence": "-4,0 / 2,3 / 2,-3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Right Pawn (Odd)",
+      "sequence": "0,4 / -1,-2 / -3,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "scallop-left-pawn",
+    "topShape": "Scallop",
+    "bottomShape": "Left Pawn",
+    "evenAlg": {
+      "label": "Scallop / Left Pawn (Even)",
+      "sequence": "0,-4 / 2,1 / 3,-2 / -2,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Scallop / Left Pawn (Odd)",
+      "sequence": "4,0 / -3,-2 / -2,3 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "scallop-muffin",
+    "topShape": "Scallop",
+    "bottomShape": "Muffin",
+    "evenAlg": {
+      "label": "Scallop / Muffin (Even)",
+      "sequence": "-2,1 / 2,0 / 2,-3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Muffin (Odd)",
+      "sequence": "2,0 / 0,-2 / -2,3 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "left-pawn-shield",
+    "topShape": "Left Pawn",
+    "bottomShape": "Shield",
+    "evenAlg": {
+      "label": "Left Pawn / Shield (Even)",
+      "sequence": "2,-4 / 1,0 / -2,3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Shield (Odd)",
+      "sequence": "2,-2 / 0,-2 / 1,0 / -2,3 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "right-pawn-shield",
+    "topShape": "Right Pawn",
+    "bottomShape": "Shield",
+    "evenAlg": {
+      "label": "Right Pawn / Shield (Even)",
+      "sequence": "4,0 / -1,0 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Shield (Odd)",
+      "sequence": "4,-2 / 0,2 / -1,0 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "right-pawn-right-fist",
+    "topShape": "Right Pawn",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Right Pawn / Right Fist (Even)",
+      "sequence": "-2,2 / -2,0 / 2,0 / -1,4 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Right Fist (Odd)",
+      "sequence": "-2,2 / 0,2 / -2,0 / 4,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "left-pawn-left-fist",
+    "topShape": "Left Pawn",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Left Pawn / Left Fist (Even)",
+      "sequence": "2,-2 / -2,0 / 2,0 / 4,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Left Fist (Odd)",
+      "sequence": "2,-2 / 0,2 / -2,0 / -4,1 / 3,0 /"
+    }
+  },
+  {
+    "id": "shield-kite",
+    "topShape": "Shield",
+    "bottomShape": "Kite",
+    "evenAlg": {
+      "label": "Shield / Kite (Even)",
+      "sequence": "-2,0 / 2,0 / -2,0 / 1,0 / 3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Shield / Kite (Odd)",
+      "sequence": "4,0 / 0,-2 / 2,0 / 0,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "shield-barrel",
+    "topShape": "Shield",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Shield / Barrel (Even)",
+      "sequence": "-2,-2 / 0,-2 / 2,0 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Shield / Barrel (Odd)",
+      "sequence": "-2,2 / 0,2 / -2,0 / -2,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "4-1-1-parallel-edges",
+    "topShape": "4-1-1",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "4-1-1 / Parallel Edges (Even)",
+      "sequence": "-1,0 / 3,-2 / 0,4 / -2,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "4-1-1 / Parallel Edges (Odd)",
+      "sequence": "-3,0 / -3,2 / 0,-4 / 2,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "right-pawn-muffin",
+    "topShape": "Right Pawn",
+    "bottomShape": "Muffin",
+    "evenAlg": {
+      "label": "Right Pawn / Muffin (Even)",
+      "sequence": "-2,1 / 0,-1 / 2,0 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Muffin (Odd)",
+      "sequence": "-2,1 / 2,1 / -2,2 / 1,0 / -3,-3 /"
+    }
+  },
+  {
+    "id": "left-pawn-muffin",
+    "topShape": "Left Pawn",
+    "bottomShape": "Muffin",
+    "evenAlg": {
+      "label": "Left Pawn / Muffin (Even)",
+      "sequence": "2,0 / 1,0 / -2,0 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Muffin (Odd)",
+      "sequence": "2,0 / -1,-2 / 2,-2 / 0,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "right-pawn-kite",
+    "topShape": "Right Pawn",
+    "bottomShape": "Kite",
+    "evenAlg": {
+      "label": "Right Pawn / Kite (Even)",
+      "sequence": "-2,0 / 0,1 / 2,0 / -1,0 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Kite (Odd)",
+      "sequence": "4,0 / -1,-2 / 2,0 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "left-pawn-kite",
+    "topShape": "Left Pawn",
+    "bottomShape": "Kite",
+    "evenAlg": {
+      "label": "Left Pawn / Kite (Even)",
+      "sequence": "2,0 / -1,0 / -2,0 / 0,1 / 3,0 /"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Kite (Odd)",
+      "sequence": "-4,0 / 2,1 / -2,0 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "right-pawn-barrel",
+    "topShape": "Right Pawn",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Right Pawn / Barrel (Even)",
+      "sequence": "0,2 / 2,0 / 3,-2 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Barrel (Odd)",
+      "sequence": "-2,-2 / 2,-1 / 2,-3 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "left-pawn-barrel",
+    "topShape": "Left Pawn",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Left Pawn / Barrel (Even)",
+      "sequence": "0,-2 / 0,-2 / -3,2 / 3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Barrel (Odd)",
+      "sequence": "2,2 / 1,-2 / -2,3 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "6-parallel-edges",
+    "topShape": "6",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "6 / Parallel Edges (Even)",
+      "sequence": "-4,0 / 0,4 / -2,3 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "6 / Parallel Edges (Odd)",
+      "sequence": "/ 0,-4 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "left-5-1-parallel-edges",
+    "topShape": "Left 5-1",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "Left 5-1 / Parallel Edges (Even)",
+      "sequence": "-4,0 / -1,4 / 2,-2 / 0,-1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "Left 5-1 / Parallel Edges (Odd)",
+      "sequence": "/ 3,0 / 0,4 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "right-5-1-parallel-edges",
+    "topShape": "Right 5-1",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "Right 5-1 / Parallel Edges (Even)",
+      "sequence": "6,0 / -3,0 / 0,-4 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Right 5-1 / Parallel Edges (Odd)",
+      "sequence": "-2,0 / 1,-4 / -2,2 / 0,1 / 3,3 /"
+    }
+  },
+  {
+    "id": "3-3-parallel-edges",
+    "topShape": "3-3",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "3-3 / Parallel Edges (Even)",
+      "sequence": "/ -1,0 / 1,0 / 0,-2 / -1,-2 / -3,-3"
+    },
+    "oddAlg": {
+      "label": "3-3 / Parallel Edges (Odd)",
+      "sequence": "-2,0 / 1,0 / -1,0 / 0,2 / -2,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "3-1-2-parallel-edges",
+    "topShape": "3-1-2",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "3-1-2 / Parallel Edges (Even)",
+      "sequence": "6,0 / 1,-4 / -2,0 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "3-1-2 / Parallel Edges (Odd)",
+      "sequence": "3,0 / 0,2 / 1,0 / -3,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "scallop-square",
+    "topShape": "Scallop",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Scallop / Square (Even)",
+      "sequence": "-2,0 / -2,0 / 2,0 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Scallop / Square (Odd)",
+      "sequence": "2,1 / 0,2 / -2,0 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "right-pawn-right-pawn",
+    "topShape": "Right Pawn",
+    "bottomShape": "Right Pawn",
+    "evenAlg": {
+      "label": "Right Pawn / Right Pawn (Even)",
+      "sequence": "-2,-2 / 0,-1 / 2,2 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Right Pawn (Odd)",
+      "sequence": "-2,-2 / 0,1 / 2,2 / -1,0 / -3,-3 /"
+    }
+  },
+  {
+    "id": "left-pawn-left-pawn",
+    "topShape": "Left Pawn",
+    "bottomShape": "Left Pawn",
+    "evenAlg": {
+      "label": "Left Pawn / Left Pawn (Even)",
+      "sequence": "2,2 / 1,0 / -2,-2 / -1,-2 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Left Pawn (Odd)",
+      "sequence": "2,2 / -1,0 / -2,-2 / 0,1 / 3,3 /"
+    }
+  },
+  {
+    "id": "right-pawn-square",
+    "topShape": "Right Pawn",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Right Pawn / Square (Even)",
+      "sequence": "-2,1 / 2,-3 / -2,0 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Right Pawn / Square (Odd)",
+      "sequence": "-2,1 / 0,-1 / 2,0 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "left-pawn-square",
+    "topShape": "Left Pawn",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Left Pawn / Square (Even)",
+      "sequence": "2,0 / 3,-2 / 2,0 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Left Pawn / Square (Odd)",
+      "sequence": "2,0 / 1,0 / -2,0 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "muffin-right-fist",
+    "topShape": "Muffin",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Muffin / Right Fist (Even)",
+      "sequence": "1,0 / 0,4 / -1,0 / 0,2 / 4,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Muffin / Right Fist (Odd)",
+      "sequence": "1,0 / 0,4 / 1,2 / 0,-2 / -1,4 / -3,0 /"
+    }
+  },
+  {
+    "id": "muffin-left-fist",
+    "topShape": "Muffin",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Muffin / Left Fist (Even)",
+      "sequence": "/ -4,0 / -1,-2 / 2,0 / 4,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Muffin / Left Fist (Odd)",
+      "sequence": "/ -4,0 / 1,0 / -2,0 / -4,1 / 3,0 /"
+    }
+  },
+  {
+    "id": "kite-right-fist",
+    "topShape": "Kite",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Kite / Right Fist (Even)",
+      "sequence": "0,2 / 0,2 / 1,0 / 0,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "Kite / Right Fist (Odd)",
+      "sequence": "0,2 / 0,2 / 3,-2 / 0,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "kite-left-fist",
+    "topShape": "Kite",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Kite / Left Fist (Even)",
+      "sequence": "0,-2 / -2,0 / -1,0 / 2,0 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Kite / Left Fist (Odd)",
+      "sequence": "0,-2 / -2,0 / -3,2 / -2,0 / -1,-2 / -3,0 /"
+    }
+  },
+  {
+    "id": "barrel-right-fist",
+    "topShape": "Barrel",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Barrel / Right Fist (Even)",
+      "sequence": "2,-3 / 0,2 / -2,-1 / -2,2 / -1,0 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Barrel / Right Fist (Odd)",
+      "sequence": "2,-3 / 0,2 / 0,1 / 0,-2 / -2,-1 / 3,3 /"
+    }
+  },
+  {
+    "id": "barrel-left-fist",
+    "topShape": "Barrel",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Barrel / Left Fist (Even)",
+      "sequence": "-2,-3 / 0,-2 / 2,1 / 2,-2 / 1,0 / -3,-3 /"
+    },
+    "oddAlg": {
+      "label": "Barrel / Left Fist (Odd)",
+      "sequence": "-2,-3 / 0,-2 / 0,-1 / 0,2 / -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "right-fist-right-fist",
+    "topShape": "Right Fist",
+    "bottomShape": "Right Fist",
+    "evenAlg": {
+      "label": "Right Fist / Right Fist (Even)",
+      "sequence": "2,6 / 2,0 / -2,0 / 2,0 / -1,0 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Right Fist / Right Fist (Odd)",
+      "sequence": "0,-4 / -4,0 / 2,0 / -2,0 / 1,0 / 3,0 / -1,1"
+    }
+  },
+  {
+    "id": "left-fist-left-fist",
+    "topShape": "Left Fist",
+    "bottomShape": "Left Fist",
+    "evenAlg": {
+      "label": "Left Fist / Left Fist (Even)",
+      "sequence": "4,0 / -2,0 / 2,0 / -2,0 / 1,0 / 3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Left Fist / Left Fist (Odd)",
+      "sequence": "6,-2 / 4,0 / -2,0 / 2,0 / -1,0 / -3,0 /"
+    }
+  },
+  {
+    "id": "muffin-kite",
+    "topShape": "Muffin",
+    "bottomShape": "Kite",
+    "evenAlg": {
+      "label": "Muffin / Kite (Even)",
+      "sequence": "0,3 / 2,-1 / 0,2 / -2,0 / -2,-1 / 3,3 /"
+    },
+    "oddAlg": {
+      "label": "Muffin / Kite (Odd)",
+      "sequence": "0,3 / 2,1 / 0,-2 / 2,0 / -1,-2 / -3,-3 /"
+    }
+  },
+  {
+    "id": "muffin-barrel",
+    "topShape": "Muffin",
+    "bottomShape": "Barrel",
+    "evenAlg": {
+      "label": "Muffin / Barrel (Even)",
+      "sequence": "0,-2 / 2,-1 / -2,0 / -2,3 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Muffin / Barrel (Odd)",
+      "sequence": "0,-2 / -2,0 / 0,2 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "left-fist-square",
+    "topShape": "Left Fist",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Left Fist / Square (Even)",
+      "sequence": "-2,0 / 0,-2 / 0,1 / 0,2 / -1,0 / 0,-3 /"
+    },
+    "oddAlg": {
+      "label": "Left Fist / Square (Odd)",
+      "sequence": "-2,0 / 0,4 / -1,-2 / 0,2 / -2,-1 / 0,-3 / -1,1"
+    }
+  },
+  {
+    "id": "right-fist-square",
+    "topShape": "Right Fist",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Right Fist / Square (Even)",
+      "sequence": "2,1 / -4,0 / 1,2 / -2,0 / -1,-2 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Right Fist / Square (Odd)",
+      "sequence": "2,1 / 2,0 / 0,-1 / -2,0 / 1,0 / 3,0 / -1,1"
+    }
+  },
+  {
+    "id": "7-1-star",
+    "topShape": "7-1",
+    "bottomShape": "Star",
+    "evenAlg": {
+      "label": "7-1 / Star (Even)",
+      "sequence": "/ 0,-2 / -1,-2 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "7-1 / Star (Odd)",
+      "sequence": "0,2 / 0,-2 / -1,-2 / 2,-3 / -2,-1 / -3,0 / -1,1"
+    }
+  },
+  {
+    "id": "5-3-star",
+    "topShape": "5-3",
+    "bottomShape": "Star",
+    "evenAlg": {
+      "label": "5-3 / Star (Even)",
+      "sequence": "1,0 / 4,0 / 1,0 / 3,-2 / 2,1 / 0,3 /"
+    },
+    "oddAlg": {
+      "label": "5-3 / Star (Odd)",
+      "sequence": "1,2 / 4,0 / 1,0 / 3,-2 / 2,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "2-2-2-perpendicular-edges",
+    "topShape": "2-2-2",
+    "bottomShape": "Perpendicular Edges",
+    "evenAlg": {
+      "label": "2-2-2 / Perpendicular Edges (Even)",
+      "sequence": "0,2 / 1,0 / -2,0 / 0,2 / 0,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "2-2-2 / Perpendicular Edges (Odd)",
+      "sequence": "/ -1,0 / 2,0 / 0,-2 / 0,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "2-2-2-parallel-edges",
+    "topShape": "2-2-2",
+    "bottomShape": "Parallel Edges",
+    "evenAlg": {
+      "label": "2-2-2 / Parallel Edges (Even)",
+      "sequence": "-2,0 / -3,0 / 0,-2 / 0,2 / 0,-1 / 0,-3 / -1,1"
+    },
+    "oddAlg": {
+      "label": "2-2-2 / Parallel Edges (Odd)",
+      "sequence": "-2,0 / 3,0 / 0,2 / 0,-2 / 0,1 / 0,3 /"
+    }
+  },
+  {
+    "id": "kite-square",
+    "topShape": "Kite",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Kite / Square (Even)",
+      "sequence": "3,1 / -1,0 / 2,0 / -2,0 / 2,0 / -1,0 / -3,0 /"
+    },
+    "oddAlg": {
+      "label": "Kite / Square (Odd)",
+      "sequence": "3,0 / 1,0 / -2,0 / 2,0 / -2,0 / 1,0 / 3,0 / -1,1"
+    }
+  },
+  {
+    "id": "barrel-square",
+    "topShape": "Barrel",
+    "bottomShape": "Square",
+    "evenAlg": {
+      "label": "Barrel / Square (Even)",
+      "sequence": "/ -2,0 / -2,0 / 2,0 / -2,0 / 1,0 / 3,0 / -1,1"
+    },
+    "oddAlg": {
+      "label": "Barrel / Square (Odd)",
+      "sequence": "0,1 / 2,0 / 2,0 / -2,0 / 2,0 / -1,0 / -3,0 /"
+    }
+  },
+  {
+    "id": "square-square",
+    "topShape": "Square",
+    "bottomShape": "Square",
+    "oddAlg": {
+      "label": "Square / Square (Odd)",
+      "sequence": "/ 3,3 / 1,2 / 2,-2 / -2,2 / -1,-2 / -3,-3 /"
+    }
+  }
+]
