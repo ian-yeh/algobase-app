@@ -58,31 +58,6 @@ export const setCountry = mutation({
   },
 });
 
-export const setSwapCspParity = mutation({
-  args: {
-    token: v.string(),
-    swapCspParity: v.boolean(),
-  },
-  handler: async (ctx, args) => {
-    const decoded = await verifyToken(args.token);
-    if (!decoded) {
-      throw new Error("Invalid token");
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("userId"), decoded.userId))
-      .first();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    await ctx.db.patch(user._id, { swapCspParity: args.swapCspParity });
-    return { swapCspParity: args.swapCspParity };
-  },
-});
-
 export const getMe = query({
   args: { token: v.string() },
   handler: async (ctx, args) => {
@@ -106,7 +81,6 @@ export const getMe = query({
       email: user.email,
       country: user.country ?? null,
       bookmarkedCompetitions: user.bookmarkedCompetitions ?? [],
-      swapCspParity: user.swapCspParity ?? false,
     };
   },
 });
