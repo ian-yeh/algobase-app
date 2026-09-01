@@ -11,7 +11,6 @@ export default defineSchema({
     lastActivityDate: v.number(), // Unix timestamp
     country: v.optional(v.string()), // ISO 3166-1 alpha-2, e.g. "CA"
     bookmarkedCompetitions: v.optional(v.array(v.string())), // WCA competition IDs
-    swapCspParity: v.optional(v.boolean()), // some people trace Square-1 CSP parity the opposite way - swap even/odd labels for them
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"]),

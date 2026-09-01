@@ -1,7 +1,23 @@
 import React from "react";
-import { MoveGroup } from "./MoveGroup";
-import { MoveButton } from "./MoveButton";
 import { PresetMenu } from "./PresetMenu";
+
+const MoveButton: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }
+> = ({ children, className, ...props }) => (
+  <button
+    {...props}
+    className={`font-mono text-[11px] leading-none rounded-md border border-foreground/10 text-foreground/45 px-2 py-1.5 hover:border-foreground/25 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${className ?? ""}`}
+  >
+    {children}
+  </button>
+);
+
+const MoveGroup: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+  <div className="flex items-center gap-1">
+    <span className="font-mono text-[11px] text-foreground/35 mr-0.5">{label}</span>
+    {children}
+  </div>
+);
 
 export const Toolbar: React.FC<{
   isBusy: boolean;

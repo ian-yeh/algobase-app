@@ -2,8 +2,7 @@ import React, { useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { useAuthStore } from "@/stores/authStore";
-import { flipParity } from "@/lib/cspParity";
-import { getEffectiveCspAlg } from "@/lib/cspCustomAlg";
+import { flipParity, getEffectiveCspAlg } from "@/lib/cspCustomAlg";
 import { useSquare1Scene, invertSequence, type CspIdentification, type CspParity } from "@algobase/square-one";
 
 const noop = () => {};

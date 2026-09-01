@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { useAuthStore } from "@/stores/authStore";
-import { flipParity } from "@/lib/cspParity";
-import { getEffectiveCspAlg, type CspCustomization } from "@/lib/cspCustomAlg";
+import { flipParity, getEffectiveCspAlg, type CspCustomization } from "@/lib/cspCustomAlg";
 import { cspCaseWeight, loadCspStats, recordCspResult, type CspStatsMap } from "@/lib/cspRecallStats";
 import {
   CSP_CASES,
@@ -158,9 +157,35 @@ const SquareOneCspRecall = () => {
         </div>
 
         {tab === "algorithm" ? (
-          <AlgorithmTestTab pool={pool} customizations={customizations ?? undefined} />
+          // Given the case + parity outright (as if already traced), pick the correct
+          // algorithm out of 4 choices. Multiple choice, not free recall, so it's
+          // gradeable without any notation-matching guesswork. Just keeps going -
+          // no session/round count, draws from the shuffle-bag forever.
+          <DrillTab
+            pool={pool}
+            customizations={customizations}
+            blurb="You're shown a case's shape and parity outright (as if you'd already traced it) and pick the right
+              algorithm from 4 choices. Cases you get wrong come up more often. Keys: 1-4 to answer, Enter for next."
+            renderCard={(round, customization, onNext) => (
+              <MultipleChoiceRound round={round} customization={customization} onNext={onNext} />
+            )}
+          />
         ) : (
-          <CasePracticeTab pool={pool} customizations={customizations ?? undefined} />
+          // Drills random learned cases with a fresh physical setup each round - no 3D
+          // model, no answer shown up front. Apply the setup to your own cube, trace
+          // it, and decide even or odd yourself, then reveal to check. Getting parity
+          // (misjudging even/odd, or applying the wrong algorithm for it) counts as a
+          // miss and resurfaces the case more often; a clean match counts as a hit.
+          <DrillTab
+            pool={pool}
+            customizations={customizations}
+            blurb="Apply the setup to your own cube, trace it, and decide even or odd yourself. Reveal to check - a
+              parity miss (wrong even/odd, or the wrong algorithm for it) comes up more often. Keys: Space to reveal,
+              then 1 if you traced it right, 2 if you missed."
+            renderCard={(round, customization, onNext) => (
+              <TracePracticeCard round={round} customization={customization} onNext={onNext} />
+            )}
+          />
         )}
       </div>
     </div>
@@ -182,59 +207,51 @@ const TabButton: React.FC<{ active: boolean; onClick: () => void; children: Reac
   </button>
 );
 
-// Given the case + parity outright (as if already traced), pick the correct
-// algorithm out of 4 choices. Multiple choice, not free recall, so it's
-// gradeable without any notation-matching guesswork. Just keeps going -
-// no session/round count, draws from the shuffle-bag forever.
-const AlgorithmTestTab: React.FC<{ pool: CspCase[]; customizations: Record<string, CspCustomization> | undefined }> = ({
-  pool,
-  customizations,
-}) => {
+// Endless weighted shuffle-bag drill: draws rounds from the learned pool,
+// records right/wrong per case, and hands each round to `renderCard`.
+const DrillTab: React.FC<{
+  pool: CspCase[];
+  customizations: Record<string, CspCustomization> | undefined;
+  blurb: string;
+  renderCard: (round: Round, customization: CspCustomization | null, onNext: (correct: boolean) => void) => React.ReactNode;
+}> = ({ pool, customizations, blurb, renderCard }) => {
   const queueRef = useRef<Round[]>([]);
   const statsRef = useRef<CspStatsMap>(loadCspStats());
   const [round, setRound] = useState<Round | null>(null);
-  const [seq, setSeq] = useState(0);
 
   const draw = useCallback(() => {
     if (queueRef.current.length === 0) {
       queueRef.current = freshBag(pool, (c) => cspCaseWeight(statsRef.current, c.id));
     }
     setRound(queueRef.current.shift() ?? null);
-    setSeq((n) => n + 1);
   }, [pool]);
 
   useEffect(() => {
     queueRef.current = [];
     draw();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pool]);
-
-  const grade = (correct: boolean) => {
-    if (!round) return;
-    statsRef.current = recordCspResult(statsRef.current, round.cspCase.id, correct);
-  };
+  }, [draw]);
 
   if (pool.length === 0) {
-    return <p className="text-sm text-foreground/45">No cases in your pool yet - mark some "Learned" first.</p>;
+    return (
+      <p className="text-sm text-foreground/45">
+        No cases in your pool yet -{" "}
+        <Link to="/training/square1-csp" className="underline hover:text-foreground">
+          mark some "Learned"
+        </Link>{" "}
+        first.
+      </p>
+    );
   }
 
   if (!round) return null;
 
   return (
     <div className="space-y-4 text-sm">
-      <p className="text-foreground/70">
-        You're shown a case's shape and parity outright (as if you'd already traced it) and pick the right
-        algorithm from 4 choices. Cases you get wrong come up more often.
-      </p>
-      <MultipleChoiceRound
-        key={`${round.cspCase.id}-${round.parity}-${seq}`}
-        round={round}
-        customization={customizations?.[round.cspCase.id] ?? null}
-        onNext={(correct) => {
-          grade(correct);
-          draw();
-        }}
-      />
+      <p className="text-foreground/70">{blurb}</p>
+      {renderCard(round, customizations?.[round.cspCase.id] ?? null, (correct) => {
+        statsRef.current = recordCspResult(statsRef.current, round.cspCase.id, correct);
+        draw();
+      })}
     </div>
   );
 };
@@ -246,35 +263,59 @@ const MultipleChoiceRound: React.FC<{
 }> = ({ round, customization, onNext }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const swapped = customization?.swapped ?? false;
-  const alg = useMemo(
-    () => getEffectiveCspAlg(round.cspCase, round.parity, customization),
-    [round.cspCase, round.parity, customization]
-  );
   const displayedParity = swapped ? flipParity(round.parity) : round.parity;
   // Choices are shuffled once per round and must not reshuffle on re-render
   // (e.g. after the user clicks an option) - depend only on values that
-  // identify the round, not on `alg`'s object identity.
+  // identify the round, not on the alg's object identity.
   const choices = useMemo(
-    () => buildChoices(round.cspCase, round.parity, alg, customization),
-    [round.cspCase, round.parity, alg, customization]
+    () => buildChoices(round.cspCase, round.parity, getEffectiveCspAlg(round.cspCase, round.parity, customization), customization),
+    [round, customization]
   );
   const [selected, setSelected] = useState<number | null>(null);
 
   // Grey (monochrome) so nothing here reads as a color cue - shape/parity
   // recognition only, matching the actual skill being tested.
-  useSquare1Scene(containerRef, {
+  const { queueRef } = useSquare1Scene(containerRef, {
     autoRotate: false,
     monochrome: true,
-    initialSequence: invertSequence(alg.sequence),
+    initialSequence: "",
     onMoveStart: noop,
     onMoveComplete: noop,
     onQueueEmpty: noop,
     onSliceBlocked: noop,
   });
 
+  // One persistent scene, re-posed per round - remounting the WebGL renderer
+  // every answer makes the drill loop jank.
+  useEffect(() => {
+    const queue = queueRef.current;
+    if (!queue) return;
+    const sequence = getEffectiveCspAlg(round.cspCase, round.parity, customization).sequence;
+    queue.clear();
+    queue.resetState();
+    if (sequence) queue.applyInstant(invertSequence(sequence));
+    setSelected(null);
+  }, [round, customization, queueRef]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      const digit = Number(e.key);
+      if (selected === null && digit >= 1 && digit <= choices.length) {
+        e.preventDefault();
+        setSelected(digit - 1);
+      } else if (selected !== null && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        onNext(choices[selected].correct);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [choices, selected, onNext]);
+
   return (
     <div className="flex flex-col rounded-lg border border-foreground/10 p-3 text-sm font-mono space-y-3">
-      <div ref={containerRef} className="h-96 w-full rounded overflow-hidden" />
+      <div ref={containerRef} className="h-72 w-full rounded overflow-hidden" />
       <div className="text-foreground/70">
         Case: <span className="text-foreground">{round.cspCase.topShape}</span> /{" "}
         <span className="text-foreground">{round.cspCase.bottomShape}</span>, parity{" "}
@@ -297,6 +338,7 @@ const MultipleChoiceRound: React.FC<{
               disabled={revealed}
               className={`w-full text-left rounded border px-4 py-3 text-base transition-colors disabled:cursor-default ${stateClass}`}
             >
+              <span className="text-foreground/40 mr-2">{i + 1}</span>
               {choice.text}
             </button>
           );
@@ -307,68 +349,9 @@ const MultipleChoiceRound: React.FC<{
           onClick={() => onNext(choices[selected].correct)}
           className="self-start rounded border border-foreground/20 text-foreground/70 px-2 py-1 hover:bg-foreground/10 transition-colors"
         >
-          Next
+          Next (enter)
         </button>
       )}
-    </div>
-  );
-};
-
-// Drills random learned cases with a fresh physical setup each round - no 3D
-// model, no answer shown up front. Apply the setup to your own cube, trace
-// it, and decide even or odd yourself, then reveal to check. Getting parity
-// (misjudging even/odd, or applying the wrong algorithm for it) counts as a
-// miss and resurfaces the case more often, same weighting as the algorithm
-// test; a clean match counts as a hit.
-const CasePracticeTab: React.FC<{ pool: CspCase[]; customizations: Record<string, CspCustomization> | undefined }> = ({
-  pool,
-  customizations,
-}) => {
-  const queueRef = useRef<Round[]>([]);
-  const statsRef = useRef<CspStatsMap>(loadCspStats());
-  const [round, setRound] = useState<Round | null>(null);
-  const [seq, setSeq] = useState(0);
-
-  const draw = useCallback(() => {
-    if (queueRef.current.length === 0) {
-      queueRef.current = freshBag(pool, (c) => cspCaseWeight(statsRef.current, c.id));
-    }
-    setRound(queueRef.current.shift() ?? null);
-    setSeq((n) => n + 1);
-  }, [pool]);
-
-  useEffect(() => {
-    queueRef.current = [];
-    draw();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pool]);
-
-  const grade = (correct: boolean) => {
-    if (!round) return;
-    statsRef.current = recordCspResult(statsRef.current, round.cspCase.id, correct);
-  };
-
-  if (pool.length === 0) {
-    return <p className="text-sm text-foreground/45">No cases in your pool yet - mark some "Learned" first.</p>;
-  }
-
-  if (!round) return null;
-
-  return (
-    <div className="space-y-4 text-sm">
-      <p className="text-foreground/70">
-        Apply the setup to your own cube, trace it, and decide even or odd yourself. Reveal to check - getting parity
-        (wrong even/odd, or the wrong algorithm for it) is a miss and comes up more often; otherwise it's a hit.
-      </p>
-      <TracePracticeCard
-        key={`${round.cspCase.id}-${round.parity}-${seq}`}
-        round={round}
-        customization={customizations?.[round.cspCase.id] ?? null}
-        onNext={(correct) => {
-          grade(correct);
-          draw();
-        }}
-      />
     </div>
   );
 };
@@ -382,11 +365,31 @@ const TracePracticeCard: React.FC<{ round: Round; customization: CspCustomizatio
   const alg = getEffectiveCspAlg(round.cspCase, round.parity, customization);
   // Setup sequence in physical convention, exactly as the user would perform it on their own
   // cube - suffixed with a random rotation so it doesn't just read as "invert(alg)" to anyone
-  // who has the algorithm memorized.
-  const setupSequence = useMemo(() => appendDisguiseRotation(invertSequence(alg.sequence)), [alg.sequence]);
+  // who has the algorithm memorized. Keyed on the round so a case repeating back-to-back
+  // still gets a fresh disguise.
+  const setupSequence = useMemo(
+    () => appendDisguiseRotation(invertSequence(getEffectiveCspAlg(round.cspCase, round.parity, customization).sequence)),
+    [round, customization]
+  );
 
   const [revealed, setRevealed] = useState(false);
+  useEffect(() => setRevealed(false), [round]);
   const displayedParity = swapped ? flipParity(round.parity) : round.parity;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (!revealed && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        setRevealed(true);
+      } else if (revealed && (e.key === "1" || e.key === "2")) {
+        e.preventDefault();
+        onNext(e.key === "1");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [revealed, onNext]);
 
   return (
     <div className="flex flex-col rounded-lg border border-foreground/10 p-3 text-sm font-mono space-y-3">
@@ -399,7 +402,7 @@ const TracePracticeCard: React.FC<{ round: Round; customization: CspCustomizatio
           onClick={() => setRevealed(true)}
           className="self-start rounded border border-accent/30 text-accent px-2 py-1 hover:bg-accent/10 transition-colors"
         >
-          Reveal
+          Reveal (space)
         </button>
       ) : (
         <div className="space-y-2">
@@ -414,13 +417,13 @@ const TracePracticeCard: React.FC<{ round: Round; customization: CspCustomizatio
               onClick={() => onNext(true)}
               className="rounded border border-green-500/40 text-green-500 px-2 py-1 hover:bg-green-500/10 transition-colors"
             >
-              No parity - correct
+              Traced it right (1)
             </button>
             <button
               onClick={() => onNext(false)}
               className="rounded border border-red-500/40 text-red-500 px-2 py-1 hover:bg-red-500/10 transition-colors"
             >
-              Got parity - wrong
+              Missed it (2)
             </button>
           </div>
         </div>
