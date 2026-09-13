@@ -149,7 +149,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         switch (displayState) {
             case 'HOLDING': return 'text-red-500';
             case 'READY': return 'text-green-500';
-            case 'RUNNING': return 'text-foreground font-medium';
+            case 'RUNNING': return 'text-foreground';
             default: return 'text-foreground';
         }
     };
