@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatSecondsTime } from './timer.utils';
 
 interface StatsDisplayProps {
     stats: {
@@ -15,20 +16,12 @@ interface StatsDisplayProps {
 const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, runningAO5, runningAO12 }) => {
     if (!stats) return null;
 
-    const formatTime = (seconds: number | null | undefined) => {
-        if (seconds === null || seconds === undefined || seconds === 0 || seconds === Infinity) return '--';
-        const ms = seconds * 1000;
-        const s = Math.floor(ms / 1000);
-        const m = Math.floor((ms % 1000) / 10);
-        return `${s}.${m.toString().padStart(2, '0')}`;
-    };
-
     return (
         <div className="py-8 w-full max-w-2xl mx-auto text-base sm:text-xl text-foreground/60 font-sans tracking-wide space-y-1">
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:gap-x-10 uppercase font-bold">
-                <span>ao5: {formatTime(runningAO5)}</span>
-                <span>ao12: {formatTime(runningAO12)}</span>
-                <span>best: {formatTime(stats.best_time)}</span>
+                <span>ao5: {formatSecondsTime(runningAO5)}</span>
+                <span>ao12: {formatSecondsTime(runningAO12)}</span>
+                <span>best: {formatSecondsTime(stats.best_time)}</span>
                 <span>solves: {stats.total_solves}</span>
             </div>
         </div>

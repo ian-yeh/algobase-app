@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
 import ImportModal from './ImportModal';
+import { formatTime } from './timer.utils';
 
 export interface Solve {
     id: string;
@@ -14,12 +15,6 @@ interface SolveHistoryProps {
     onSelectSolve: (solve: Solve) => void;
     onDeleteSolve: (id: string) => void;
 }
-
-const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const milliseconds = Math.floor((ms % 1000) / 10);
-    return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
-};
 
 const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDeleteSolve }) => {
     const [menuOpen, setMenuOpen] = useState(false);

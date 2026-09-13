@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { formatTime } from './timer.utils';
 
 interface TimerDisplayProps {
     onSolveComplete: (time: number) => void;
@@ -142,12 +143,6 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         } else if (stateRef.current === 'HOLDING') {
             updateState('IDLE');
         }
-    };
-
-    const formatTime = (ms: number) => {
-        const seconds = Math.floor(ms / 1000);
-        const milliseconds = Math.floor((ms % 1000) / 10);
-        return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
     };
 
     const getTimerColor = () => {

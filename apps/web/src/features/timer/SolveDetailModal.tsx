@@ -1,17 +1,12 @@
 import React, { useEffect } from 'react';
 import type { Solve } from './SolveHistory';
+import { formatTime } from './timer.utils';
 
 interface SolveDetailModalProps {
     solve: Solve | null;
     onClose: () => void;
     onDelete: (id: string) => void;
 }
-
-const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const milliseconds = Math.floor((ms % 1000) / 10);
-    return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
-};
 
 const formatTimestamp = (ts: number) => {
     const d = new Date(ts);

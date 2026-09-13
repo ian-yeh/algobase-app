@@ -1,6 +1,7 @@
 import React from 'react';
 import SolveChart from './SolveChart';
 import type { Doc } from '@convex/_generated/dataModel';
+import { formatSecondsTime } from './timer.utils';
 
 interface StatsDashboardProps {
     stats: {
@@ -30,14 +31,6 @@ const StatCard = ({ label: statLabel, value: statValue }: { label: string; value
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
     if (!stats) return null;
 
-    const formatTime = (seconds: number) => {
-        if (!seconds || seconds === 0 || seconds === Infinity) return '--';
-        const ms = seconds * 1000;
-        const s = Math.floor(ms / 1000);
-        const m = Math.floor((ms % 1000) / 10);
-        return `${s}.${m.toString().padStart(2, '0')}`;
-    };
-
     return (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-12 space-y-8 sm:space-y-10">
             <header className="animate-blur-in">
@@ -52,9 +45,9 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-slide-up delay-200">
-                <StatCard label="Best Ao5" value={formatTime(stats.best_ao5)} />
-                <StatCard label="Best Ao12" value={formatTime(stats.best_ao12)} />
-                <StatCard label="Best single" value={formatTime(stats.best_time)} />
+                <StatCard label="Best Ao5" value={formatSecondsTime(stats.best_ao5)} />
+                <StatCard label="Best Ao12" value={formatSecondsTime(stats.best_ao12)} />
+                <StatCard label="Best single" value={formatSecondsTime(stats.best_time)} />
             </div>
 
             <div className="animate-slide-up delay-300">
