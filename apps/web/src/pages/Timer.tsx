@@ -28,7 +28,7 @@ const Timer = () => {
 
     useEffect(() => {
         if (solvesData) {
-            const formattedSolves = solvesData.map((s: any) => ({
+            const formattedSolves = solvesData.map((s) => ({
                 id: s._id,
                 time: s.time * 1000,
                 scramble: s.scramble,

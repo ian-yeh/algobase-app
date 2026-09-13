@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { formatTime } from '@/lib/stats';
 
 interface TimerDisplayProps {
     onSolveComplete: (time: number) => void;
@@ -30,12 +31,12 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         disabledRef.current = disabled;
     }, [disabled]);
 
-    const updateState = (newState: TimerState) => {
+    const updateState = useCallback((newState: TimerState) => {
         stateRef.current = newState;
         setDisplayState(newState);
-    };
+    }, []);
 
-    const startTimer = () => {
+    const startTimer = useCallback(() => {
         startTimeRef.current = Date.now();
         updateState('RUNNING');
         callbacks.current.onStart?.();
@@ -45,9 +46,9 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         intervalRef.current = setInterval(() => {
             setTime(Date.now() - startTimeRef.current);
         }, 10);
-    };
+    }, [updateState]);
 
-    const stopTimer = () => {
+    const stopTimer = useCallback(() => {
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
@@ -59,7 +60,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         updateState('IDLE');
         callbacks.current.onStop?.();
         callbacks.current.onSolveComplete(finalTime);
-    };
+    }, [updateState]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -110,7 +111,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
             if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, []); // Only run once on mount
+    }, [startTimer, stopTimer, updateState]);
 
     // Touch handlers mirror the space-bar hold/release behavior for mobile
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -142,12 +143,6 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
         } else if (stateRef.current === 'HOLDING') {
             updateState('IDLE');
         }
-    };
-
-    const formatTime = (ms: number) => {
-        const seconds = Math.floor(ms / 1000);
-        const milliseconds = Math.floor((ms % 1000) / 10);
-        return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
     };
 
     const getTimerColor = () => {

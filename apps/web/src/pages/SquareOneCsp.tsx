@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { useAuthStore } from "@/stores/authStore";
 import { CSP_CASES, type Shape } from "@algobase/square-one";
-import { CspCaseRow } from "@/components/square-one/CspCaseRow";
+import { CspCaseRow } from "@/features/square-one/CspCaseRow";
 
 const ALL_SHAPES: Shape[] = Array.from(
     new Set(CSP_CASES.flatMap((c) => [c.topShape, c.bottomShape]))

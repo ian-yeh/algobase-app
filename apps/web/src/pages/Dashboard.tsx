@@ -1,7 +1,7 @@
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useAuthStore } from '@/stores/authStore';
-import StatsDashboard from '@/features/timer/StatsDashboard';
+import StatsDashboard from '@/features/stats-dashboard/Dashboard';
 import Loading from '@/components/Loading';
 
 const DashboardPage = () => {

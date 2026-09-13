@@ -1,17 +1,12 @@
 import React, { useEffect } from 'react';
 import type { Solve } from './SolveHistory';
+import { formatTime } from '@/lib/stats';
 
 interface SolveDetailModalProps {
     solve: Solve | null;
     onClose: () => void;
     onDelete: (id: string) => void;
 }
-
-const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const milliseconds = Math.floor((ms % 1000) / 10);
-    return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
-};
 
 const formatTimestamp = (ts: number) => {
     const d = new Date(ts);
@@ -61,7 +56,7 @@ const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onD
                         <div className="text-[10px] uppercase font-bold tracking-widest text-foreground/40 mb-1.5">
                             Scramble
                         </div>
-                        <div className="text-sm leading-relaxed text-foreground/80 break-words">
+                        <div className="text-sm leading-relaxed text-foreground/80 wrap-break-word">
                             {solve.scramble}
                         </div>
                     </div>
