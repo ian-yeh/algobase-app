@@ -12,7 +12,9 @@ const StatCard = ({ label, value }: StatCardProps) => (
             <span className="text-5xl font-serif font-medium tracking-tight tabular-nums">
                 {value}
             </span>
-            <span className="text-foreground/30 text-lg font-serif">s</span>
+            {!value.includes(':') && value !== '--' && (
+                <span className="text-foreground/30 text-lg font-serif">s</span>
+            )}
         </div>
     </div>
 );

@@ -1,42 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler,
-    type TooltipItem,
-} from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { calculateAverageSeries } from '@/lib/stats';
 import type { Doc } from '@convex/_generated/dataModel';
-
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler
-);
+import { CHART_OPTIONS, INTERVALS, SERIES_STYLE, type Interval, type Series } from './SolveChart.config';
 
 interface SolveChartProps {
     solves: Doc<'solves'>[];
 }
 
-type Interval = 'hour' | 'day' | 'week' | 'month' | 'all';
-
 const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     const [interval, setInterval] = useState<Interval>('all');
-    const [showSingle, setShowSingle] = useState(true);
-    const [showAO5, setShowAO5] = useState(true);
-    const [showAO12, setShowAO12] = useState(true);
+    const [visible, setVisible] = useState<Record<Series, boolean>>({ single: true, ao5: true, ao12: true });
+    const toggle = (series: Series) => setVisible(v => ({ ...v, [series]: !v[series] }));
 
     const filteredSolves = useMemo(() => {
         const sorted = [...solves].sort((a, b) => a._creationTime - b._creationTime);
@@ -63,90 +38,16 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
         const labels = allLabels.map((l, i) => (i > 0 && l === allLabels[i - 1] ? '' : l));
 
         const times = filteredSolves.map(s => s.time);
-        const ao5Series = calculateAverageSeries(times.reverse(), 5).reverse();
-        const ao12Series = calculateAverageSeries(times.reverse(), 12).reverse();
+        const ao5Series = calculateAverageSeries([...times].reverse(), 5).reverse();
+        const ao12Series = calculateAverageSeries([...times].reverse(), 12).reverse();
+        const seriesData: Record<Series, (number | null)[]> = { single: times, ao5: ao5Series, ao12: ao12Series };
 
-        const datasets = [];
-
-        if (showSingle) {
-            datasets.push({
-                label: 'Single',
-                data: times,
-                borderColor: 'rgba(120, 113, 108, 0.35)',
-                backgroundColor: 'rgba(120, 113, 108, 0.08)',
-                borderWidth: 1.5,
-                pointRadius: 2,
-                tension: 0.3,
-                fill: false,
-            });
-        }
-
-        if (showAO5) {
-            datasets.push({
-                label: 'AO5',
-                data: ao5Series,
-                borderColor: '#9333ea',
-                backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                borderWidth: 2,
-                pointRadius: 0,
-                tension: 0.4,
-                fill: false,
-            });
-        }
-
-        if (showAO12) {
-            datasets.push({
-                label: 'AO12',
-                data: ao12Series,
-                borderColor: '#c2761a',
-                backgroundColor: 'rgba(194, 118, 26, 0.1)',
-                borderWidth: 2,
-                pointRadius: 0,
-                tension: 0.4,
-                fill: false,
-            });
-        }
+        const datasets = (Object.keys(SERIES_STYLE) as Series[])
+            .filter(key => visible[key])
+            .map(key => ({ ...SERIES_STYLE[key], data: seriesData[key], fill: false }));
 
         return { labels, datasets };
-    }, [filteredSolves, showSingle, showAO5, showAO12, interval]);
-
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                mode: 'index' as const,
-                intersect: false,
-                backgroundColor: '#fcfcf9',
-                titleColor: '#1a1a1a',
-                bodyColor: 'rgba(26, 26, 26, 0.6)',
-                borderColor: '#e7e2d5',
-                borderWidth: 1,
-                padding: 12,
-                displayColors: true,
-                callbacks: {
-                    label: (context: TooltipItem<'line'>) => `${context.dataset.label}: ${(context.parsed.y as number).toFixed(2)}s`
-                }
-            },
-        },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: {
-                    color: 'rgba(26, 26, 26, 0.35)',
-                    font: { size: 10 },
-                    maxRotation: 0,
-                    autoSkip: false,
-                }
-            },
-            y: {
-                border: { display: false },
-                grid: { color: '#eeeade' },
-                ticks: { color: 'rgba(26, 26, 26, 0.35)', font: { size: 10 }, padding: 8, callback: (value: number | string) => `${value}s` }
-            }
-        }
-    };
+    }, [filteredSolves, visible, interval]);
 
     return (
         <div className="bg-surface rounded-2xl border border-line p-5 sm:p-7">
@@ -162,7 +63,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
 
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="flex bg-background p-1 rounded-lg border border-line">
-                        {(['hour', 'day', 'week', 'month', 'all'] as Interval[]).map((int) => (
+                        {INTERVALS.map((int) => (
                             <button
                                 key={int}
                                 onClick={() => setInterval(int)}
@@ -178,8 +79,8 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
 
                     <div className="flex gap-2 ml-2">
                         <button
-                            onClick={() => setShowSingle(!showSingle)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showSingle
+                            onClick={() => toggle('single')}
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${visible.single
                                 ? 'border-line bg-background text-foreground/70'
                                 : 'border-transparent text-foreground/30'
                                 }`}
@@ -187,18 +88,18 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                             Single
                         </button>
                         <button
-                            onClick={() => setShowAO5(!showAO5)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO5
-                                ? 'border-accent/20 bg-accent/8 text-accent'
+                            onClick={() => toggle('ao5')}
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${visible.ao5
+                                ? 'border-line bg-foreground text-background'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >
                             AO5
                         </button>
                         <button
-                            onClick={() => setShowAO12(!showAO12)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${showAO12
-                                ? 'border-accent-warm/25 bg-accent-warm/8 text-accent-warm'
+                            onClick={() => toggle('ao12')}
+                            className={`px-3 py-1.5 rounded-lg border border-dashed text-xs font-medium transition-all ${visible.ao12
+                                ? 'border-foreground/30 bg-background text-foreground/70'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >
@@ -209,7 +110,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
             </div>
 
             <div className="h-75 w-full">
-                <Line data={chartData} options={options} />
+                <Line data={chartData} options={CHART_OPTIONS} />
             </div>
         </div>
     );
