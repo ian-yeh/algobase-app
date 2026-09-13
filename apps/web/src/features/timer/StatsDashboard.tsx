@@ -13,6 +13,20 @@ interface StatsDashboardProps {
     solves: Doc<'solves'>[];
 }
 
+const StatCard = ({ label, value }: { label: string; value: string }) => (
+    <div className="bg-surface border border-line rounded-2xl p-6 sm:p-7 transition-colors hover:border-foreground/15">
+        <span className="text-foreground/45 text-[11px] font-medium tracking-[0.12em] uppercase">
+            {label}
+        </span>
+        <div className="mt-3 flex items-baseline gap-1">
+            <span className="text-5xl font-serif font-medium tracking-tight tabular-nums">
+                {value}
+            </span>
+            <span className="text-foreground/30 text-lg font-serif">s</span>
+        </div>
+    </div>
+);
+
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
     if (!stats) return null;
 
@@ -23,20 +37,6 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
         const m = Math.floor((ms % 1000) / 10);
         return `${s}.${m.toString().padStart(2, '0')}`;
     };
-
-    const StatCard = ({ label, value }: { label: string; value: string }) => (
-        <div className="bg-surface border border-line rounded-2xl p-6 sm:p-7 transition-colors hover:border-foreground/15">
-            <span className="text-foreground/45 text-[11px] font-medium tracking-[0.12em] uppercase">
-                {label}
-            </span>
-            <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-5xl font-serif font-medium tracking-tight tabular-nums">
-                    {value}
-                </span>
-                <span className="text-foreground/30 text-lg font-serif">s</span>
-            </div>
-        </div>
-    );
 
     return (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-12 space-y-8 sm:space-y-10">
