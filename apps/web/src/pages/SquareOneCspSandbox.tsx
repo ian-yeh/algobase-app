@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import SquareOne from "@/components/square-one";
+import SquareOne from "@/features/square-one";
 
 const SquareOneCspSandbox = () => (
     <div className="h-full overflow-y-auto">

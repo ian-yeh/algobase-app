@@ -1,5 +1,6 @@
 import React from 'react';
 import SolveChart from './SolveChart';
+import type { Doc } from '@convex/_generated/dataModel';
 
 interface StatsDashboardProps {
     stats: {
@@ -9,7 +10,7 @@ interface StatsDashboardProps {
         best_time: number;
         total_solves: number;
     } | null;
-    solves: any[];
+    solves: Doc<'solves'>[];
 }
 
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {

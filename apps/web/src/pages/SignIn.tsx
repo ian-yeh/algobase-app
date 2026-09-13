@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type SyntheticEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
@@ -18,7 +18,7 @@ const SignIn = () => {
   const signUpMutation = useMutation(api.auth.signUp)
   const signInMutation = useMutation(api.auth.signIn)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
     setLoading(true)
