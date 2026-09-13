@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import type { Solve } from './SolveHistory';
-import { formatTime } from './timer.utils';
+import { formatTime } from '@/lib/stats';
 
 interface SolveDetailModalProps {
     solve: Solve | null;

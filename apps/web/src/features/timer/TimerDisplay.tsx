@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { formatTime } from './timer.utils';
+import { formatTime } from '@/lib/stats';
 
 interface TimerDisplayProps {
     onSolveComplete: (time: number) => void;

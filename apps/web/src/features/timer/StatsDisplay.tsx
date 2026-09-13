@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatSecondsTime } from './timer.utils';
+import { formatSecondsTime } from '@/lib/stats';
 
 interface StatsDisplayProps {
     stats: {

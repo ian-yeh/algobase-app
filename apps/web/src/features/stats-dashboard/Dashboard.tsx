@@ -2,7 +2,7 @@ import React from 'react';
 import SolveChart from './SolveChart';
 import StatCard from './StatCard';
 import type { Doc } from '@convex/_generated/dataModel';
-import { formatSecondsTime } from '@/features/timer/timer.utils';
+import { formatSecondsTime } from '@/lib/stats';
 
 interface StatsDashboardProps {
     stats: {

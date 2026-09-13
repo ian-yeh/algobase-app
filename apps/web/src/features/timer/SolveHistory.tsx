@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
 import ImportModal from './ImportModal';
-import { formatTime } from './timer.utils';
+import { formatTime } from '@/lib/stats';
 
 export interface Solve {
     id: string;
