@@ -73,9 +73,9 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                                 <button
                                     type="button"
                                     onClick={() => onSelectSolve(solve)}
-                                    className="w-full text-left px-6 py-4 hover:bg-foreground/5 transition-colors group flex items-start gap-3"
+                                    className="w-full text-left px-6 py-5 hover:bg-foreground/5 transition-colors group flex items-start gap-4"
                                 >
-                                    <span className="text-xs font-bold text-foreground/30 tabular-nums w-6 pt-2 shrink-0">
+                                    <span className="text-xs font-bold text-foreground/30 tabular-nums w-6 pt-1.5 shrink-0">
                                         {solves.length - i}
                                     </span>
                                     <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                                                 ✕
                                             </span>
                                         </div>
-                                        <span className="text-xs text-foreground/40 leading-snug block wrap-break-word mt-1">
+                                        <span className="text-xs text-foreground/40 leading-relaxed block wrap-break-word mt-1.5">
                                             {solve.scramble}
                                         </span>
                                     </div>
