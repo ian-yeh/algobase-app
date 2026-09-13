@@ -29,6 +29,8 @@ export type Series = 'single' | 'ao5' | 'ao12';
 
 export const INTERVALS: Interval[] = ['hour', 'day', 'week', 'month', 'all'];
 
+const MONO_FONT = "'SF Mono', ui-monospace, monospace";
+
 export const SERIES_STYLE: Record<Series, {
     label: string;
     borderColor: string;
@@ -40,34 +42,34 @@ export const SERIES_STYLE: Record<Series, {
 }> = {
     single: {
         label: 'Single',
-        borderColor: 'rgba(26, 26, 26, 0.18)',
-        backgroundColor: 'rgba(26, 26, 26, 0.05)',
-        borderWidth: 1.5,
-        pointRadius: 2,
-        tension: 0.3,
+        borderColor: 'rgba(26, 26, 26, 0.2)',
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.25,
     },
     ao5: {
         label: 'AO5',
-        borderColor: 'rgba(26, 26, 26, 0.85)',
-        backgroundColor: 'rgba(26, 26, 26, 0.06)',
-        borderWidth: 2,
+        borderColor: '#9333ea',
+        backgroundColor: 'transparent',
+        borderWidth: 1.25,
         pointRadius: 0,
-        tension: 0.4,
+        tension: 0.3,
     },
     ao12: {
         label: 'AO12',
-        borderColor: 'rgba(26, 26, 26, 0.4)',
+        borderColor: '#c2761a',
         backgroundColor: 'transparent',
-        borderWidth: 2,
-        borderDash: [4, 3],
+        borderWidth: 1.25,
         pointRadius: 0,
-        tension: 0.4,
+        tension: 0.3,
     },
 };
 
 export const CHART_OPTIONS: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
     plugins: {
         legend: { display: false },
         tooltip: {
@@ -75,19 +77,19 @@ export const CHART_OPTIONS: ChartOptions<'line'> = {
             intersect: false,
             backgroundColor: '#fcfcf9',
             titleColor: '#1a1a1a',
-            titleFont: { family: "'Newsreader', serif", size: 13, weight: 'normal' },
+            titleFont: { family: MONO_FONT, size: 11, weight: 'normal' },
             bodyColor: 'rgba(26, 26, 26, 0.65)',
-            bodyFont: { size: 12 },
+            bodyFont: { family: MONO_FONT, size: 11 },
             borderColor: '#e7e2d5',
             borderWidth: 1,
-            cornerRadius: 10,
-            padding: { x: 16, y: 12 },
-            boxPadding: 6,
-            boxWidth: 8,
-            boxHeight: 8,
+            cornerRadius: 4,
+            padding: { x: 12, y: 8 },
+            boxPadding: 4,
+            boxWidth: 6,
+            boxHeight: 6,
             usePointStyle: true,
-            bodySpacing: 6,
-            titleMarginBottom: 8,
+            bodySpacing: 4,
+            titleMarginBottom: 6,
             displayColors: true,
             callbacks: {
                 label: (context: TooltipItem<'line'>) => `${context.dataset.label}: ${formatSecondsTime(context.parsed.y as number)}`
@@ -99,15 +101,21 @@ export const CHART_OPTIONS: ChartOptions<'line'> = {
             grid: { display: false },
             ticks: {
                 color: 'rgba(26, 26, 26, 0.35)',
-                font: { size: 10 },
+                font: { family: MONO_FONT, size: 9 },
                 maxRotation: 0,
-                autoSkip: false,
+                autoSkip: true,
+                maxTicksLimit: 10,
             }
         },
         y: {
             border: { display: false },
             grid: { color: '#eeeade' },
-            ticks: { color: 'rgba(26, 26, 26, 0.35)', font: { size: 10 }, padding: 8, callback: (value: number | string) => formatSecondsTime(Number(value)) }
+            ticks: {
+                color: 'rgba(26, 26, 26, 0.35)',
+                font: { family: MONO_FONT, size: 9 },
+                padding: 8,
+                callback: (value: number | string) => formatSecondsTime(Number(value)),
+            }
         }
     }
 };

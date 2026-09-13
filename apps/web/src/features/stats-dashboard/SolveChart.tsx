@@ -11,6 +11,7 @@ interface SolveChartProps {
 const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     const [interval, setInterval] = useState<Interval>('all');
     const [visible, setVisible] = useState<Record<Series, boolean>>({ single: true, ao5: true, ao12: true });
+    const [scrollMode, setScrollMode] = useState(false);
     const toggle = (series: Series) => setVisible(v => ({ ...v, [series]: !v[series] }));
 
     const filteredSolves = useMemo(() => {
@@ -28,14 +29,12 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
     }, [solves, interval]);
 
     const chartData = useMemo(() => {
-        const allLabels = filteredSolves.map(s => {
+        const labels = filteredSolves.map(s => {
             const date = new Date(s._creationTime);
             return interval === 'hour' || interval === 'day'
                 ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         });
-        // only label a point when its date/time bucket changes
-        const labels = allLabels.map((l, i) => (i > 0 && l === allLabels[i - 1] ? '' : l));
 
         const times = filteredSolves.map(s => s.time);
         const ao5Series = calculateAverageSeries([...times].reverse(), 5).reverse();
@@ -51,13 +50,13 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
 
     return (
         <div className="bg-surface rounded-2xl border border-line p-5 sm:p-7">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
-                    <h3 className="text-xl font-serif font-medium tracking-tight text-foreground">
+                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/45">
                         Solve Insights
                     </h3>
-                    <p className="text-foreground/60 text-xs mt-1">
-                        Analyze your progress over time
+                    <p className="text-foreground/70 text-sm mt-1 font-mono tabular-nums">
+                        {filteredSolves.length} solve{filteredSolves.length === 1 ? '' : 's'}
                     </p>
                 </div>
 
@@ -67,7 +66,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                             <button
                                 key={int}
                                 onClick={() => setInterval(int)}
-                                className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-all ${interval === int
+                                className={`px-3 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-md transition-all ${interval === int
                                     ? 'bg-foreground text-background shadow-sm'
                                     : 'text-foreground/40 hover:text-foreground'
                                     }`}
@@ -77,10 +76,21 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         ))}
                     </div>
 
+                    <button
+                        onClick={() => setScrollMode(s => !s)}
+                        className={`px-3 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-md border transition-all ${scrollMode
+                            ? 'border-foreground/30 bg-background text-foreground/70'
+                            : 'border-line text-foreground/40 hover:text-foreground'
+                            }`}
+                        title="Toggle between fitting all points and scrolling through detail"
+                    >
+                        {scrollMode ? 'Scroll' : 'Fit'}
+                    </button>
+
                     <div className="flex gap-2 ml-2">
                         <button
                             onClick={() => toggle('single')}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${visible.single
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${visible.single
                                 ? 'border-line bg-background text-foreground/70'
                                 : 'border-transparent text-foreground/30'
                                 }`}
@@ -89,8 +99,8 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         </button>
                         <button
                             onClick={() => toggle('ao5')}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${visible.ao5
-                                ? 'border-line bg-foreground text-background'
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${visible.ao5
+                                ? 'border-[#9333ea]/30 bg-background text-[#9333ea]'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >
@@ -98,8 +108,8 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                         </button>
                         <button
                             onClick={() => toggle('ao12')}
-                            className={`px-3 py-1.5 rounded-lg border border-dashed text-xs font-medium transition-all ${visible.ao12
-                                ? 'border-foreground/30 bg-background text-foreground/70'
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${visible.ao12
+                                ? 'border-[#c2761a]/30 bg-background text-[#c2761a]'
                                 : 'border-transparent text-foreground/30'
                                 }`}
                         >
@@ -109,8 +119,13 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                 </div>
             </div>
 
-            <div className="h-75 w-full">
-                <Line data={chartData} options={CHART_OPTIONS} />
+            <div className="h-64 w-full overflow-x-auto">
+                <div
+                    className="h-full"
+                    style={scrollMode ? { width: Math.max(filteredSolves.length * 14, 100) } : { width: '100%' }}
+                >
+                    <Line data={chartData} options={CHART_OPTIONS} />
+                </div>
             </div>
         </div>
     );
