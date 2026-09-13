@@ -56,7 +56,7 @@ const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onD
                         <div className="text-[10px] uppercase font-bold tracking-widest text-foreground/40 mb-1.5">
                             Scramble
                         </div>
-                        <div className="text-sm leading-relaxed text-foreground/80 break-words">
+                        <div className="text-sm leading-relaxed text-foreground/80 wrap-break-word">
                             {solve.scramble}
                         </div>
                     </div>

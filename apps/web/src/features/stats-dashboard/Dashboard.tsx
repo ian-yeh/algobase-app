@@ -1,7 +1,8 @@
 import React from 'react';
 import SolveChart from './SolveChart';
+import StatCard from './StatCard';
 import type { Doc } from '@convex/_generated/dataModel';
-import { formatSecondsTime } from './timer.utils';
+import { formatSecondsTime } from '@/features/timer/timer.utils';
 
 interface StatsDashboardProps {
     stats: {
@@ -13,20 +14,6 @@ interface StatsDashboardProps {
     } | null;
     solves: Doc<'solves'>[];
 }
-
-const StatCard = ({ label: statLabel, value: statValue }: { label: string; value: string }) => (
-    <div className="bg-surface border border-line rounded-2xl p-6 sm:p-7 transition-colors hover:border-foreground/15">
-        <span className="text-foreground/45 text-[11px] font-medium tracking-[0.12em] uppercase">
-            {statLabel}
-        </span>
-        <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-5xl font-serif font-medium tracking-tight tabular-nums">
-                {statValue}
-            </span>
-            <span className="text-foreground/30 text-lg font-serif">s</span>
-        </div>
-    </div>
-);
 
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
     if (!stats) return null;

@@ -103,7 +103,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                                                 ✕
                                             </span>
                                         </div>
-                                        <span className="text-xs text-foreground/40 leading-snug block break-words mt-1">
+                                        <span className="text-xs text-foreground/40 leading-snug block wrap-break-word mt-1">
                                             {solve.scramble}
                                         </span>
                                     </div>

@@ -9,9 +9,11 @@ import {
     Tooltip,
     Legend,
     Filler,
+    type TooltipItem,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { calculateAverageSeries } from '@/lib/stats';
+import type { Doc } from '@convex/_generated/dataModel';
 
 ChartJS.register(
     CategoryScale,
@@ -25,7 +27,7 @@ ChartJS.register(
 );
 
 interface SolveChartProps {
-    solves: any[];
+    solves: Doc<'solves'>[];
 }
 
 type Interval = 'hour' | 'day' | 'week' | 'month' | 'all';
@@ -124,7 +126,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                 padding: 12,
                 displayColors: true,
                 callbacks: {
-                    label: (context: any) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)}s`
+                    label: (context: TooltipItem<'line'>) => `${context.dataset.label}: ${(context.parsed.y as number).toFixed(2)}s`
                 }
             },
         },
@@ -141,7 +143,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
             y: {
                 border: { display: false },
                 grid: { color: '#eeeade' },
-                ticks: { color: 'rgba(26, 26, 26, 0.35)', font: { size: 10 }, padding: 8, callback: (value: any) => `${value}s` }
+                ticks: { color: 'rgba(26, 26, 26, 0.35)', font: { size: 10 }, padding: 8, callback: (value: number | string) => `${value}s` }
             }
         }
     };
@@ -206,7 +208,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                 </div>
             </div>
 
-            <div className="h-[300px] w-full">
+            <div className="h-75 w-full">
                 <Line data={chartData} options={options} />
             </div>
         </div>
