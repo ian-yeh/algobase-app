@@ -1,6 +1,4 @@
-// Raw data only - no puzzle-specific types here. Consumers (e.g.
-// @algobase/square-one) own the shapes/interfaces for their own domain and
-// type this JSON on the way in.
+// Raw data only - no puzzle-specific types here
 import presetsJson from "./presets.json";
 import cspCasesJson from "./csp-cases.json";
 
