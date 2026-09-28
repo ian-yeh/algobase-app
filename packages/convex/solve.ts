@@ -14,7 +14,7 @@ export const getSolves = query({
 
     return await ctx.db
       .query("solves")
-      .filter((q) => q.eq(q.field("userId"), decoded.userId))
+      .withIndex("by_userId", (q) => q.eq("userId", decoded.userId))
       .collect();
   },
 });
@@ -76,7 +76,7 @@ export const getStats = query({
 
     const solves = await ctx.db
       .query("solves")
-      .filter((q) => q.eq(q.field("userId"), decoded.userId))
+      .withIndex("by_userId", (q) => q.eq("userId", decoded.userId))
       .collect();
 
     const times = solves.map((s) => s.time).filter((t) => !isNaN(t));
