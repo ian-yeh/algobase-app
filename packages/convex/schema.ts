@@ -30,6 +30,17 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"]),
 
+  // Running bests per user, maintained by solve mutations so reads never scan all solves.
+  userStats: defineTable({
+    userId: v.string(),
+    best_time: v.number(), // 0 = none yet
+    best_ao5: v.number(),
+    best_ao12: v.number(),
+    best_ao100: v.number(),
+    total_solves: v.number(),
+  })
+    .index("by_userId", ["userId"]),
+
   cspCaseProgress: defineTable({
     userId: v.string(),
     caseId: v.string(), // CspCase.id, e.g. "kite-kite"
