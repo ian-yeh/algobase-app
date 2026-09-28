@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, Undo2 } from "lucide-react";
-import { generateScramble, invertAlg, opAlgForLetter, traceOldPochmann, useCubeScene, type PieceType } from "@algobase/three-by-three";
+import { ChevronDown, Eraser, Undo2 } from "lucide-react";
+import { generateScramble, invertAlg, opAlgForLetter, traceOldPochmann, useCubeScene, type PieceFocus, type PieceType } from "@algobase/three-by-three";
 
 const noop = () => {};
 
@@ -68,6 +68,15 @@ const TraceField: React.FC<{
   </form>
 );
 
+const FOCUS_OPTIONS: { value: PieceFocus; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "edge", label: "Edges" },
+  { value: "corner", label: "Corners" },
+];
+
+const iconButtonClass =
+  "rounded-md p-1 text-foreground/45 hover:bg-foreground/10 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors";
+
 const Section: React.FC<{ title: string; action?: React.ReactNode; children: React.ReactNode }> = ({
   title,
   action,
@@ -92,6 +101,7 @@ const ThreeBldTrace = () => {
     onQueueEmpty: noop,
   });
   const [lettersOn, setLettersOn] = useState(false);
+  const [focus, setFocus] = useState<PieceFocus>("all");
   const [panelOpen, setPanelOpen] = useState(true);
   const [edgeInput, setEdgeInput] = useState("");
   const [cornerInput, setCornerInput] = useState("");
@@ -120,6 +130,10 @@ const ThreeBldTrace = () => {
   const reset = () => {
     queueRef.current?.resetState();
     setExecuted([]);
+  };
+  const changeFocus = (next: PieceFocus) => {
+    setFocus(next);
+    queueRef.current?.setFocus(next);
   };
   const toggleLetters = () => {
     const next = !lettersOn;
@@ -160,15 +174,29 @@ const ThreeBldTrace = () => {
             <Section
               title="Trace"
               action={
-                <button
-                  onClick={undo}
-                  disabled={executed.length === 0}
-                  aria-label="Undo last execution"
-                  title="Undo last execution"
-                  className="rounded-md p-1 text-foreground/45 hover:bg-foreground/10 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                >
-                  <Undo2 size={15} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      setEdgeInput("");
+                      setCornerInput("");
+                    }}
+                    disabled={!edgeInput && !cornerInput}
+                    aria-label="Clear traces"
+                    title="Clear traces"
+                    className={iconButtonClass}
+                  >
+                    <Eraser size={15} />
+                  </button>
+                  <button
+                    onClick={undo}
+                    disabled={executed.length === 0}
+                    aria-label="Undo last execution"
+                    title="Undo last execution"
+                    className={iconButtonClass}
+                  >
+                    <Undo2 size={15} />
+                  </button>
+                </div>
               }
             >
               <div className="space-y-4">
@@ -205,6 +233,26 @@ const ThreeBldTrace = () => {
               </div>
             </Section>
             <Section title="Display">
+              <div className="flex items-center justify-between text-sm text-foreground/80 mb-4">
+                Pieces
+                <div role="radiogroup" className="flex rounded-lg border border-line bg-background p-0.5">
+                  {FOCUS_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      role="radio"
+                      aria-checked={focus === option.value}
+                      onClick={() => changeFocus(option.value)}
+                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                        focus === option.value
+                          ? "bg-foreground text-background"
+                          : "text-foreground/55 hover:text-foreground"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="flex items-center justify-between text-sm text-foreground/80">
                 Sticker letters
                 <button

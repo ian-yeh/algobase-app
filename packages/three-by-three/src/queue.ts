@@ -1,5 +1,5 @@
 import { Cube, parseAlg } from "./cube";
-import { CubeRenderer } from "./renderer";
+import { CubeRenderer, type PieceFocus } from "./renderer";
 
 // The 3x3 state machine: owns the canonical Cube state and decides every transition. Moves are queued so rapid input/sequences/scrambles can't glitch or desync; each move plays out on the (purely visual) renderer before being committed to state.
 
@@ -66,6 +66,10 @@ export class CubeQueue {
 
   public setLabelsVisible(visible: boolean): void {
     this.renderer.setLabelsVisible(visible);
+  }
+
+  public setFocus(focus: PieceFocus): void {
+    this.renderer.setFocus(focus);
   }
 
   private async processNext(): Promise<void> {

@@ -1,7 +1,13 @@
 import * as THREE from "three";
 import { Cube, FACELETS, FACES, parseMove, type Vec3 } from "./cube";
-import { FACE_COLORS, DARK, CUBE_SCALE, CUBIE_SIZE, STICKER_SIZE, LABEL_SIZE } from "./constants";
-import { FACELET_LETTERS } from "./old-pochmann";
+import { FACE_COLORS, DARK, GREYED_OUT, CUBE_SCALE, CUBIE_SIZE, STICKER_SIZE, LABEL_SIZE } from "./constants";
+import { FACELET_LETTERS, type PieceType } from "./old-pochmann";
+
+export type PieceFocus = PieceType | "all";
+
+// Piece type of a facelet index (or of a sticker id - stickers never change piece type).
+const pieceTypeOf = (index: number): PieceType | "center" =>
+  index % 9 === 4 ? "center" : (index % 9) % 2 === 0 ? "corner" : "edge";
 
 const letterTextureCache = new Map<string, THREE.CanvasTexture>();
 
@@ -36,6 +42,10 @@ export class CubeRenderer {
   private bodies: THREE.Mesh[] = [];
   private stickers: THREE.Mesh[];
   private labels: THREE.Mesh[];
+  private stickerMaterials: THREE.Material[];
+  private greyMaterial = new THREE.MeshStandardMaterial({ color: GREYED_OUT, roughness: 0.3, flatShading: true });
+  private labelsVisible = false;
+  private focus: PieceFocus = "all";
 
   constructor() {
     this.rootGroup = new THREE.Group();
@@ -66,6 +76,7 @@ export class CubeRenderer {
       this.staticGroup.add(sticker);
       return sticker;
     });
+    this.stickerMaterials = this.stickers.map((sticker) => sticker.material as THREE.Material);
 
     // Letters mark fixed locations on the cube's shell (Speffz), not the stickers passing through
     // them, so they sit a hair further out than the stickers and never move on turns or scrambles.
@@ -79,6 +90,7 @@ export class CubeRenderer {
       label.position.set(...facelet.pos).addScaledVector(n, CUBIE_SIZE / 2 + 0.01);
       label.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
       label.visible = false;
+      label.userData.type = pieceTypeOf(id);
       this.staticGroup.add(label);
       return [label];
     });
@@ -87,7 +99,22 @@ export class CubeRenderer {
   }
 
   public setLabelsVisible(visible: boolean): void {
-    this.labels.forEach((label) => (label.visible = visible));
+    this.labelsVisible = visible;
+    this.applyFocus();
+  }
+
+  // Greys out the other piece type's stickers and hides its letters. Centers always keep their color.
+  public setFocus(focus: PieceFocus): void {
+    this.focus = focus;
+    this.applyFocus();
+  }
+
+  private applyFocus(): void {
+    const inFocus = (type: PieceType | "center") => this.focus === "all" || type === "center" || type === this.focus;
+    this.labels.forEach((label) => (label.visible = this.labelsVisible && inFocus(label.userData.type)));
+    this.stickers.forEach((sticker, id) => {
+      sticker.material = inFocus(pieceTypeOf(id)) ? this.stickerMaterials[id] : this.greyMaterial;
+    });
   }
 
   // Snaps every mesh to `state`, instantly - no animation.

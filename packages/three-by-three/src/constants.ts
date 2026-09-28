@@ -10,6 +10,8 @@ export const FACE_COLORS: Record<Face, string> = {
   B: "#2456c9",
 };
 export const DARK = "#161616";
+// Stickers of the piece type not being trained - dark enough to never be mistaken for white.
+export const GREYED_OUT = "#5c5c5c";
 
 // Whole cube spans 3 units; scaled down so it frames like the Square-1 under the same camera.
 export const CUBE_SCALE = 0.7;
