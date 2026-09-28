@@ -1,13 +1,11 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { generateScramble, opAlgForLetter, traceOldPochmann, useCubeScene, type PieceType } from "@algobase/three-by-three";
+import { ChevronDown, Undo2 } from "lucide-react";
+import { generateScramble, invertAlg, opAlgForLetter, traceOldPochmann, useCubeScene, type PieceType } from "@algobase/three-by-three";
 
 const noop = () => {};
 
-const TURN_DURATION_MS = 75;
-
-const buttonClass =
-  "rounded border border-foreground/20 text-foreground/70 px-3 py-1.5 text-sm hover:bg-foreground/10 transition-colors";
+const TURN_DURATION_MS = 30;
 
 const normalize = (s: string) => s.replace(/[^a-zA-Z]/g, "").toUpperCase();
 
@@ -20,13 +18,69 @@ function traceStatus(input: string, correct: string[]): TraceStatus {
 }
 
 const inputClass = (status: TraceStatus) =>
-  `rounded border bg-transparent px-3 py-1.5 text-sm outline-none w-40 transition-colors ${
+  `w-full rounded-lg border bg-background px-3 py-2.5 font-mono text-base tracking-widest uppercase outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-foreground/30 ${
     status === "correct"
       ? "border-green-500 text-green-600"
       : status === "incorrect"
         ? "border-red-500 text-red-600"
-        : "border-foreground/20 text-foreground/70"
+        : "border-line text-foreground focus:border-foreground/30"
   }`;
+
+const STATUS_LABEL: Record<TraceStatus, string> = { empty: "", correct: "Correct", incorrect: "Incorrect" };
+
+const TraceField: React.FC<{
+  label: string;
+  value: string;
+  status: TraceStatus;
+  onChange: (value: string) => void;
+  onExecute: () => void;
+}> = ({ label, value, status, onChange, onExecute }) => (
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      onExecute();
+    }}
+  >
+    <div className="flex items-baseline justify-between mb-1.5">
+      <label htmlFor={label} className="text-sm font-medium text-foreground/80">{label}</label>
+      <span className={`text-xs ${status === "correct" ? "text-green-600" : "text-red-600"}`}>
+        {STATUS_LABEL[status]}
+      </span>
+    </div>
+    <div className="flex gap-2">
+      <input
+        id={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Type letters..."
+        spellCheck={false}
+        autoComplete="off"
+        className={inputClass(status)}
+      />
+      <button
+        type="submit"
+        disabled={!normalize(value)}
+        className="shrink-0 rounded-lg border border-accent/30 px-3 text-sm font-medium text-accent hover:bg-accent/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+      >
+        Execute
+      </button>
+    </div>
+  </form>
+);
+
+const Section: React.FC<{ title: string; action?: React.ReactNode; children: React.ReactNode }> = ({
+  title,
+  action,
+  children,
+}) => (
+  <section className="rounded-xl border border-line bg-background/70 p-4">
+    <div className="flex items-center justify-between mb-3">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/40">{title}</h2>
+      {action}
+    </div>
+    {children}
+  </section>
+);
 
 const ThreeBldTrace = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -38,25 +92,35 @@ const ThreeBldTrace = () => {
     onQueueEmpty: noop,
   });
   const [lettersOn, setLettersOn] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [edgeInput, setEdgeInput] = useState("");
   const [cornerInput, setCornerInput] = useState("");
-  const prevEdgeNorm = useRef("");
-  const prevCornerNorm = useRef("");
+  const [executed, setExecuted] = useState<string[]>([]);
 
-  // Executes setup + swap + undo-setup for each letter newly appended to the input, live on the
-  // cube - so typing a memo out plays it, letter by letter, like actually solving.
-  const runNewLetters = (norm: string, prevRef: React.RefObject<string>, type: PieceType) => {
-    if (norm.startsWith(prevRef.current)) {
-      for (const letter of norm.slice(prevRef.current.length)) {
-        const alg = opAlgForLetter(letter, type);
-        if (alg) queueRef.current?.enqueueSequence(alg, TURN_DURATION_MS);
-      }
-    }
-    prevRef.current = norm;
+  // Executes setup + swap + undo-setup for each letter on the cube, like actually solving the memo.
+  const runLetters = (input: string, type: PieceType) => {
+    const sequence = [...normalize(input)].map((letter) => opAlgForLetter(letter, type) ?? "").join(" ").trim();
+    if (!sequence) return;
+    queueRef.current?.enqueueSequence(sequence, TURN_DURATION_MS);
+    setExecuted((stack) => [...stack, sequence]);
   };
 
-  const scramble = () => queueRef.current?.enqueueSequence(generateScramble(), TURN_DURATION_MS);
-  const reset = () => queueRef.current?.resetState();
+  // Undo plays the inverse of the most recent execution, so executions must be undone newest-first.
+  const undo = () => {
+    const last = executed.at(-1);
+    if (!last) return;
+    queueRef.current?.enqueueSequence(invertAlg(last), TURN_DURATION_MS);
+    setExecuted((stack) => stack.slice(0, -1));
+  };
+
+  const scramble = () => {
+    queueRef.current?.enqueueSequence(generateScramble(), TURN_DURATION_MS);
+    setExecuted([]);
+  };
+  const reset = () => {
+    queueRef.current?.resetState();
+    setExecuted([]);
+  };
   const toggleLetters = () => {
     const next = !lettersOn;
     setLettersOn(next);
@@ -76,51 +140,92 @@ const ThreeBldTrace = () => {
         &larr; Back to Training
       </Link>
       <div ref={containerRef} className="h-full w-full" />
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3">
-        <input
-          value={edgeInput}
-          onChange={(e) => {
-            setEdgeInput(e.target.value);
-            runNewLetters(normalize(e.target.value), prevEdgeNorm, "edge");
-          }}
-          placeholder="Edge trace"
-          className={inputClass(edgeStatus)}
-        />
-        <input
-          value={cornerInput}
-          onChange={(e) => {
-            setCornerInput(e.target.value);
-            runNewLetters(normalize(e.target.value), prevCornerNorm, "corner");
-          }}
-          placeholder="Corner trace"
-          className={inputClass(cornerStatus)}
-        />
-      </div>
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
-        <button onClick={reset} className={buttonClass}>
-          Reset
+      <aside className="absolute top-4 right-4 w-[22rem] max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] flex flex-col rounded-2xl border border-line bg-surface/90 backdrop-blur-md shadow-xl shadow-foreground/5">
+        <button
+          onClick={() => setPanelOpen((o) => !o)}
+          aria-expanded={panelOpen}
+          className="flex items-center justify-between px-5 py-4 text-left"
+        >
+          <div>
+            <div className="font-semibold tracking-tight">3BLD Tracing</div>
+            <div className="text-xs text-foreground/45">Old Pochmann, Speffz lettering</div>
+          </div>
+          <ChevronDown
+            size={18}
+            className={`text-foreground/45 transition-transform ${panelOpen ? "rotate-180" : ""}`}
+          />
         </button>
-        <button onClick={scramble} className={buttonClass}>
-          Scramble
-        </button>
-        <label className="flex items-center gap-2 text-sm text-foreground/70">
-          Letters
-          <button
-            role="switch"
-            aria-checked={lettersOn}
-            onClick={toggleLetters}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-              lettersOn ? "bg-green-500" : "bg-foreground/20"
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 rounded-full bg-white transition-transform ${
-                lettersOn ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </label>
-      </div>
+        {panelOpen && (
+          <div className="flex flex-col gap-3 px-3 pb-3 overflow-y-auto">
+            <Section
+              title="Trace"
+              action={
+                <button
+                  onClick={undo}
+                  disabled={executed.length === 0}
+                  aria-label="Undo last execution"
+                  title="Undo last execution"
+                  className="rounded-md p-1 text-foreground/45 hover:bg-foreground/10 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                >
+                  <Undo2 size={15} />
+                </button>
+              }
+            >
+              <div className="space-y-4">
+                <TraceField
+                  label="Edges"
+                  value={edgeInput}
+                  status={edgeStatus}
+                  onChange={setEdgeInput}
+                  onExecute={() => runLetters(edgeInput, "edge")}
+                />
+                <TraceField
+                  label="Corners"
+                  value={cornerInput}
+                  status={cornerStatus}
+                  onChange={setCornerInput}
+                  onExecute={() => runLetters(cornerInput, "corner")}
+                />
+              </div>
+            </Section>
+            <Section title="Cube">
+              <div className="flex gap-2">
+                <button
+                  onClick={scramble}
+                  className="flex-1 rounded-lg bg-foreground text-background py-2 text-sm font-medium hover:opacity-85 transition-opacity"
+                >
+                  Scramble
+                </button>
+                <button
+                  onClick={reset}
+                  className="flex-1 rounded-lg border border-line bg-background py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:border-foreground/25 transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            </Section>
+            <Section title="Display">
+              <label className="flex items-center justify-between text-sm text-foreground/80">
+                Sticker letters
+                <button
+                  role="switch"
+                  aria-checked={lettersOn}
+                  onClick={toggleLetters}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    lettersOn ? "bg-accent" : "bg-foreground/20"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                      lettersOn ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </label>
+            </Section>
+          </div>
+        )}
+      </aside>
     </div>
   );
 };

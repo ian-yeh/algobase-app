@@ -4,8 +4,8 @@ import { Cube, FACELETS, FACES, invertAlg, type Face } from "./cube";
 export const SPEFFZ = "ABCDEFGHIJKLMNOPQRSTUVWX";
 const SPEFFZ_FACES: Face[] = ["U", "L", "F", "R", "B", "D"];
 // Cosmetic-only face order for the on-cube letter labels: A-D/U-X stay on U/D, the middle three
-// groups run F, R, B, L instead of L, F, R, B. Purely a display choice - the trace engine above
-// never reads this.
+// groups run F, R, B, L instead of L, F, R, B. This is the lettering the user sees and types, so the
+// public API (opAlgForLetter, traceOldPochmann) speaks it and translates to/from the engine's order.
 const DISPLAY_FACES: Face[] = ["U", "F", "R", "B", "L", "D"];
 const CORNER_CELLS = [0, 2, 8, 6];
 const EDGE_CELLS = [1, 5, 7, 3];
@@ -18,7 +18,16 @@ function faceletFor(letter: string, type: PieceType, faces: Face[]): number {
   return FACES.indexOf(faces[Math.floor(k / 4)]) * 9 + cells[k % 4];
 }
 
-// Facelet index (cube.ts) of a Speffz letter's sticker.
+// Same sticker spot, relettered from one face order to the other - a whole-face remap, so it's
+// identical for edges and corners.
+function remapLetter(letter: string, from: Face[], to: Face[]): string {
+  const k = SPEFFZ.indexOf(letter);
+  return SPEFFZ[to.indexOf(from[Math.floor(k / 4)]) * 4 + (k % 4)];
+}
+const toEngine = (letter: string) => remapLetter(letter, DISPLAY_FACES, SPEFFZ_FACES);
+const toDisplay = (letter: string) => remapLetter(letter, SPEFFZ_FACES, DISPLAY_FACES);
+
+// Facelet index (cube.ts) of a Speffz letter's sticker, in the engine's (standard Speffz) order.
 export function speffzFacelet(letter: string, type: PieceType): number {
   return faceletFor(letter, type, SPEFFZ_FACES);
 }
@@ -64,9 +73,10 @@ const CORNER_SETUPS: Record<string, string> = {
 const OP_SETUPS: Record<PieceType, Record<string, string>> = { edge: EDGE_SETUPS, corner: CORNER_SETUPS };
 
 // Full move sequence (setup, swap, undo-setup) that executes one memo letter's swap on a live cube -
-// the "practice" counterpart to speffzFacelet. null for a buffer's own letters, which have no swap.
+// the "practice" counterpart to speffzFacelet. Takes a display letter (FACELET_LETTERS). null for a
+// buffer's own letters, which have no swap.
 export function opAlgForLetter(letter: string, type: PieceType): string | null {
-  const entry = OP_SETUPS[type][letter];
+  const entry = OP_SETUPS[type][toEngine(letter)];
   if (!entry) return null;
   const [, setup, algName] = entry.match(/^(.*?)\s*\[(\w+)\]$/)!;
   return `${setup} ${OP_ALGS[algName as keyof typeof OP_ALGS]} ${invertAlg(setup)}`.trim();
@@ -134,6 +144,7 @@ function traceType(cube: Cube, type: PieceType, buffer: string): string[] {
   }
 }
 
+// Letters are display letters (FACELET_LETTERS), matching what opAlgForLetter takes.
 export interface OldPochmannMemo {
   edges: string[];
   corners: string[];
@@ -142,7 +153,7 @@ export interface OldPochmannMemo {
 }
 
 export function traceOldPochmann(cube: Cube): OldPochmannMemo {
-  const edges = traceType(cube, "edge", EDGE_BUFFER);
-  const corners = traceType(cube, "corner", CORNER_BUFFER);
+  const edges = traceType(cube, "edge", EDGE_BUFFER).map(toDisplay);
+  const corners = traceType(cube, "corner", CORNER_BUFFER).map(toDisplay);
   return { edges, corners, parity: edges.length % 2 === 1 };
 }

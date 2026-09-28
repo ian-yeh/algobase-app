@@ -73,8 +73,9 @@ export function useCubeScene(containerRef: React.RefObject<HTMLDivElement | null
     if (!container) return;
 
     const { scene, camera, webglRenderer, dispose } = createStage(container, 400, 320);
+    camera.position.multiplyScalar(1.2);
     scene.background = new THREE.Color("#ffffff");
-    scene.fog = new THREE.Fog("#ffffff", 8, 16);
+    scene.fog = new THREE.Fog("#ffffff", 9.6, 19.2);
 
     const controls = new OrbitControls(camera, webglRenderer.domElement);
     controls.enableDamping = true;
