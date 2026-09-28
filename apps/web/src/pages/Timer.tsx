@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, usePaginatedQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import type { Id } from '@convex/_generated/dataModel';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,19 +23,20 @@ const Timer = () => {
     const createSolveMutation = useMutation(api.solve.createSolve);
     const deleteSolveMutation = useMutation(api.solve.deleteSolve);
 
-    const solvesData = useQuery(api.solve.getSolves, token ? { token } : 'skip');
+    const { results: solvesData, status: solvesStatus, loadMore } = usePaginatedQuery(
+        api.solve.listSolves,
+        token ? { token } : 'skip',
+        { initialNumItems: 50 }
+    );
     const statsData = useQuery(api.solve.getStats, token ? { token } : 'skip');
 
     useEffect(() => {
-        if (solvesData) {
-            const formattedSolves = solvesData.map((s) => ({
-                id: s._id,
-                time: s.time * 1000,
-                scramble: s.scramble,
-                timestamp: s._creationTime
-            })).reverse();
-            setSolves(formattedSolves);
-        }
+        setSolves(solvesData.map((s) => ({
+            id: s._id,
+            time: s.time * 1000,
+            scramble: s.scramble,
+            timestamp: s._creationTime
+        })));
     }, [solvesData]);
 
     const handleSolveComplete = useCallback(async (timeMs: number) => {
@@ -93,7 +94,7 @@ const Timer = () => {
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
 
-    if (!solvesData || !statsData) {
+    if (solvesStatus === 'LoadingFirstPage' || !statsData) {
         return <Loading />;
     }
 
@@ -128,6 +129,8 @@ const Timer = () => {
             <aside className={`w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-foreground/5 max-h-80 lg:max-h-none lg:h-full transition-opacity duration-300 ${isTiming ? 'hidden lg:block lg:opacity-0 lg:pointer-events-none' : 'opacity-100'}`}>
                 <SolveHistory
                     solves={solves}
+                    total={statsData.total_solves}
+                    onLoadMore={() => solvesStatus === 'CanLoadMore' && loadMore(50)}
                     onSelectSolve={setSelectedSolve}
                     onDeleteSolve={handleDeleteSolve}
                 />

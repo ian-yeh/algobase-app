@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { verifyToken } from "./auth";
 
@@ -16,6 +17,26 @@ export const getSolves = query({
       .query("solves")
       .withIndex("by_userId", (q) => q.eq("userId", decoded.userId))
       .collect();
+  },
+});
+
+// Newest first, for the timer's history list.
+export const listSolves = query({
+  args: {
+    token: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    return await ctx.db
+      .query("solves")
+      .withIndex("by_userId", (q) => q.eq("userId", decoded.userId))
+      .order("desc")
+      .paginate(args.paginationOpts);
   },
 });
 
