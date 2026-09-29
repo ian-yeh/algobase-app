@@ -9,7 +9,7 @@ interface ScrambleDisplayProps {
 const ScrambleDisplay: React.FC<ScrambleDisplayProps> = ({ scramble, onNewScramble }) => {
     return (
         <div className="w-full text-center py-8">
-            <div className="text-xl md:text-2xl font-sans font-medium tracking-wide text-foreground leading-relaxed max-w-3xl mx-auto px-4">
+            <div className="text-xl md:text-2xl lg:text-[26px] font-sans font-medium tracking-wide text-foreground leading-relaxed max-w-3xl mx-auto px-4">
                 {scramble}
             </div>
             {onNewScramble && (
@@ -18,7 +18,7 @@ const ScrambleDisplay: React.FC<ScrambleDisplayProps> = ({ scramble, onNewScramb
                     onClick={onNewScramble}
                     title="New scramble"
                     aria-label="New scramble"
-                    className="mt-4 p-2 text-foreground/30 hover:text-foreground transition-colors active:scale-90"
+                    className="pointer-events-auto mt-4 p-2 text-foreground/30 hover:text-foreground transition-colors active:scale-90"
                 >
                     <RefreshCw size={16} />
                 </button>
