@@ -80,6 +80,8 @@ export function useCubeScene(containerRef: React.RefObject<HTMLDivElement | null
     const controls = new OrbitControls(camera, webglRenderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    // Ctrl/Shift+drag would otherwise pan, moving the orbit pivot off the cube's core.
+    controls.enablePan = false;
     controls.minDistance = 3;
     controls.maxDistance = 9;
     controls.autoRotate = optionsRef.current.autoRotate;

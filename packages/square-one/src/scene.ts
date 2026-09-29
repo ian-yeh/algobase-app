@@ -56,6 +56,8 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     const controls = new OrbitControls(camera, webglRenderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    // Ctrl/Shift+drag would otherwise pan, moving the orbit pivot off the puzzle's core.
+    controls.enablePan = false;
     controls.minDistance = 3;
     controls.maxDistance = 9;
     controls.autoRotate = optionsRef.current.autoRotate;
