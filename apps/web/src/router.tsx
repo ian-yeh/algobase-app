@@ -9,6 +9,8 @@ import Training from "@/pages/Training";
 import SquareOneCsp from "@/pages/SquareOneCsp";
 import SquareOneCspSandbox from "@/pages/SquareOneCspSandbox";
 import SquareOneCspRecall from "@/pages/SquareOneCspRecall";
+import ThreeBldTrace from "@/pages/ThreeBldTrace";
+import ThreeBldMemo from "@/pages/ThreeBldMemo";
 import Layout from "@/features/layout/Layout";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: '/training/square1-csp', element: <SquareOneCsp /> },
       { path: '/training/square1-csp/sandbox', element: <SquareOneCspSandbox /> },
       { path: '/training/square1-csp/recall', element: <SquareOneCspRecall /> },
+      { path: '/training/3bld', element: <ThreeBldTrace /> },
+      { path: '/training/3bld-memo', element: <ThreeBldMemo /> },
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }
