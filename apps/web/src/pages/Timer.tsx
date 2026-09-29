@@ -15,7 +15,7 @@ import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
 const Timer = () => {
     const token = useAuthStore((s) => s.token);
-    const [currentScramble, setCurrentScramble] = useState(generateScramble());
+    const [currentScramble, setCurrentScramble] = useState(generateScramble);
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
     const [selectedSolve, setSelectedSolve] = useState<Solve | null>(null);
@@ -93,6 +93,9 @@ const Timer = () => {
 
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
+    const handleLoadMore = useCallback(() => {
+        if (solvesStatus === 'CanLoadMore') loadMore(50);
+    }, [solvesStatus, loadMore]);
 
     if (solvesStatus === 'LoadingFirstPage' || !statsData) {
         return <Loading />;
@@ -130,7 +133,7 @@ const Timer = () => {
                 <SolveHistory
                     solves={solves}
                     total={statsData.total_solves}
-                    onLoadMore={() => solvesStatus === 'CanLoadMore' && loadMore(50)}
+                    onLoadMore={handleLoadMore}
                     onSelectSolve={setSelectedSolve}
                     onDeleteSolve={handleDeleteSolve}
                 />

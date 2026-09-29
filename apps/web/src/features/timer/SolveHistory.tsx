@@ -126,4 +126,4 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, total, onLoadMore, 
     );
 };
 
-export default SolveHistory;
+export default React.memo(SolveHistory);

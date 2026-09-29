@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { formatTime } from '@/lib/stats';
 
 interface TimerDisplayProps {
@@ -18,7 +18,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     const stateRef = useRef<TimerState>('IDLE');
     const startTimeRef = useRef<number>(0);
     const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const frameRef = useRef<number | null>(null);
     const disabledRef = useRef(disabled);
 
     // Sync props to refs to avoid re-running the effect when callbacks change
@@ -37,29 +37,34 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     }, []);
 
     const startTimer = useCallback(() => {
-        startTimeRef.current = Date.now();
+        startTimeRef.current = performance.now();
         updateState('RUNNING');
-        callbacks.current.onStart?.();
+        startTransition(() => callbacks.current.onStart?.());
 
-        // Ticking loop
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(() => {
-            setTime(Date.now() - startTimeRef.current);
-        }, 10);
+        const tick = () => {
+            setTime(performance.now() - startTimeRef.current);
+            frameRef.current = requestAnimationFrame(tick);
+        };
+        if (frameRef.current) cancelAnimationFrame(frameRef.current);
+        frameRef.current = requestAnimationFrame(tick);
     }, [updateState]);
 
-    const stopTimer = useCallback(() => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+    // stoppedAt is the event's timeStamp, so handler latency never counts toward the solve
+    const stopTimer = useCallback((stoppedAt: number) => {
+        if (frameRef.current) {
+            cancelAnimationFrame(frameRef.current);
+            frameRef.current = null;
         }
 
-        const finalTime = Date.now() - startTimeRef.current;
+        const finalTime = stoppedAt - startTimeRef.current;
         startTimeRef.current = 0;
         setTime(finalTime);
         updateState('IDLE');
-        callbacks.current.onStop?.();
-        callbacks.current.onSolveComplete(finalTime);
+        // Parent updates (history, stats, layout) are low priority so the final time paints first
+        startTransition(() => {
+            callbacks.current.onStop?.();
+            callbacks.current.onSolveComplete(finalTime);
+        });
     }, [updateState]);
 
     useEffect(() => {
@@ -67,7 +72,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
             // If any key is pressed while running, stop (even when disabled — safety)
             if (stateRef.current === 'RUNNING') {
                 e.preventDefault();
-                stopTimer();
+                stopTimer(e.timeStamp);
                 return;
             }
 
@@ -109,7 +114,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
             if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (frameRef.current) cancelAnimationFrame(frameRef.current);
         };
     }, [startTimer, stopTimer, updateState]);
 
@@ -117,7 +122,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
     const handleTouchStart = (e: React.TouchEvent) => {
         e.preventDefault();
         if (stateRef.current === 'RUNNING') {
-            stopTimer();
+            stopTimer(e.timeStamp);
             return;
         }
         if (disabledRef.current) return;
