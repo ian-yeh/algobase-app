@@ -161,14 +161,14 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
 
     return (
         <div
-            className="flex flex-col items-center justify-center py-12 md:py-20 select-none touch-none cursor-pointer w-full"
+            className={`absolute inset-0 2xl:pl-96 flex flex-col items-center justify-center gap-4 md:gap-5 select-none touch-none cursor-pointer ${displayState === 'RUNNING' ? 'z-20' : ''}`}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            <div className={`text-7xl sm:text-8xl md:text-9xl font-sans tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
+            <div className={`text-8xl sm:text-9xl md:text-[160px] lg:text-[224px] leading-none font-sans tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
                 {formatTime(time)}
             </div>
-            <div className="mt-8 text-foreground/40 text-sm font-medium h-6 text-center px-4">
+            <div className="text-foreground/60 text-sm font-medium h-5 text-center px-4">
                 {displayState === 'IDLE' && 'Hold to start'}
                 {displayState === 'HOLDING' && 'Wait for green...'}
                 {displayState === 'READY' && 'Release to start!'}
