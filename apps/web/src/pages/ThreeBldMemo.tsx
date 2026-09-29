@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { SPEFFZ } from "@algobase/three-by-three";
+import { PAIR_WORDS } from "@/lib/letterPairs";
 
 const buttonClass =
   "rounded border border-foreground/20 text-foreground/70 px-3 py-1.5 text-sm hover:bg-foreground/10 transition-colors disabled:opacity-30 disabled:pointer-events-none";
@@ -9,16 +10,14 @@ const primaryButtonClass =
 
 const PRESET_COUNTS = [6, 10, 14, 20];
 
-// One concrete, imageable word per Speffz letter. The hint for a pair is just its two words said
-// together - a cheap stand-in for the full person/action systems serious BLD memo uses, but enough
-// to turn "R Q" into a picture ("Robot Queen") worth remembering.
+// One imageable word per Speffz letter, said together as the hint for pairs PAIR_WORDS lacks (JX, XX).
 const LETTER_WORDS: Record<string, string> = {
   A: "Astronaut", B: "Banana", C: "Captain", D: "Dragon", E: "Elephant", F: "Falcon", G: "Guitar", H: "Hammer",
   I: "Igloo", J: "Jaguar", K: "Kangaroo", L: "Lantern", M: "Mummy", N: "Ninja", O: "Octopus", P: "Pirate",
   Q: "Queen", R: "Robot", S: "Shark", T: "Tiger", U: "Umbrella", V: "Viking", W: "Wizard", X: "Xylophone",
 };
 
-const hintFor = (pair: string[]) => pair.map((l) => LETTER_WORDS[l]).join(" ");
+const hintFor = (pair: string[]) => PAIR_WORDS[pair.join("")] ?? pair.map((l) => LETTER_WORDS[l]).join(" ");
 
 const randomLetters = (count: number): string[] =>
   Array.from({ length: count }, () => SPEFFZ[Math.floor(Math.random() * SPEFFZ.length)]);
