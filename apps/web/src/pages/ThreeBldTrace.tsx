@@ -1,52 +1,31 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Eraser, Undo2 } from "lucide-react";
-import { generateScramble, invertAlg, opAlgForLetter, traceOldPochmann, useCubeScene, type PieceFocus, type PieceType } from "@algobase/three-by-three";
+import { generateScramble, invertAlg, opAlgForLetter, useCubeScene, type PieceFocus, type PieceType } from "@algobase/three-by-three";
 
 const noop = () => {};
 
-const TURN_DURATION_MS = 30;
+// Under one frame, so each move renders in a single frame - the renderer's fastest
+const TURN_DURATION_MS = 10;
 
 const normalize = (s: string) => s.replace(/[^a-zA-Z]/g, "").toUpperCase();
 
-type TraceStatus = "empty" | "correct" | "incorrect";
-
-function traceStatus(input: string, correct: string[]): TraceStatus {
-  const norm = normalize(input);
-  if (!norm) return "empty";
-  return norm === correct.join("") ? "correct" : "incorrect";
-}
-
-const inputClass = (status: TraceStatus) =>
-  `w-full rounded-lg border bg-background px-3 py-2.5 font-mono text-base tracking-widest uppercase outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-foreground/30 ${
-    status === "correct"
-      ? "border-green-500 text-green-600"
-      : status === "incorrect"
-        ? "border-red-500 text-red-600"
-        : "border-line text-foreground focus:border-foreground/30"
-  }`;
-
-const STATUS_LABEL: Record<TraceStatus, string> = { empty: "", correct: "Correct", incorrect: "Incorrect" };
+const inputClass =
+  "w-full rounded-lg border border-line bg-background px-3 py-2.5 font-mono text-base tracking-widest uppercase text-foreground outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-foreground/30 focus:border-foreground/30";
 
 const TraceField: React.FC<{
   label: string;
   value: string;
-  status: TraceStatus;
   onChange: (value: string) => void;
   onExecute: () => void;
-}> = ({ label, value, status, onChange, onExecute }) => (
+}> = ({ label, value, onChange, onExecute }) => (
   <form
     onSubmit={(e) => {
       e.preventDefault();
       onExecute();
     }}
   >
-    <div className="flex items-baseline justify-between mb-1.5">
-      <label htmlFor={label} className="text-sm font-medium text-foreground/80">{label}</label>
-      <span className={`text-xs ${status === "correct" ? "text-green-600" : "text-red-600"}`}>
-        {STATUS_LABEL[status]}
-      </span>
-    </div>
+    <label htmlFor={label} className="block mb-1.5 text-sm font-medium text-foreground/80">{label}</label>
     <div className="flex gap-2">
       <input
         id={label}
@@ -55,7 +34,7 @@ const TraceField: React.FC<{
         placeholder="Type letters..."
         spellCheck={false}
         autoComplete="off"
-        className={inputClass(status)}
+        className={inputClass}
       />
       <button
         type="submit"
@@ -141,10 +120,6 @@ const ThreeBldTrace = () => {
     queueRef.current?.setLabelsVisible(next);
   };
 
-  const memo = queueRef.current ? traceOldPochmann(queueRef.current.getState()) : null;
-  const edgeStatus = memo ? traceStatus(edgeInput, memo.edges) : "empty";
-  const cornerStatus = memo ? traceStatus(cornerInput, memo.corners) : "empty";
-
   return (
     <div className="relative h-full w-full">
       <Link
@@ -203,14 +178,12 @@ const ThreeBldTrace = () => {
                 <TraceField
                   label="Edges"
                   value={edgeInput}
-                  status={edgeStatus}
                   onChange={setEdgeInput}
                   onExecute={() => runLetters(edgeInput, "edge")}
                 />
                 <TraceField
                   label="Corners"
                   value={cornerInput}
-                  status={cornerStatus}
                   onChange={setCornerInput}
                   onExecute={() => runLetters(cornerInput, "corner")}
                 />
