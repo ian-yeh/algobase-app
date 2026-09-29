@@ -1,8 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useOutletContext } from 'react-router-dom';
+import { useQuery, useMutation, usePaginatedQuery } from 'convex/react';
+import { Menu } from 'lucide-react';
 import { api } from '@convex/_generated/api';
 import type { Id } from '@convex/_generated/dataModel';
 import { useAuthStore } from '@/stores/authStore';
+import type { LayoutContext } from '@/features/layout/Layout';
 import ScrambleDisplay from '@/features/timer/ScrambleDisplay';
 import TimerDisplay from '@/features/timer/TimerDisplay';
 import StatsDisplay from '@/features/timer/StatsDisplay';
@@ -15,27 +18,29 @@ import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
 const Timer = () => {
     const token = useAuthStore((s) => s.token);
-    const [currentScramble, setCurrentScramble] = useState(generateScramble());
+    const [currentScramble, setCurrentScramble] = useState(generateScramble);
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
     const [selectedSolve, setSelectedSolve] = useState<Solve | null>(null);
+    const { menuOpen, openMenu } = useOutletContext<LayoutContext>();
 
     const createSolveMutation = useMutation(api.solve.createSolve);
     const deleteSolveMutation = useMutation(api.solve.deleteSolve);
 
-    const solvesData = useQuery(api.solve.getSolves, token ? { token } : 'skip');
+    const { results: solvesData, status: solvesStatus, loadMore } = usePaginatedQuery(
+        api.solve.listSolves,
+        token ? { token } : 'skip',
+        { initialNumItems: 50 }
+    );
     const statsData = useQuery(api.solve.getStats, token ? { token } : 'skip');
 
     useEffect(() => {
-        if (solvesData) {
-            const formattedSolves = solvesData.map((s) => ({
-                id: s._id,
-                time: s.time * 1000,
-                scramble: s.scramble,
-                timestamp: s._creationTime
-            })).reverse();
-            setSolves(formattedSolves);
-        }
+        setSolves(solvesData.map((s) => ({
+            id: s._id,
+            time: s.time * 1000,
+            scramble: s.scramble,
+            timestamp: s._creationTime
+        })));
     }, [solvesData]);
 
     const handleSolveComplete = useCallback(async (timeMs: number) => {
@@ -92,42 +97,59 @@ const Timer = () => {
 
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
+    const handleLoadMore = useCallback(() => {
+        if (solvesStatus === 'CanLoadMore') loadMore(50);
+    }, [solvesStatus, loadMore]);
 
-    if (!solvesData || !statsData) {
+    if (solvesStatus === 'LoadingFirstPage' || !statsData) {
         return <Loading />;
     }
 
+    const chrome = `transition-opacity duration-300 ${isTiming ? 'opacity-0' : 'opacity-100'}`;
+
     return (
-        <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
-            <div className="flex-1 flex flex-col items-center py-8 md:py-12 px-4 md:px-6 tracking-tight lg:overflow-y-auto">
-                <div className={`w-full max-w-4xl transition-opacity duration-300 ${isTiming ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <ScrambleDisplay
-                        scramble={currentScramble}
-                        onNewScramble={() => setCurrentScramble(generateScramble())}
-                    />
-                </div>
+        <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden font-sans tracking-tight">
+            <div className="relative flex-1 min-h-[36rem] lg:min-h-0">
+                <TimerDisplay
+                    onSolveComplete={handleSolveComplete}
+                    onStart={handleStart}
+                    onStop={handleStop}
+                    disabled={!!selectedSolve || menuOpen}
+                />
 
-                <div className="flex-1 flex flex-col items-center justify-center w-full">
-                    <TimerDisplay
-                        onSolveComplete={handleSolveComplete}
-                        onStart={handleStart}
-                        onStop={handleStop}
-                        disabled={!!selectedSolve}
-                    />
-
-                    <div className={`w-full transition-all duration-500 transform ${isTiming ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-                        <StatsDisplay
-                            stats={statsData}
-                            runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
-                            runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
+                <div className={`absolute inset-x-0 top-0 z-10 pointer-events-none ${chrome}`}>
+                    <header className="h-14 px-4 md:px-6 flex items-center">
+                        <button
+                            type="button"
+                            onClick={openMenu}
+                            aria-label="Open menu"
+                            className="pointer-events-auto p-1.5 -ml-1.5 rounded-lg text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                    </header>
+                    <div className="2xl:pl-96">
+                        <ScrambleDisplay
+                            scramble={currentScramble}
+                            onNewScramble={() => setCurrentScramble(generateScramble())}
                         />
                     </div>
+                </div>
+
+                <div className={`absolute inset-x-0 bottom-0 z-10 px-4 2xl:pl-100 pb-16 md:pb-32 ${chrome}`}>
+                    <StatsDisplay
+                        stats={statsData}
+                        runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
+                        runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
+                    />
                 </div>
             </div>
 
             <aside className={`w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-foreground/5 max-h-80 lg:max-h-none lg:h-full transition-opacity duration-300 ${isTiming ? 'hidden lg:block lg:opacity-0 lg:pointer-events-none' : 'opacity-100'}`}>
                 <SolveHistory
                     solves={solves}
+                    total={statsData.total_solves}
+                    onLoadMore={handleLoadMore}
                     onSelectSolve={setSelectedSolve}
                     onDeleteSolve={handleDeleteSolve}
                 />

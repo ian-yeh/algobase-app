@@ -20,9 +20,10 @@ const TimerIcon = () => (
 interface SidebarProps {
     mobileOpen: boolean;
     onClose: () => void;
+    drawerOnly?: boolean;
 }
 
-const Sidebar = ({ mobileOpen, onClose }: SidebarProps) => {
+const Sidebar = ({ mobileOpen, onClose, drawerOnly }: SidebarProps) => {
     const location = useLocation();
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
@@ -61,7 +62,7 @@ const Sidebar = ({ mobileOpen, onClose }: SidebarProps) => {
                     <button
                         onClick={onClose}
                         aria-label="Close menu"
-                        className="md:hidden p-1.5 rounded-md text-foreground/40 hover:text-foreground/70 transition-colors"
+                        className={`${drawerOnly ? '' : 'md:hidden'} p-1.5 rounded-md text-foreground/40 hover:text-foreground/70 transition-colors`}
                     >
                         <X className="w-5 h-5" strokeWidth={1.5} />
                     </button>
@@ -69,7 +70,7 @@ const Sidebar = ({ mobileOpen, onClose }: SidebarProps) => {
                         onClick={toggleCollapsed}
                         aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                         title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                        className="hidden md:block p-1.5 rounded-md text-foreground/30 hover:text-foreground/70 transition-colors"
+                        className={`hidden ${drawerOnly ? '' : 'md:block'} p-1.5 rounded-md text-foreground/30 hover:text-foreground/70 transition-colors`}
                     >
                         {isCollapsed ? <PanelLeftOpen className="w-[18px] h-[18px]" strokeWidth={1.5} /> : <PanelLeftClose className="w-[18px] h-[18px]" strokeWidth={1.5} />}
                     </button>
@@ -125,17 +126,17 @@ const Sidebar = ({ mobileOpen, onClose }: SidebarProps) => {
 
     return (
         <>
-            <div className={`hidden md:flex ${collapsed ? 'w-20' : 'w-64'} h-screen bg-background text-foreground flex-col border-r border-foreground/8 transition-all duration-200`}>
+            {!drawerOnly && <div className={`hidden md:flex ${collapsed ? 'w-20' : 'w-64'} h-screen bg-background text-foreground flex-col border-r border-foreground/8 transition-all duration-200`}>
                 {content(collapsed)}
-            </div>
+            </div>}
 
             <div
-                className={`md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`${drawerOnly ? '' : 'md:hidden'} fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={onClose}
                 aria-hidden="true"
             />
             <div
-                className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[80vw] bg-background text-foreground flex flex-col border-r border-foreground/8 shadow-2xl transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`${drawerOnly ? '' : 'md:hidden'} fixed inset-y-0 left-0 z-50 w-72 max-w-[80vw] bg-background text-foreground flex flex-col border-r border-foreground/8 transition-transform duration-300 ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`}
             >
                 {content(false)}
             </div>

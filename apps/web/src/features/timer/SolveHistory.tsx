@@ -12,11 +12,13 @@ export interface Solve {
 
 interface SolveHistoryProps {
     solves: Solve[];
+    total: number;
+    onLoadMore: () => void;
     onSelectSolve: (solve: Solve) => void;
     onDeleteSolve: (id: string) => void;
 }
 
-const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDeleteSolve }) => {
+const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, total, onLoadMore, onSelectSolve, onDeleteSolve }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
 
@@ -29,7 +31,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                             Recent Solves
                         </h3>
                         <p className="text-xs text-foreground/40 mt-1 font-sans">
-                            {solves.length} {solves.length === 1 ? 'solve' : 'solves'}
+                            {total} {total === 1 ? 'solve' : 'solves'}
                         </p>
                     </div>
                     <div className="relative" onBlur={(e) => {
@@ -61,7 +63,13 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                     </div>
                 </div>
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar font-sans text-black">
+            <div
+                className="flex-1 overflow-y-auto custom-scrollbar font-sans text-black"
+                onScroll={(e) => {
+                    const el = e.currentTarget;
+                    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300) onLoadMore();
+                }}
+            >
                 {solves.length === 0 ? (
                     <div className="text-center py-12 text-foreground/20 text-sm">
                         No solves yet.
@@ -76,7 +84,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
                                     className="w-full text-left px-6 py-5 hover:bg-foreground/5 transition-colors group flex items-start gap-4"
                                 >
                                     <span className="text-xs font-bold text-foreground/30 tabular-nums w-6 pt-1.5 shrink-0">
-                                        {solves.length - i}
+                                        {total - i}
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-2">
@@ -118,4 +126,4 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, onSelectSolve, onDe
     );
 };
 
-export default SolveHistory;
+export default React.memo(SolveHistory);
