@@ -11,6 +11,8 @@ import SquareOneCspSandbox from "@/pages/SquareOneCspSandbox";
 import SquareOneCspRecall from "@/pages/SquareOneCspRecall";
 import ThreeBldTrace from "@/pages/ThreeBldTrace";
 import ThreeBldMemo from "@/pages/ThreeBldMemo";
+import AlgLists from "@/pages/AlgLists";
+import AlgList from "@/pages/AlgList";
 import Layout from "@/features/layout/Layout";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -44,7 +46,11 @@ export const router = createBrowserRouter([
       { path: '/training/square1-csp/recall', element: <SquareOneCspRecall /> },
       { path: '/training/3bld', element: <ThreeBldTrace /> },
       { path: '/training/3bld-memo', element: <ThreeBldMemo /> },
+      { path: '/lists', element: <AlgLists /> },
+      { path: '/lists/:listId', element: <AlgList /> },
     ]
   },
+  // Public read-only view, no sign-in
+  { path: '/lists/share/:listId', element: <div className="h-screen bg-background text-foreground font-sans"><AlgList shared /></div> },
   { path: '*', element: <Navigate to="/" replace /> }
 ])

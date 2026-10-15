@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Dumbbell, LogOut, PanelLeftClose, PanelLeftOpen, Trophy, X } from 'lucide-react';
+import { Dumbbell, ListOrdered, LogOut, PanelLeftClose, PanelLeftOpen, Trophy, X } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import Logo from '@/components/Logo';
 import CubeLogo from '@/components/CubeLogo';
@@ -42,6 +42,7 @@ const Sidebar = ({ mobileOpen, onClose, drawerOnly }: SidebarProps) => {
         { name: 'Dashboard', path: '/home', icon: <DashboardIcon /> },
         { name: 'Competitions', path: '/competitions', icon: <Trophy className="w-5 h-5" strokeWidth={1.5} /> },
         { name: 'Training', path: '/training', icon: <Dumbbell className="w-5 h-5" strokeWidth={1.5} /> },
+        { name: 'Lists', path: '/lists', icon: <ListOrdered className="w-5 h-5" strokeWidth={1.5} /> },
     ];
 
     const userDisplayName = user?.username || user?.email?.split('@')[0] || 'User';
