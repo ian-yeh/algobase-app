@@ -56,7 +56,7 @@ export class Square1Renderer {
 
     this.createLayerMeshes(state.getTopLayer(), 'top', HEIGHT_TOP / 2 + HEIGHT_MID / 2);
     this.createLayerMeshes(state.getBottomLayer(), 'bot', -(HEIGHT_BOTTOM / 2 + HEIGHT_MID / 2));
-    this.createEquatorMeshes();
+    this.createEquatorMeshes(state.getEquatorHalves()[0] === 'M2');
   }
 
   // Animates a combined top (u) / bottom (d) turn. `before` is read only to find which meshes currently occupy the moving layer(s) - never mutated.
@@ -187,10 +187,9 @@ export class Square1Renderer {
 
   private createLayerMeshes(cells: ReadonlyArray<LayerCell>, layer: 'top' | 'bot', yPos: number): void {
     const seenIds = new Set<string>();
-    const capColor = this.monochrome ? GREY : layer === 'top' ? WHITE : YELLOW;
     const sideColorForSlot = (slot: number) => (this.monochrome ? GREY : faceColorForSlot(slot));
 
-    cells.forEach((cell, slotIndex) => {
+    cells.forEach((cell, firstSeen) => {
       const { piece } = cell;
       if (seenIds.has(piece.id)) return;
       seenIds.add(piece.id);
@@ -200,8 +199,16 @@ export class Square1Renderer {
         ? layer === 'top' ? this.geometries.cornerTop : this.geometries.cornerBottom
         : layer === 'top' ? this.geometries.edgeTop : this.geometries.edgeBottom;
 
+      // A corner straddling cells 11|0 is first seen at 0 but starts at 11.
+      const slotIndex = isCorner && cells[(firstSeen + 1) % 12].piece.id !== piece.id ? 11 : firstSeen;
+      // Cap color follows the piece's home layer, not the layer it's in now. A corner sliced into the other
+      // layer is upside down, so its half 1 leads and its two side stickers swap.
+      const capColor = this.monochrome ? GREY : piece.id.startsWith('top') ? WHITE : YELLOW;
+      const flipped = isCorner && cells[slotIndex].pieceHalf === 1;
+      const [lowSide, highSide] = flipped ? [piece.homeSlot + 1, piece.homeSlot] : [piece.homeSlot, piece.homeSlot + 1];
+
       const materials = isCorner
-        ? this.createWedgeMaterials(capColor, sideColorForSlot(piece.homeSlot), sideColorForSlot(piece.homeSlot + 1))
+        ? this.createWedgeMaterials(capColor, sideColorForSlot(lowSide), sideColorForSlot(highSide))
         : this.createWedgeMaterials(capColor, sideColorForSlot(piece.homeSlot), sideColorForSlot(piece.homeSlot));
       const mesh = new THREE.Mesh(geom, materials);
       mesh.name = piece.id;
@@ -217,13 +224,14 @@ export class Square1Renderer {
     });
   }
 
-  private createEquatorMeshes(): void {
+  // Every slice flips mid-M1 half a turn about Z (see getSliceMoveMeshes), so an odd slice count leaves it flipped.
+  private createEquatorMeshes(m1Flipped: boolean): void {
     const matM1 = this.createTrapezoidMaterials(0);
     const meshM1 = new THREE.Mesh(this.geometries.equator, matM1);
     meshM1.name = "mid-M1";
     meshM1.add(this.createOutline(this.geometries.equator));
     meshM1.position.set(0, 0, 0);
-    meshM1.rotation.y = 0;
+    meshM1.rotation.set(0, 0, m1Flipped ? Math.PI : 0);
     this.staticGroup.add(meshM1);
     this.meshMap.set("mid-M1", meshM1);
 
