@@ -51,8 +51,21 @@ export function renderStaticSquare1(container: HTMLDivElement, sequence: string)
 
   renderer.render(scene, camera);
 
-  return () => {
+  return snapshot(container, renderer.domElement, () => {
+    renderer.forceContextLoss();
     renderer.dispose();
     if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
-  };
+  });
 }
+
+// Snapshot to an <img> and release the WebGL context right away - browsers cap live contexts (~16), so a grid of live canvases would start blanking out.
+function snapshot(container: HTMLDivElement, canvas: HTMLCanvasElement, dispose: () => void): () => void {
+  const img = document.createElement("img");
+  img.src = canvas.toDataURL();
+  img.style.cssText = "width:100%;height:100%;object-fit:contain;image-rendering:pixelated";
+  img.alt = "";
+  dispose();
+  container.appendChild(img);
+  return () => img.remove();
+}
+
