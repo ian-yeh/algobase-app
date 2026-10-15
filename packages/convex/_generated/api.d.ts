@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as algLists from "../algLists.js";
 import type * as auth from "../auth.js";
 import type * as competitions from "../competitions.js";
 import type * as cspCustomization from "../cspCustomization.js";
@@ -22,6 +23,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  algLists: typeof algLists;
   auth: typeof auth;
   competitions: typeof competitions;
   cspCustomization: typeof cspCustomization;

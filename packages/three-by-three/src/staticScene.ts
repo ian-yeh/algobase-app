@@ -11,5 +11,20 @@ export function renderStaticCube(container: HTMLDivElement, sequence: string): (
   scene.add(cubeRenderer.rootGroup);
 
   webglRenderer.render(scene, camera);
-  return dispose;
+  return snapshot(container, webglRenderer.domElement, () => {
+    webglRenderer.forceContextLoss();
+    dispose();
+  });
 }
+
+// Snapshot to an <img> and release the WebGL context right away - browsers cap live contexts (~16), so a grid of live canvases would start blanking out.
+function snapshot(container: HTMLDivElement, canvas: HTMLCanvasElement, dispose: () => void): () => void {
+  const img = document.createElement("img");
+  img.src = canvas.toDataURL();
+  img.style.cssText = "width:100%;height:100%;object-fit:contain;image-rendering:pixelated";
+  img.alt = "";
+  dispose();
+  container.appendChild(img);
+  return () => img.remove();
+}
+

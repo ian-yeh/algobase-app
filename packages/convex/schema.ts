@@ -62,6 +62,25 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_case", ["userId", "caseId"]),
 
+  algLists: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    puzzle: v.union(v.literal("3x3"), v.literal("sq1")),
+    topColor: v.union(v.literal("white"), v.literal("yellow")), // 3x3 only; ignored for sq1
+    isShared: v.boolean(), // anyone with /lists/share/<_id> can view
+  })
+    .index("by_user", ["userId"]),
+
+  algEntries: defineTable({
+    listId: v.id("algLists"),
+    name: v.string(), // "" = unnamed
+    alg: v.string(), // WCA notation (physical D convention for sq1)
+    notes: v.string(),
+    order: v.number(), // fractional, so a reorder only rewrites the moved entry
+    status: v.optional(v.union(v.literal("learning"), v.literal("learned"))), // unset = not started
+  })
+    .index("by_list_order", ["listId", "order"]),
+
   competitionCache: defineTable({
     country: v.string(), // ISO 3166-1 alpha-2
     fetchedAt: v.number(), // ms since epoch
