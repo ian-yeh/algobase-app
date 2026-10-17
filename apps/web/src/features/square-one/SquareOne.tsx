@@ -6,12 +6,15 @@ export interface SquareOneProps {
   // Applied from solved whenever it changes - scrambles are the inverse of a solve, so the puzzle must start solved.
   scramble: string;
   onScramble: () => void;
+  // false = jump straight to the scrambled state instead of playing the scramble.
+  animated?: boolean;
   className?: string;
 }
 
 export const SquareOne: React.FC<SquareOneProps> = ({
   scramble,
   onScramble,
+  animated = true,
   className = "h-96 w-full rounded-xl overflow-hidden relative",
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +46,14 @@ export const SquareOne: React.FC<SquareOneProps> = ({
 
   useEffect(() => {
     reset();
-    if (scramble) queueRef.current?.enqueueSequence(scramble, 180);
+    const queue = queueRef.current;
+    if (!queue || !scramble) return;
+    if (animated) {
+      queue.enqueueSequence(scramble, 180);
+    } else {
+      queue.applyInstant(scramble);
+      setCanSlice(queue.getState().canSlice());
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scramble, queueRef]);
 

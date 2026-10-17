@@ -134,6 +134,7 @@ const SquareOneCubeshape = () => {
         <SquareOne
           scramble={current?.scramble ?? ""}
           onScramble={() => newScramble()}
+          animated={false}
           className="h-[32rem] w-full rounded-xl overflow-hidden relative border border-foreground/10"
         />
 
