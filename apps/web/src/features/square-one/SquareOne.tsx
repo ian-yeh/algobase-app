@@ -1,59 +1,31 @@
-import React, { useRef, useState } from "react";
-import {
-  useSquare1Scene,
-  generateWCASquareOneScramble,
-  identifyCspCase,
-  shapeFromLayerKinds,
-  type MoveTask,
-  type Square,
-  type CspIdentification,
-} from "@algobase/square-one";
+import React, { useEffect, useRef, useState } from "react";
+import { useSquare1Scene, type Square } from "@algobase/square-one";
 import { Toolbar } from "./Toolbar";
-import { CspCasePopup } from "./CspCasePopup";
 
 export interface SquareOneProps {
-  initialSequence?: string;
-  autoRotate?: boolean;
+  // Applied from solved whenever it changes - scrambles are the inverse of a solve, so the puzzle must start solved.
+  scramble: string;
+  onScramble: () => void;
   className?: string;
 }
 
 export const SquareOne: React.FC<SquareOneProps> = ({
-  initialSequence = "",
-  autoRotate = false,
+  scramble,
+  onScramble,
   className = "h-96 w-full rounded-xl overflow-hidden relative",
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const pendingScrambleLogRef = useRef<boolean>(false);
 
   const [canSlice, setCanSlice] = useState<boolean>(true);
   const [isBusy, setIsBusy] = useState<boolean>(false);
-  const [cspRevealed, setCspRevealed] = useState<CspIdentification | null>(null);
-  const [scrambleSequence, setScrambleSequence] = useState<string>("");
-  const [scrambleCopied, setScrambleCopied] = useState(false);
 
   const { queueRef } = useSquare1Scene(containerRef, {
-    autoRotate,
-    initialSequence,
+    autoRotate: false,
+    initialSequence: "",
     onMoveStart: () => setIsBusy(true),
-    onMoveComplete: (task: MoveTask, currentState: Square) => {
+    onMoveComplete: (_task, currentState: Square) => {
       setCanSlice(currentState.canSlice());
       setIsBusy(queueRef.current?.isBusy() ?? false);
-      setCspRevealed(null);
-
-      // Debug: log what the scramble actually left the puzzle in, read straight off the real Square state machine after the scramble has actually been applied - not a separately-simulated copy.
-      if (task.type === "sequence" && pendingScrambleLogRef.current) {
-        pendingScrambleLogRef.current = false;
-        const topKinds = currentState.getTopLayerKinds();
-        const bottomKinds = currentState.getBottomLayerKinds();
-        console.log("[Square-1 scramble]", {
-          sequence: task.sequenceStr,
-          topKinds,
-          bottomKinds,
-          topShape: shapeFromLayerKinds(topKinds, "top"),
-          bottomShape: shapeFromLayerKinds(bottomKinds, "bottom"),
-          identification: identifyCspCase(currentState),
-        });
-      }
     },
     onQueueEmpty: () => {
       setIsBusy(false);
@@ -61,99 +33,33 @@ export const SquareOne: React.FC<SquareOneProps> = ({
     onSliceBlocked: () => {},
   });
 
-  const handleTurnTop = (u: number) => {
-    queueRef.current?.enqueueTurn(u, 0);
-  };
-
-  const handleTurnBottom = (d: number) => {
-    queueRef.current?.enqueueTurn(0, d);
-  };
-
-  const handleSlice = () => {
-    queueRef.current?.enqueueSlice();
-  };
-
-  const handleScramble = () => {
-    const queue = queueRef.current;
-    if (!queue) return;
-    // WCA scrambles are generated as the inverse of a solve from the solved state, so the puzzle must actually be solved before applying one.
-    queue.clear();
-    queue.resetState();
-    setCanSlice(true);
-    setCspRevealed(null);
-
-    const scramble = generateWCASquareOneScramble();
-    pendingScrambleLogRef.current = true;
-    setScrambleSequence(scramble);
-    queue.enqueueSequence(scramble, 180);
-  };
-
-  const handleRunPreset = (sequence: string) => {
-    queueRef.current?.enqueueSequence(sequence, 220);
-  };
-
-  const handleReset = () => {
+  const reset = () => {
     const queue = queueRef.current;
     if (!queue) return;
     queue.clear();
     queue.resetState();
     setCanSlice(true);
-    setCspRevealed(null);
-    setScrambleSequence("");
   };
 
-  const handleRevealCsp = () => {
-    if (!queueRef.current) return;
-    const result = identifyCspCase(queueRef.current.getState());
-    setCspRevealed(result);
-  };
-
-  const handlePlayCspAlg = (sequence: string) => {
-    queueRef.current?.enqueueSequence(sequence, 220);
-    setCspRevealed(null);
-  };
-
-  const handleCopyScramble = async () => {
-    await navigator.clipboard.writeText(scrambleSequence);
-    setScrambleCopied(true);
-    setTimeout(() => setScrambleCopied(false), 1500);
-  };
+  useEffect(() => {
+    reset();
+    if (scramble) queueRef.current?.enqueueSequence(scramble, 180);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scramble, queueRef]);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
-      {scrambleSequence && (
-        <div className="flex items-center gap-2 w-full max-w-md text-xs font-mono">
-          <span className="text-foreground/70 break-all">{scrambleSequence}</span>
-          <button
-            onClick={handleCopyScramble}
-            className="shrink-0 rounded border border-foreground/20 text-foreground/70 px-1.5 py-0.5 hover:bg-foreground/10 transition-colors"
-          >
-            {scrambleCopied ? "Copied" : "Copy"}
-          </button>
-        </div>
-      )}
-      <div className={className}>
-        <div ref={containerRef} className="w-full h-full" />
-        <Toolbar
-          isBusy={isBusy}
-          canSlice={canSlice}
-          onTurnTop={handleTurnTop}
-          onTurnBottom={handleTurnBottom}
-          onSlice={handleSlice}
-          onScramble={handleScramble}
-          onReset={handleReset}
-          onRunPreset={handleRunPreset}
-          onRevealCsp={handleRevealCsp}
-        />
-      </div>
-      {cspRevealed && (
-        <CspCasePopup
-          result={cspRevealed}
-          onPlayAlg={handlePlayCspAlg}
-          onClose={() => setCspRevealed(null)}
-          playDisabled={isBusy}
-        />
-      )}
+    <div className={className}>
+      <div ref={containerRef} className="w-full h-full" />
+      <Toolbar
+        isBusy={isBusy}
+        canSlice={canSlice}
+        onTurnTop={(u) => queueRef.current?.enqueueTurn(u, 0)}
+        onTurnBottom={(d) => queueRef.current?.enqueueTurn(0, d)}
+        onSlice={() => queueRef.current?.enqueueSlice()}
+        onScramble={onScramble}
+        onReset={reset}
+        onRunPreset={(sequence) => queueRef.current?.enqueueSequence(sequence, 220)}
+      />
     </div>
   );
 };

@@ -11,8 +11,6 @@
 import type * as algLists from "../algLists.js";
 import type * as auth from "../auth.js";
 import type * as competitions from "../competitions.js";
-import type * as cspCustomization from "../cspCustomization.js";
-import type * as cspProgress from "../cspProgress.js";
 import type * as solve from "../solve.js";
 import type * as user from "../user.js";
 
@@ -26,8 +24,6 @@ declare const fullApi: ApiFromModules<{
   algLists: typeof algLists;
   auth: typeof auth;
   competitions: typeof competitions;
-  cspCustomization: typeof cspCustomization;
-  cspProgress: typeof cspProgress;
   solve: typeof solve;
   user: typeof user;
 }>;

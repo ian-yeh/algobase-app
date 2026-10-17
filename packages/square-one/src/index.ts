@@ -22,10 +22,3 @@ export {
 } from "./wcaScramble";
 export { CSP_CASES, type CspCase } from "./csp-cases";
 export { Shape, shapeFromLayerKinds, shapeLayerKinds } from "./shapes";
-export {
-  identifyCspCase,
-  getReferenceSetup,
-  getCspAlg,
-  type CspIdentification,
-  type CspParity,
-} from "./csp-identify";

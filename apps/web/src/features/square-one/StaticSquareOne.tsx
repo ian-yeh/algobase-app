@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { renderStaticSquare1 } from "@algobase/square-one";
 
 // A single non-animated, non-interactive frame of a posed Square-1. `sequence` must be
-// in engine convention (e.g. from getReferenceSetup) - see renderStaticSquare1.
+// in engine convention (e.g. via toEngineConvention) - see renderStaticSquare1.
 // Defers the actual WebGL render until scrolled near view, since a grid can have dozens
 // of these mounted at once.
 export const StaticSquareOne: React.FC<{ sequence: string; className?: string }> = ({

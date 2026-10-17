@@ -81,7 +81,38 @@ export const getMe = query({
       email: user.email,
       country: user.country ?? null,
       bookmarkedCompetitions: user.bookmarkedCompetitions ?? [],
+      cubeshapeCases: user.cubeshapeCases ?? null,
+      cubeshapeMiddle: user.cubeshapeMiddle ?? "random",
     };
+  },
+});
+
+export const setCubeshapeSettings = mutation({
+  args: {
+    token: v.string(),
+    cases: v.optional(v.array(v.string())),
+    middle: v.optional(v.union(v.literal("random"), v.literal("solved"), v.literal("flipped"))),
+  },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", decoded.userId))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      ...(args.cases !== undefined && { cubeshapeCases: args.cases }),
+      ...(args.middle !== undefined && { cubeshapeMiddle: args.middle }),
+    });
+    return null;
   },
 });
 
