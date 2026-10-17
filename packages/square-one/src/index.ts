@@ -13,9 +13,15 @@ export * from "./constants";
 export { useSquare1Scene, type UseSquare1SceneOptions } from "./scene";
 export { renderStaticSquare1 } from "./staticScene";
 export { PRESET_ALGORITHMS, type PresetAlgorithm } from "./presets";
-export { generateWCASquareOneScramble } from "./wcaScramble";
+export {
+  generateWCASquareOneScramble,
+  generateCspScramble,
+  flipCspShape,
+  type CspScramble,
+  type MiddleLayer,
+} from "./wcaScramble";
 export { CSP_CASES, type CspCase } from "./csp-cases";
-export { Shape, shapeFromLayerKinds } from "./shapes";
+export { Shape, shapeFromLayerKinds, shapeLayerKinds } from "./shapes";
 export {
   identifyCspCase,
   getReferenceSetup,

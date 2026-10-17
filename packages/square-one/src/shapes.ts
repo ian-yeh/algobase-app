@@ -131,6 +131,11 @@ const PATTERN_TO_SHAPE = new Map<string, Shape>(
   Object.entries(SHAPE_PATTERNS).map(([shape, pattern]) => [canonicalEncoding(decodePattern(pattern)), shape as Shape])
 );
 
+// The 12 cells of a shape's canonical pattern, clockwise from the first corner (for drawing).
+export function shapeLayerKinds(shape: Shape): PieceKind[] {
+  return decodePattern(SHAPE_PATTERNS[shape]).flatMap(([kind, count]) => Array<PieceKind>(count).fill(kind));
+}
+
 // Classifies a layer's corner/edge arrangement into its named CSP shape. `layer`
 // controls read direction: bottom is reversed before matching because it's viewed
 // from below (mirrored relative to top's array order) - see the module doc comment.

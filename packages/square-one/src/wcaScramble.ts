@@ -1,5 +1,9 @@
 // WCA-regulated Square-1 scramble generation, ported from cstimer's Square-1 solver (cs0x7f/cstimer, src/js/scramble/scramble_sq1_new.js): samples a uniformly random *reachable* state, finds a near-optimal solution with two-phase IDA* search, and inverts it (that's the scramble), rerolling anything shorter than the WCA minimum of 11 moves (Regulation 12c4) - matching the official TNoodle scrambler. The bitwise tricks below rely on 32-bit two's-complement semantics (JS shares this with Java), so this is a close port, not a reimplementation from first principles.
 
+import { CSP_CASES } from "./csp-cases";
+import { shapeFromLayerKinds } from "./shapes";
+import type { PieceKind } from "./square1";
+
 const WCA_MIN_SCRAMBLE_DISTANCE = 11;
 
 // --- small perm-index utilities (n = 8 case only, per mathlib.js) ---------
@@ -705,4 +709,70 @@ export function generateWCASquareOneScramble(): string {
     scramble = search.solution(randomCube(t));
   } while (wcaMoveCost(scramble) < WCA_MIN_SCRAMBLE_DISTANCE);
   return scramble;
+}
+
+// --- cubeshape (CSP) training scrambles, like cstimer's "sqrcsp": a uniformly random state whose layers form a chosen CSP case's shape pair. Instead of cstimer's hardcoded case table, every shape index is classified with this repo's own shapeFromLayerKinds, so case ids line up with CSP_CASES. ---
+
+export type MiddleLayer = "random" | "solved" | "flipped";
+
+export interface CspScramble {
+  scramble: string;
+  caseId: string;
+  // Exact layer layout (including each layer's rotation) - a shapeIdx index.
+  shape: number;
+  // Piece-order parity at that exact layout: two scrambles with the same `shape` and `parity` need the same CSP parity alg, opposite `parity` means the other one.
+  parity: number;
+}
+
+// Bit (23 - slot) of a shapeIdx value is set when that slot holds a corner half (see randomCube); slots 0-11 are the top layer, 12-23 the bottom. cstimer reads the top layer in the opposite direction to this engine, so callers reverse it before classifying (verified by cspScramble.check.ts against chiral pairs like Left/Right Fist).
+function layerKinds(shape: number, firstSlot: number): PieceKind[] {
+  return Array.from({ length: 12 }, (_, i) => ((shape >> (23 - firstSlot - i)) & 1 ? "corner" : "edge"));
+}
+
+let cspShapes: { caseOf: string[]; byCase: Map<string, number[]> } | null = null;
+
+function ensureCspShapes(t: Tables) {
+  if (cspShapes) return cspShapes;
+  const caseOf: string[] = [];
+  const byCase = new Map<string, number[]>();
+  t.shapeIdx.forEach((value, shape) => {
+    const top = shapeFromLayerKinds(layerKinds(value, 0).reverse(), "top");
+    const bottom = shapeFromLayerKinds(layerKinds(value, 12), "bottom");
+    const cspCase = CSP_CASES.find(
+      (c) => (c.topShape === top && c.bottomShape === bottom) || (c.topShape === bottom && c.bottomShape === top),
+    );
+    if (!cspCase) throw new Error(`No CSP case for shape ${shape} (${top} / ${bottom})`);
+    caseOf[shape] = cspCase.id;
+    byCase.set(cspCase.id, [...(byCase.get(cspCase.id) ?? []), shape]);
+  });
+  cspShapes = { caseOf, byCase };
+  return cspShapes;
+}
+
+// The same layout with the top and bottom layers swapped (cstimer's CSPInit treats this as the same case).
+export function flipCspShape(shape: number): number {
+  const t = ensureTables();
+  const value = t.shapeIdx[shape];
+  return binarySearch(t.shapeIdx, ((value & 0xfff) << 12) | (value >> 12));
+}
+
+// Picks a random layout of a random case from `caseIds` (all 90 when omitted), unless `shape` pins an exact layout; `parity` pins the piece-order parity, otherwise it's random.
+export function generateCspScramble(
+  opts: { caseIds?: string[]; shape?: number; parity?: number; middle?: MiddleLayer } = {},
+): CspScramble {
+  const t = ensureTables();
+  const { caseOf, byCase } = ensureCspShapes(t);
+  let shape = opts.shape;
+  if (shape === undefined) {
+    const ids = opts.caseIds?.length ? opts.caseIds : [...byCase.keys()];
+    const layouts = byCase.get(ids[randInt(ids.length)])!;
+    shape = layouts[randInt(layouts.length)];
+  }
+  let cube: SqCubie;
+  do {
+    cube = randomCube(t, shape);
+  } while (opts.parity !== undefined && getParity(cube) !== opts.parity);
+  if (opts.middle === "solved") cube.ml = 0;
+  if (opts.middle === "flipped") cube.ml = 1;
+  return { scramble: new Search().solution(cube), caseId: caseOf[shape], shape, parity: getParity(cube) };
 }
