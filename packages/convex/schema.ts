@@ -11,6 +11,8 @@ export default defineSchema({
     lastActivityDate: v.number(), // Unix timestamp
     country: v.optional(v.string()), // ISO 3166-1 alpha-2, e.g. "CA"
     bookmarkedCompetitions: v.optional(v.array(v.string())), // WCA competition IDs
+    cubeshapeCases: v.optional(v.array(v.string())), // CspCase ids the cubeshape trainer scrambles; unset = all
+    cubeshapeMiddle: v.optional(v.union(v.literal("random"), v.literal("solved"), v.literal("flipped"))),
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"]),
@@ -40,27 +42,6 @@ export default defineSchema({
     total_solves: v.number(),
   })
     .index("by_userId", ["userId"]),
-
-  cspCaseProgress: defineTable({
-    userId: v.string(),
-    caseId: v.string(), // CspCase.id, e.g. "kite-kite"
-    status: v.literal("learned"), // row presence = learned; absent = not learned
-    updatedAt: v.number(), // ms since epoch
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_case", ["userId", "caseId"]),
-
-  cspCaseCustomization: defineTable({
-    userId: v.string(),
-    caseId: v.string(), // CspCase.id, e.g. "kite-kite"
-    evenAlg: v.optional(v.string()), // user's own algorithm text, overrides the stock one
-    oddAlg: v.optional(v.string()),
-    notes: v.optional(v.string()),
-    swapped: v.optional(v.boolean()), // display evenAlg's block as "Odd" and oddAlg's block as "Even" for this case only
-    updatedAt: v.number(), // ms since epoch
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_case", ["userId", "caseId"]),
 
   algLists: defineTable({
     userId: v.string(),

@@ -3,7 +3,7 @@ import { Square } from "./square1";
 import { Square1Renderer } from "./renderer";
 
 // Renders one non-interactive frame of a Square-1 posed by `sequence` (engine convention,
-// e.g. from getReferenceSetup) - no OrbitControls, no move queue, no render loop. Meant
+// e.g. via toEngineConvention) - no OrbitControls, no move queue, no render loop. Meant
 // for grids of many thumbnails at once, where an animated scene per cell would be wasteful.
 export function renderStaticSquare1(container: HTMLDivElement, sequence: string): () => void {
   const width = container.clientWidth || 200;

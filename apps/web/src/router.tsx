@@ -6,9 +6,7 @@ import TimerPage from "@/pages/Timer";
 import SignIn from "@/pages/SignIn";
 import Competitions from "@/pages/Competitions";
 import Training from "@/pages/Training";
-import SquareOneCsp from "@/pages/SquareOneCsp";
-import SquareOneCspSandbox from "@/pages/SquareOneCspSandbox";
-import SquareOneCspRecall from "@/pages/SquareOneCspRecall";
+import SquareOneCubeshape from "@/pages/SquareOneCubeshape";
 import ThreeBldTrace from "@/pages/ThreeBldTrace";
 import ThreeBldMemo from "@/pages/ThreeBldMemo";
 import AlgLists from "@/pages/AlgLists";
@@ -41,9 +39,8 @@ export const router = createBrowserRouter([
       { path: '/timer', element: <TimerPage /> },
       { path: '/competitions', element: <Competitions /> },
       { path: '/training', element: <Training /> },
-      { path: '/training/square1-csp', element: <SquareOneCsp /> },
-      { path: '/training/square1-csp/sandbox', element: <SquareOneCspSandbox /> },
-      { path: '/training/square1-csp/recall', element: <SquareOneCspRecall /> },
+      { path: '/training/square1-cubeshape', element: <SquareOneCubeshape /> },
+      { path: '/training/square1-csp/*', element: <Navigate to="/training/square1-cubeshape" replace /> },
       { path: '/training/3bld', element: <ThreeBldTrace /> },
       { path: '/training/3bld-memo', element: <ThreeBldMemo /> },
       { path: '/lists', element: <AlgLists /> },
