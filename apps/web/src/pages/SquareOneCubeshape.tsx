@@ -8,6 +8,7 @@ import {
   flipCspShape,
   generateCspScramble,
   shapeLayerKinds,
+  type CspCase,
   type CspScramble,
   type MiddleLayer,
   type Shape,
@@ -17,20 +18,24 @@ import { ShapePairIcon } from "@/features/square-one/ShapeIcon";
 
 const ALL_IDS = CSP_CASES.map((c) => c.id);
 const CASE_BY_ID = new Map(CSP_CASES.map((c) => [c.id, c]));
-const ALL_SHAPES: Shape[] = Array.from(new Set(CSP_CASES.flatMap((c) => [c.topShape, c.bottomShape]))).sort();
 
 const cornerCount = (shape: Shape) => shapeLayerKinds(shape).filter((k) => k === "corner").length / 2;
-// 4/4-corner cases first, then 5/3 (edge pairs), then 6/2 (star).
-const SORTED_CASES = [...CSP_CASES].sort(
-  (a, b) => Math.max(cornerCount(a.topShape), cornerCount(a.bottomShape)) - Math.max(cornerCount(b.topShape), cornerCount(b.bottomShape))
-);
+const cornerSplit = (c: CspCase) => Math.max(cornerCount(c.topShape), cornerCount(c.bottomShape));
+// Grouped by how the 8 corners split between layers: 4/4 first, then 5/3, 6/2, ...
+const CASE_GROUPS = [...new Set(CSP_CASES.map(cornerSplit))]
+  .sort((a, b) => a - b)
+  .map((split) => ({ split, cases: CSP_CASES.filter((c) => cornerSplit(c) === split) }));
 
-const MIDDLE_LABELS: Record<MiddleLayer, string> = { random: "Random", solved: "Never flipped", flipped: "Always flipped" };
+const MIDDLE_OPTIONS: { value: MiddleLayer; label: string }[] = [
+  { value: "random", label: "Random" },
+  { value: "solved", label: "Always square" },
+  { value: "flipped", label: "Always flipped" },
+];
 
-const ActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ className, ...props }) => (
+const DrillButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
   <button
     {...props}
-    className={`text-xs rounded-md border border-foreground/10 text-foreground/70 px-2.5 py-1.5 hover:border-foreground/25 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${className ?? ""}`}
+    className="text-sm rounded-md border border-foreground/10 text-foreground/70 px-3 py-1.5 hover:border-foreground/25 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
   />
 );
 
@@ -46,13 +51,18 @@ const SquareOneCubeshape = () => {
   const middle = middleOverride ?? me?.cubeshapeMiddle ?? "random";
   const selectedSet = useMemo(() => new Set(selected), [selected]);
 
-  const [current, setCurrent] = useState<CspScramble | null>(null);
+  const [history, setHistory] = useState<{ list: CspScramble[]; i: number }>({ list: [], i: -1 });
+  const current = history.list[history.i] ?? null;
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [shapeFilter, setShapeFilter] = useState<Shape | "all">("all");
 
   const show = (next: CspScramble) => {
-    setCurrent(next);
+    setHistory((h) => ({ list: [...h.list.slice(0, h.i + 1), next], i: h.i + 1 }));
+    setRevealed(false);
+  };
+
+  const step = (by: number) => {
+    setHistory((h) => ({ ...h, i: h.i + by }));
     setRevealed(false);
   };
 
@@ -80,19 +90,9 @@ const SquareOneCubeshape = () => {
   const toggleCase = (id: string) =>
     setSelected(selectedSet.has(id) ? selected.filter((s) => s !== id) : [...selected, id]);
 
-  const deselectCurrent = () => {
-    if (!current) return;
-    const next = selected.filter((id) => id !== current.caseId);
-    setSelected(next);
-    newScramble(next);
-  };
-
-  const shownCases = SORTED_CASES.filter(
-    (c) => shapeFilter === "all" || c.topShape === shapeFilter || c.bottomShape === shapeFilter
-  );
-  const setShown = (on: boolean) => {
-    const shownIds = new Set(shownCases.map((c) => c.id));
-    setSelected(on ? [...new Set([...selected, ...shownIds])] : selected.filter((id) => !shownIds.has(id)));
+  const setGroup = (cases: CspCase[], on: boolean) => {
+    const ids = new Set(cases.map((c) => c.id));
+    setSelected(on ? [...new Set([...selected, ...ids])] : selected.filter((id) => !ids.has(id)));
   };
 
   const copyScramble = async () => {
@@ -106,146 +106,201 @@ const SquareOneCubeshape = () => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-3xl mx-auto py-10 px-4">
+      <div className="max-w-3xl mx-auto py-10 px-4 pb-16">
         <Link to="/training" className="text-sm text-foreground/45 hover:text-foreground mb-6 inline-block">
           &larr; Back to training
         </Link>
-        <h1 className="text-2xl font-semibold mb-2">Square-1 Cubeshape Trainer</h1>
-        <p className="text-sm text-foreground/45 mb-6">
-          Random-state scrambles that land on the shapes you pick below, with random parity.
+        <h1 className="text-2xl font-semibold mb-2">Square-1 Cubeshape</h1>
+        <p className="text-sm text-foreground/55 mb-8">
+          Choose which cases appear under <a href="#cases" className="underline underline-offset-2 hover:text-foreground">Cases</a>.
         </p>
 
-        <div className="flex items-center gap-2 mb-3 min-h-6 text-xs font-mono">
-          {current ? (
-            <>
-              <span className="text-foreground/70 break-all">{current.scramble}</span>
-              <button
-                onClick={copyScramble}
-                className="shrink-0 rounded border border-foreground/20 text-foreground/70 px-1.5 py-0.5 hover:bg-foreground/10 transition-colors"
-              >
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </>
-          ) : (
-            selected.length === 0 && <span className="text-foreground/45">Select at least one case below.</span>
-          )}
-        </div>
-
-        <SquareOne
-          scramble={current?.scramble ?? ""}
-          onScramble={() => newScramble()}
-          animated={false}
-          className="h-[32rem] w-full rounded-xl overflow-hidden relative border border-foreground/10"
-        />
-
-        <div className="flex flex-wrap items-center gap-2 mt-4">
-          <ActionButton
-            onClick={() => newScramble()}
-            disabled={!selected.length}
-            className="bg-foreground text-background! border-foreground hover:opacity-85"
-          >
-            New scramble
-          </ActionButton>
-          <ActionButton
-            onClick={() => current && show(generateCspScramble({ caseIds: [current.caseId], middle }))}
-            disabled={!current}
-          >
-            Repeat case
-          </ActionButton>
-          <ActionButton
-            onClick={() => current && show(generateCspScramble({ shape: current.shape, parity: current.parity, middle }))}
-            disabled={!current}
-          >
-            Same parity
-          </ActionButton>
-          <ActionButton
-            onClick={() =>
-              current && show(generateCspScramble({ shape: current.shape, parity: 1 - current.parity, middle }))
-            }
-            disabled={!current}
-          >
-            Opposite parity
-          </ActionButton>
-          <ActionButton
-            onClick={() => current && show(generateCspScramble({ shape: flipCspShape(current.shape), middle }))}
-            disabled={!current}
-          >
-            Flip top/bottom
-          </ActionButton>
-          <ActionButton onClick={deselectCurrent} disabled={!current || !selectedSet.has(current.caseId)}>
-            Deselect case
-          </ActionButton>
-          <ActionButton onClick={() => setRevealed((r) => !r)} disabled={!current}>
-            {revealed ? "Hide case" : "Show case"}
-          </ActionButton>
-          {revealed && currentCase && (
-            <span className="text-sm text-foreground/70">
-              {currentCase.topShape} / {currentCase.bottomShape}
-            </span>
-          )}
-        </div>
-
-        <label className="flex items-center gap-2 mt-4 text-sm text-foreground/45">
-          Middle layer
-          <select
-            value={middle}
-            onChange={(e) => setMiddle(e.target.value as MiddleLayer)}
-            className="text-sm rounded-md border border-foreground/10 bg-background px-2 py-1.5 text-foreground"
-          >
-            {(Object.keys(MIDDLE_LABELS) as MiddleLayer[]).map((m) => (
-              <option key={m} value={m}>
-                {MIDDLE_LABELS[m]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-10 mb-3">
-          <h2 className="font-medium">
-            Cases <span className="text-sm font-normal text-foreground/45">{selected.length} / {CSP_CASES.length}</span>
-          </h2>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setShown(true)} className="text-sm text-foreground/45 hover:text-foreground">
-              Select {shapeFilter === "all" ? "all" : "shown"}
-            </button>
-            <button onClick={() => setShown(false)} className="text-sm text-foreground/45 hover:text-foreground">
-              {shapeFilter === "all" ? "Select none" : "Deselect shown"}
-            </button>
-            <select
-              value={shapeFilter}
-              onChange={(e) => setShapeFilter(e.target.value as Shape | "all")}
-              className="text-sm rounded-md border border-foreground/10 bg-background px-2 py-1.5"
+        {selected.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-foreground/20 px-6 py-12 text-center mb-10">
+            <p className="font-medium mb-1">No cases selected</p>
+            <p className="text-sm text-foreground/55 mb-4">Choose at least one case to get scrambles.</p>
+            <button
+              onClick={() => setSelected(ALL_IDS)}
+              className="text-sm font-medium rounded-md bg-foreground text-background px-4 py-2 hover:opacity-85 transition-opacity"
             >
-              <option value="all">All shapes</option>
-              {ALL_SHAPES.map((shape) => (
-                <option key={shape} value={shape}>
-                  {shape}
-                </option>
-              ))}
-            </select>
+              Select all cases
+            </button>
           </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-12">
-          {shownCases.map((c) => {
-            const on = selectedSet.has(c.id);
-            return (
-              <label
-                key={c.id}
-                className={`flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
-                  on ? "border-foreground/30 bg-foreground/5" : "border-foreground/10 hover:border-foreground/25"
-                }`}
-              >
-                <input type="checkbox" checked={on} onChange={() => toggleCase(c.id)} />
-                <ShapePairIcon top={c.topShape} bottom={c.bottomShape} className="h-9 shrink-0" />
-                <span className="text-xs leading-tight">
-                  {c.topShape}
-                  <br />
-                  {c.bottomShape}
+        ) : (
+          <>
+            <div className="rounded-t-xl border border-b-0 border-foreground/10 bg-surface px-5 py-5 sm:px-6">
+              <p className="font-mono text-xl sm:text-2xl leading-relaxed break-words min-h-9">{current?.scramble}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                <button
+                  onClick={() => step(-1)}
+                  disabled={history.i <= 0}
+                  className="text-sm rounded-md border border-foreground/15 text-foreground/70 px-4 py-2 hover:text-foreground hover:border-foreground/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  &larr; Previous
+                </button>
+                <button
+                  onClick={() => (history.i < history.list.length - 1 ? step(1) : newScramble())}
+                  className="text-sm font-medium rounded-md bg-foreground text-background px-5 py-2 hover:opacity-85 transition-opacity"
+                >
+                  Next &rarr;
+                </button>
+                <span className="text-sm text-foreground/45 ml-2">
+                  From {selected.length} of {CSP_CASES.length} cases
                 </span>
-              </label>
-            );
-          })}
-        </div>
+                <button
+                  onClick={copyScramble}
+                  disabled={!current}
+                  className="ml-auto text-sm text-foreground/55 hover:text-foreground transition-colors"
+                >
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+            </div>
+            <SquareOne
+              scramble={current?.scramble ?? ""}
+              animated={false}
+              className="h-[26rem] w-full rounded-b-xl overflow-hidden relative border border-foreground/10"
+            />
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mt-4">
+              <span className="text-sm text-foreground/45">Drill again</span>
+              <div className="flex flex-wrap gap-2">
+                <DrillButton
+                  onClick={() => current && show(generateCspScramble({ caseIds: [current.caseId], middle }))}
+                  disabled={!current}
+                  title="Same shapes, either parity"
+                >
+                  Same case
+                </DrillButton>
+                <DrillButton
+                  onClick={() => current && show(generateCspScramble({ shape: current.shape, parity: current.parity, middle }))}
+                  disabled={!current}
+                  title="Same shapes and the same parity"
+                >
+                  Same parity
+                </DrillButton>
+                <DrillButton
+                  onClick={() =>
+                    current && show(generateCspScramble({ shape: current.shape, parity: 1 - current.parity, middle }))
+                  }
+                  disabled={!current}
+                  title="Same shapes, the other parity"
+                >
+                  Other parity
+                </DrillButton>
+                <DrillButton
+                  onClick={() => current && show(generateCspScramble({ shape: flipCspShape(current.shape), middle }))}
+                  disabled={!current}
+                  title="Same shapes with top and bottom swapped"
+                >
+                  Upside down
+                </DrillButton>
+              </div>
+              <button
+                onClick={() => setRevealed((r) => !r)}
+                disabled={!current}
+                className="sm:ml-auto flex items-center gap-2 text-sm text-foreground/45 hover:text-foreground transition-colors"
+              >
+                {revealed && currentCase ? (
+                  <>
+                    <ShapePairIcon top={currentCase.topShape} bottom={currentCase.bottomShape} className="h-6" />
+                    <span className="text-foreground/70">
+                      {currentCase.topShape} / {currentCase.bottomShape}
+                    </span>
+                  </>
+                ) : (
+                  "Show case name"
+                )}
+              </button>
+            </div>
+          </>
+        )}
+
+        <section className="mt-12">
+          <div className="mb-10">
+            <div className="text-sm mb-2">Middle layer</div>
+            <div role="radiogroup" className="inline-flex rounded-lg border border-foreground/10 p-0.5">
+              {MIDDLE_OPTIONS.map((o) => (
+                <button
+                  key={o.value}
+                  role="radio"
+                  aria-checked={middle === o.value}
+                  onClick={() => setMiddle(o.value)}
+                  className={`text-sm rounded-md px-3 py-1.5 transition-colors ${
+                    middle === o.value ? "bg-foreground text-background" : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div id="cases" className="flex items-end justify-between gap-4 mb-3 scroll-mt-6">
+            <div>
+              <h2 className="font-medium">
+                Cases <span className="font-normal text-foreground/45">{selected.length} / {CSP_CASES.length}</span>
+              </h2>
+              <p className="text-sm text-foreground/55">Scrambles only use the checked cases.</p>
+            </div>
+            <div className="flex gap-3 text-sm text-foreground/45">
+              <button onClick={() => setSelected(ALL_IDS)} className="hover:text-foreground">
+                Select all
+              </button>
+              <button onClick={() => setSelected([])} className="hover:text-foreground">
+                Clear
+              </button>
+            </div>
+          </div>
+          <div className="rounded-xl border border-foreground/10 divide-y divide-foreground/10">
+            {CASE_GROUPS.map(({ split, cases }) => {
+              const count = cases.filter((c) => selectedSet.has(c.id)).length;
+              return (
+                <details key={split} className="group">
+                  <summary className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none list-none hover:bg-foreground/[0.03]">
+                    <span className="text-foreground/35 transition-transform group-open:rotate-90">&rsaquo;</span>
+                    <span className="text-sm font-medium">
+                      {split} + {8 - split} corners
+                    </span>
+                    <span className="text-sm text-foreground/45">
+                      {count} / {cases.length}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setGroup(cases, count < cases.length);
+                      }}
+                      className="ml-auto text-xs text-foreground/45 hover:text-foreground"
+                    >
+                      {count < cases.length ? "Select all" : "Clear"}
+                    </button>
+                  </summary>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 px-4 pb-4">
+                    {cases.map((c) => {
+                      const on = selectedSet.has(c.id);
+                      return (
+                        <label
+                          key={c.id}
+                          className={`flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                            on ? "border-foreground/30 bg-foreground/5" : "border-foreground/10 hover:border-foreground/25"
+                          }`}
+                        >
+                          <input type="checkbox" checked={on} onChange={() => toggleCase(c.id)} />
+                          <ShapePairIcon top={c.topShape} bottom={c.bottomShape} className="h-9 shrink-0" />
+                          <span className="text-xs leading-tight">
+                            {c.topShape}
+                            <br />
+                            {c.bottomShape}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </div>
   );

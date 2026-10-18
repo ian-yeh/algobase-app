@@ -5,7 +5,6 @@ import { Toolbar } from "./Toolbar";
 export interface SquareOneProps {
   // Applied from solved whenever it changes - scrambles are the inverse of a solve, so the puzzle must start solved.
   scramble: string;
-  onScramble: () => void;
   // false = jump straight to the scrambled state instead of playing the scramble.
   animated?: boolean;
   className?: string;
@@ -13,7 +12,6 @@ export interface SquareOneProps {
 
 export const SquareOne: React.FC<SquareOneProps> = ({
   scramble,
-  onScramble,
   animated = true,
   className = "h-96 w-full rounded-xl overflow-hidden relative",
 }) => {
@@ -66,7 +64,6 @@ export const SquareOne: React.FC<SquareOneProps> = ({
         onTurnTop={(u) => queueRef.current?.enqueueTurn(u, 0)}
         onTurnBottom={(d) => queueRef.current?.enqueueTurn(0, d)}
         onSlice={() => queueRef.current?.enqueueSlice()}
-        onScramble={onScramble}
         onReset={reset}
         onRunPreset={(sequence) => queueRef.current?.enqueueSequence(sequence, 220)}
       />
