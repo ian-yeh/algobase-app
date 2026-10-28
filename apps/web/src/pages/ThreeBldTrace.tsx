@@ -155,7 +155,7 @@ const ThreeBldTrace = () => {
           <ScrambleDisplay scramble={currentScramble} />
         </div>
       )}
-      <aside className="absolute top-4 right-4 w-[22rem] max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] flex flex-col rounded-2xl border border-line bg-surface/90 backdrop-blur-md shadow-xl shadow-foreground/5">
+      <aside className="absolute top-4 right-4 w-[22rem] max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] flex flex-col rounded-2xl border border-line bg-surface/90 backdrop-blur-md shadow-xl shadow-foreground/5 dark:shadow-black/40">
         <button
           onClick={() => setPanelOpen((o) => !o)}
           aria-expanded={panelOpen}

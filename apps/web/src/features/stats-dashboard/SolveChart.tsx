@@ -2,13 +2,16 @@ import React, { useState, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import { calculateAverageSeries } from '@/lib/stats';
 import type { Doc } from '@convex/_generated/dataModel';
-import { CHART_OPTIONS, INTERVALS, SERIES_STYLE, type Interval, type Series } from './SolveChart.config';
+import { useThemeStore } from '@/stores/themeStore';
+import { chartOptions, INTERVALS, SERIES_STYLE, type Interval, type Series } from './SolveChart.config';
 
 interface SolveChartProps {
     solves: Doc<'solves'>[];
 }
 
 const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
+    const dark = useThemeStore((s) => s.theme === 'dark');
+    const options = useMemo(() => chartOptions(dark), [dark]);
     const [interval, setInterval] = useState<Interval>('all');
     const [visible, setVisible] = useState<Record<Series, boolean>>({ single: true, ao5: true, ao12: true });
     const [scrollMode, setScrollMode] = useState(false);
@@ -43,10 +46,15 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
 
         const datasets = (Object.keys(SERIES_STYLE) as Series[])
             .filter(key => visible[key])
-            .map(key => ({ ...SERIES_STYLE[key], data: seriesData[key], fill: false }));
+            .map(key => ({
+                ...SERIES_STYLE[key],
+                ...(key === 'single' && dark && { borderColor: 'rgba(247, 248, 248, 0.2)' }),
+                data: seriesData[key],
+                fill: false,
+            }));
 
         return { labels, datasets };
-    }, [filteredSolves, visible, interval]);
+    }, [filteredSolves, visible, interval, dark]);
 
     return (
         <div className="bg-surface rounded-2xl border border-line p-5 sm:p-7">
@@ -124,7 +132,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                     className="h-full"
                     style={scrollMode ? { width: Math.max(filteredSolves.length * 14, 100) } : { width: '100%' }}
                 >
-                    <Line data={chartData} options={CHART_OPTIONS} />
+                    <Line data={chartData} options={options} />
                 </div>
             </div>
         </div>

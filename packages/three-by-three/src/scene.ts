@@ -74,8 +74,10 @@ export function useCubeScene(containerRef: React.RefObject<HTMLDivElement | null
 
     const { scene, camera, webglRenderer, dispose } = createStage(container, 400, 320);
     camera.position.multiplyScalar(1.2);
-    scene.background = new THREE.Color("#ffffff");
-    scene.fog = new THREE.Fog("#ffffff", 9.6, 19.2);
+    const background = new THREE.Color();
+    const fog = new THREE.Fog(background, 9.6, 19.2);
+    scene.background = background;
+    scene.fog = fog;
 
     const controls = new OrbitControls(camera, webglRenderer.domElement);
     controls.enableDamping = true;
@@ -107,6 +109,9 @@ export function useCubeScene(containerRef: React.RefObject<HTMLDivElement | null
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
       controls.update();
+      // Follows the app's dark-mode class live, so toggling the theme recolours an open scene.
+      background.set(document.documentElement.classList.contains("dark") ? "#202124" : "#ffffff");
+      fog.color.copy(background);
       webglRenderer.render(scene, camera);
     };
     animate();

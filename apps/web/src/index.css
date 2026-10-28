@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-serif: "Newsreader", serif;
   --font-sans: "Inter", sans-serif;
@@ -11,6 +13,16 @@
   --color-accent-warm: #c2761a;
   --color-surface: #f6f3ec;
   --color-line: #e7e2d5;
+}
+
+.dark {
+  --color-background: #17181a;
+  --color-foreground: #f7f8f8;
+  --color-accent: #a855f7;
+  --color-accent-warm: #d98a2b;
+  --color-surface: #1e1f22;
+  --color-line: #2c2d31;
+  color-scheme: dark;
 }
 
 :root {
@@ -39,7 +51,7 @@ h6 {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(26, 26, 26, 0.55);
+  background: color-mix(in srgb, var(--color-foreground) 55%, transparent);
   animation: dotPulse 1.4s ease-in-out infinite;
 }
 

@@ -43,7 +43,7 @@ const App: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-purple-100">
+    <div className="min-h-screen bg-background text-foreground selection:bg-purple-100 dark:selection:bg-accent/30">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto animate-reveal">
         <div className="flex items-center space-x-2">
@@ -81,7 +81,7 @@ const App: React.FC = () => {
 
           <button
             onClick={() => navigate("/signin")}
-            className="px-8 py-3 bg-foreground text-background font-medium rounded-full hover:opacity-90 transition-all shadow-xl shadow-foreground/10 active:scale-95 animate-slide-up delay-300"
+            className="px-8 py-3 bg-foreground text-background font-medium rounded-full hover:opacity-90 transition-all shadow-xl shadow-foreground/10 dark:shadow-black/40 active:scale-95 animate-slide-up delay-300"
           >
             Try for free
           </button>
@@ -129,7 +129,7 @@ const App: React.FC = () => {
 
           {/* Hand-built chart card echoing the real dashboard */}
           <Reveal delay={150}>
-            <div className="bg-slate-50 border border-foreground/5 rounded-2xl shadow-sm p-6">
+            <div className="bg-slate-50 dark:bg-surface border border-foreground/5 rounded-2xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-widest text-foreground/40">
@@ -153,8 +153,8 @@ const App: React.FC = () => {
               >
                 <defs>
                   <linearGradient id="ao5fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#9333ea" stopOpacity="0.18" />
-                    <stop offset="100%" stopColor="#9333ea" stopOpacity="0" />
+                    <stop offset="0%" stopOpacity="0.18" style={{ stopColor: 'var(--color-accent)' }} />
+                    <stop offset="100%" stopOpacity="0" style={{ stopColor: 'var(--color-accent)' }} />
                   </linearGradient>
                 </defs>
 
@@ -166,7 +166,7 @@ const App: React.FC = () => {
                     y1={y}
                     x2="360"
                     y2={y}
-                    stroke="#1a1a1a"
+                    className="stroke-foreground"
                     strokeOpacity="0.05"
                   />
                 ))}
@@ -192,12 +192,12 @@ const App: React.FC = () => {
                 <polyline
                   points="10,40 40,52 70,48 100,62 130,70 160,66 190,80 220,86 250,92 280,96 310,104 350,108"
                   fill="none"
-                  stroke="#9333ea"
+                  className="stroke-accent"
                   strokeWidth="2.5"
                   strokeLinejoin="round"
                   strokeLinecap="round"
                 />
-                <circle cx="350" cy="108" r="4" fill="#9333ea" />
+                <circle cx="350" cy="108" r="4" className="fill-accent" />
               </svg>
 
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
