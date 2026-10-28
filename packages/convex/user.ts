@@ -83,6 +83,7 @@ export const getMe = query({
       bookmarkedCompetitions: user.bookmarkedCompetitions ?? [],
       cubeshapeCases: user.cubeshapeCases ?? null,
       cubeshapeMiddle: user.cubeshapeMiddle ?? "random",
+      whatsNewSeen: user.whatsNewSeen ?? null,
     };
   },
 });
@@ -112,6 +113,31 @@ export const setCubeshapeSettings = mutation({
       ...(args.cases !== undefined && { cubeshapeCases: args.cases }),
       ...(args.middle !== undefined && { cubeshapeMiddle: args.middle }),
     });
+    return null;
+  },
+});
+
+export const setWhatsNewSeen = mutation({
+  args: {
+    token: v.string(),
+    version: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", decoded.userId))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, { whatsNewSeen: args.version });
     return null;
   },
 });

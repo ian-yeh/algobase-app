@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
+import WhatsNewModal from './WhatsNewModal';
 import Logo from '@/components/Logo';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -55,6 +56,7 @@ const Layout = () => {
                     <Outlet context={{ menuOpen: mobileOpen, openMenu: () => setMobileOpen(true) } satisfies LayoutContext} />
                 </main>
             </div>
+            <WhatsNewModal />
         </div>
     );
 };
