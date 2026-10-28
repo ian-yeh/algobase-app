@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Eraser, Undo2 } from "lucide-react";
-import { generateScramble, invertAlg, opAlgForLetter, useCubeScene, type PieceFocus, type PieceType } from "@algobase/three-by-three";
+import ScrambleDisplay from "@/features/timer/ScrambleDisplay";
+import { generateScramble, invertAlg, opAlgForLetter, parseAlg, parseMove, useCubeScene, type PieceFocus, type PieceType } from "@algobase/three-by-three";
 
 const noop = () => {};
 
@@ -9,6 +10,18 @@ const noop = () => {};
 const TURN_DURATION_MS = 10;
 
 const normalize = (s: string) => s.replace(/[^a-zA-Z]/g, "").toUpperCase();
+
+const isValidAlg = (alg: string) => {
+  try {
+    parseAlg(alg).forEach(parseMove);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const baseInputClass =
+  "w-full rounded-lg border border-line bg-background px-3 py-2.5 font-mono text-foreground outline-none transition-colors placeholder:font-sans placeholder:text-sm placeholder:text-foreground/30 focus:border-foreground/30";
 
 const inputClass =
   "w-full rounded-lg border border-line bg-background px-3 py-2.5 font-mono text-base tracking-widest uppercase text-foreground outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-foreground/30 focus:border-foreground/30";
@@ -85,6 +98,8 @@ const ThreeBldTrace = () => {
   const [edgeInput, setEdgeInput] = useState("");
   const [cornerInput, setCornerInput] = useState("");
   const [executed, setExecuted] = useState<string[]>([]);
+  const [currentScramble, setCurrentScramble] = useState("");
+  const [customInput, setCustomInput] = useState("");
 
   // Executes setup + swap + undo-setup for each letter on the cube, like actually solving the memo.
   const runLetters = (input: string, type: PieceType) => {
@@ -102,12 +117,18 @@ const ThreeBldTrace = () => {
     setExecuted((stack) => stack.slice(0, -1));
   };
 
-  const scramble = () => {
-    queueRef.current?.enqueueSequence(generateScramble(), TURN_DURATION_MS);
+  // Scrambles start from solved so the cube always matches the scramble shown at the top.
+  const applyScramble = (alg: string) => {
+    queueRef.current?.resetState();
+    queueRef.current?.enqueueSequence(alg, TURN_DURATION_MS);
+    setCurrentScramble(alg);
     setExecuted([]);
   };
+  const scramble = () => applyScramble(generateScramble());
+  const customValid = isValidAlg(customInput);
   const reset = () => {
     queueRef.current?.resetState();
+    setCurrentScramble("");
     setExecuted([]);
   };
   const changeFocus = (next: PieceFocus) => {
@@ -129,6 +150,11 @@ const ThreeBldTrace = () => {
         &larr; Back to Training
       </Link>
       <div ref={containerRef} className="h-full w-full" />
+      {currentScramble && (
+        <div className="pointer-events-none absolute inset-x-0 top-6 lg:right-[24rem]">
+          <ScrambleDisplay scramble={currentScramble} />
+        </div>
+      )}
       <aside className="absolute top-4 right-4 w-[22rem] max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] flex flex-col rounded-2xl border border-line bg-surface/90 backdrop-blur-md shadow-xl shadow-foreground/5">
         <button
           onClick={() => setPanelOpen((o) => !o)}
@@ -190,6 +216,37 @@ const ThreeBldTrace = () => {
               </div>
             </Section>
             <Section title="Cube">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (customInput.trim() && customValid) applyScramble(customInput.trim().replace(/\s+/g, " "));
+                }}
+                className="mb-3"
+              >
+                <label htmlFor="custom-scramble" className="block mb-1.5 text-sm font-medium text-foreground/80">
+                  Custom scramble
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="custom-scramble"
+                    value={customInput}
+                    onChange={(e) => setCustomInput(e.target.value)}
+                    placeholder="e.g. R U R' U'"
+                    spellCheck={false}
+                    autoComplete="off"
+                    aria-invalid={!customValid}
+                    className={`${baseInputClass} text-sm ${customValid ? "" : "border-red-500/60 focus:border-red-500/60"}`}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!customInput.trim() || !customValid}
+                    className="shrink-0 rounded-lg border border-accent/30 px-3 text-sm font-medium text-accent hover:bg-accent/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {!customValid && <p className="mt-1.5 text-xs text-red-500">Invalid move in scramble</p>}
+              </form>
               <div className="flex gap-2">
                 <button
                   onClick={scramble}
