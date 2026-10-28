@@ -9,7 +9,7 @@ const CubeLogo: React.FC<CubeLogoProps> = ({ className = "w-8 h-8" }) => {
         <img
             src="/cube.png"
             alt="Algobase"
-            className={`object-contain mix-blend-multiply ${className}`}
+            className={`object-contain mix-blend-multiply dark:mix-blend-normal ${className}`}
         />
     );
 };

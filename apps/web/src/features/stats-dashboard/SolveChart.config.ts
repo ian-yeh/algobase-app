@@ -66,7 +66,7 @@ export const SERIES_STYLE: Record<Series, {
     },
 };
 
-export const CHART_OPTIONS: ChartOptions<'line'> = {
+export const chartOptions = (dark: boolean): ChartOptions<'line'> => ({
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
@@ -75,12 +75,12 @@ export const CHART_OPTIONS: ChartOptions<'line'> = {
         tooltip: {
             mode: 'index',
             intersect: false,
-            backgroundColor: '#fcfcf9',
-            titleColor: '#1a1a1a',
+            backgroundColor: dark ? '#1e1f22' : '#fcfcf9',
+            titleColor: dark ? '#f7f8f8' : '#1a1a1a',
             titleFont: { family: MONO_FONT, size: 11, weight: 'normal' },
-            bodyColor: 'rgba(26, 26, 26, 0.65)',
+            bodyColor: dark ? 'rgba(247, 248, 248, 0.65)' : 'rgba(26, 26, 26, 0.65)',
             bodyFont: { family: MONO_FONT, size: 11 },
-            borderColor: '#e7e2d5',
+            borderColor: dark ? '#2c2d31' : '#e7e2d5',
             borderWidth: 1,
             cornerRadius: 4,
             padding: { x: 12, y: 8 },
@@ -100,7 +100,7 @@ export const CHART_OPTIONS: ChartOptions<'line'> = {
         x: {
             grid: { display: false },
             ticks: {
-                color: 'rgba(26, 26, 26, 0.35)',
+                color: dark ? 'rgba(247, 248, 248, 0.35)' : 'rgba(26, 26, 26, 0.35)',
                 font: { family: MONO_FONT, size: 9 },
                 maxRotation: 0,
                 autoSkip: true,
@@ -109,13 +109,13 @@ export const CHART_OPTIONS: ChartOptions<'line'> = {
         },
         y: {
             border: { display: false },
-            grid: { color: '#eeeade' },
+            grid: { color: dark ? '#25262a' : '#eeeade' },
             ticks: {
-                color: 'rgba(26, 26, 26, 0.35)',
+                color: dark ? 'rgba(247, 248, 248, 0.35)' : 'rgba(26, 26, 26, 0.35)',
                 font: { family: MONO_FONT, size: 9 },
                 padding: 8,
                 callback: (value: number | string) => formatSecondsTime(Number(value)),
             }
         }
     }
-};
+});

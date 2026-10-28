@@ -13,6 +13,7 @@ export default defineSchema({
     bookmarkedCompetitions: v.optional(v.array(v.string())), // WCA competition IDs
     cubeshapeCases: v.optional(v.array(v.string())), // CspCase ids the cubeshape trainer scrambles; unset = all
     cubeshapeMiddle: v.optional(v.union(v.literal("random"), v.literal("solved"), v.literal("flipped"))),
+    whatsNewSeen: v.optional(v.string()), // last "What's new" VERSION the user dismissed
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"]),

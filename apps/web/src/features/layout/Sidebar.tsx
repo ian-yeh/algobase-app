@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Dumbbell, ListOrdered, LogOut, PanelLeftClose, PanelLeftOpen, Trophy, X } from 'lucide-react';
+import { Dumbbell, ListOrdered, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Sun, Trophy, X } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useThemeStore } from '@/stores/themeStore';
 import Logo from '@/components/Logo';
 import CubeLogo from '@/components/CubeLogo';
 
@@ -28,6 +29,8 @@ const Sidebar = ({ mobileOpen, onClose, drawerOnly }: SidebarProps) => {
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
     const clearAuth = useAuthStore((s) => s.clearAuth);
+    const theme = useThemeStore((s) => s.theme);
+    const toggleTheme = useThemeStore((s) => s.toggle);
     const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === '1');
 
     const toggleCollapsed = () => {
@@ -112,6 +115,14 @@ const Sidebar = ({ mobileOpen, onClose, drawerOnly }: SidebarProps) => {
                                 <span className="text-[11px] text-foreground/35 truncate">{user?.email}</span>
                             </div>
                         )}
+                        <button
+                            onClick={toggleTheme}
+                            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                            className="p-1.5 rounded-md text-foreground/30 hover:text-foreground/70 transition-colors"
+                        >
+                            {theme === 'dark' ? <Sun className="w-4 h-4" strokeWidth={1.5} /> : <Moon className="w-4 h-4" strokeWidth={1.5} />}
+                        </button>
                         <button
                             onClick={handleSignOut}
                             aria-label="Sign out"

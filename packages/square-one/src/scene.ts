@@ -34,8 +34,10 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     const height = container.clientHeight || 320;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#ffffff");
-    scene.fog = new THREE.Fog("#ffffff", 8, 16);
+    const background = new THREE.Color();
+    const fog = new THREE.Fog(background, 8, 16);
+    scene.background = background;
+    scene.fog = fog;
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     camera.position.set(3.5, 3.0, 5.2);
@@ -111,6 +113,9 @@ export function useSquare1Scene(containerRef: React.RefObject<HTMLDivElement | n
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
       controls.update();
+      // Follows the app's dark-mode class live, so toggling the theme recolours an open scene.
+      background.set(document.documentElement.classList.contains("dark") ? "#202124" : "#ffffff");
+      fog.color.copy(background);
       webglRenderer.render(scene, camera);
     };
     animate();

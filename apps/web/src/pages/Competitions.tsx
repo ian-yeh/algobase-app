@@ -132,7 +132,7 @@ const Competitions = () => {
         <div className="h-full overflow-y-auto font-sans">
             <div className="max-w-4xl mx-auto py-8 px-4 md:py-12 md:px-6">
                 <header className="mb-8">
-                    <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight text-black mb-2">
+                    <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight text-foreground mb-2">
                         Competitions
                     </h1>
                     <p className="text-foreground/50 text-sm">
@@ -178,7 +178,7 @@ const Competitions = () => {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium mb-6">
+                    <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400 px-4 py-3 rounded-lg text-sm font-medium mb-6">
                         {error}
                     </div>
                 )}
@@ -220,7 +220,7 @@ const Competitions = () => {
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="min-w-0 flex-1">
-                                            <h3 className="text-lg font-semibold text-black truncate">{comp.name}</h3>
+                                            <h3 className="text-lg font-semibold text-foreground truncate">{comp.name}</h3>
                                             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-foreground/60">
                                                 {comp.start_date && (
                                                     <span className="inline-flex items-center gap-1.5">

@@ -44,7 +44,7 @@ const SignIn = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-purple-100 flex flex-col">
+    <div className="min-h-screen bg-background text-foreground selection:bg-purple-100 dark:selection:bg-accent/30 flex flex-col">
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto w-full animate-reveal">
         <div className="flex items-center space-x-2">
           <Link to="/">
@@ -66,9 +66,9 @@ const SignIn = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-slate-50 border border-foreground/5 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4 animate-slide-up delay-300">
+          <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-surface border border-foreground/5 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4 animate-slide-up delay-300">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium">
+              <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
                 <p className="flex items-center gap-2">
                   <span>⚠️</span>
                   {error}

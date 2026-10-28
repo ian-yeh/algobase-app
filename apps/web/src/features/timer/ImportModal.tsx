@@ -94,7 +94,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ open, onClose }) => {
                 className="bg-background rounded-2xl shadow-2xl border border-foreground/5 max-w-md w-full mx-4 p-8"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="text-2xl mb-6 text-black">Import solves from csTimer</div>
+                <div className="text-2xl mb-6 text-foreground">Import solves from csTimer</div>
 
                 {!sessions ? (
                     <div

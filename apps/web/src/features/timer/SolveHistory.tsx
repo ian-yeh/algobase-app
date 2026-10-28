@@ -27,7 +27,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, total, onLoadMore, 
             <div className="px-6 py-6 border-b border-foreground/5">
                 <div className="flex items-start justify-between gap-2">
                     <div>
-                        <h3 className="text-black text-sm font-bold font-sans uppercase tracking-widest">
+                        <h3 className="text-foreground text-sm font-bold font-sans uppercase tracking-widest">
                             Recent Solves
                         </h3>
                         <p className="text-xs text-foreground/40 mt-1 font-sans">
@@ -54,7 +54,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, total, onLoadMore, 
                                         setMenuOpen(false);
                                         setImportOpen(true);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-xs font-sans text-black hover:bg-foreground/5"
+                                    className="w-full text-left px-3 py-2 text-xs font-sans text-foreground hover:bg-foreground/5"
                                 >
                                     Import solves from csTimer
                                 </button>
@@ -64,7 +64,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, total, onLoadMore, 
                 </div>
             </div>
             <div
-                className="flex-1 overflow-y-auto custom-scrollbar font-sans text-black"
+                className="flex-1 overflow-y-auto custom-scrollbar font-sans text-foreground"
                 onScroll={(e) => {
                     const el = e.currentTarget;
                     if (el.scrollHeight - el.scrollTop - el.clientHeight < 300) onLoadMore();

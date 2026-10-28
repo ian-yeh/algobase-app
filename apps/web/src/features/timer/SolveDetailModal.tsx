@@ -48,7 +48,7 @@ const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onD
                 <div className="text-xs font-bold uppercase tracking-widest text-foreground/40 mb-2">
                     Solve
                 </div>
-                <div className="text-6xl tabular-nums mb-8 text-black">
+                <div className="text-6xl tabular-nums mb-8 text-foreground">
                     {formatTime(solve.time)}
                 </div>
                 <div className="space-y-5">
@@ -73,7 +73,7 @@ const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onD
                     <button
                         type="button"
                         onClick={handleDelete}
-                        className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                     >
                         Delete
                     </button>
