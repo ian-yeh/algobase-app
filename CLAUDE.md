@@ -22,7 +22,7 @@ Works offline and needs no env for typecheck, lint, test, or build. Running the 
     npm run test:convex  # vitest + convex-test, in-memory Convex functions (auth, solves, ...)
     npm run web:build    # vite production build
 
-CI (`.github/workflows/ci.yml`) runs typecheck, lint, `npm test`, and build on every PR and on pushes to main. `test:convex` is not in CI yet - run it yourself when touching `packages/convex/`.
+CI (`.github/workflows/ci.yml`) runs all five on every PR and on pushes to main.
 
 Self-checks: `apps/web/src/lib/{algList,stats,cstimer}.check.ts`, `packages/square-one/src/cspScramble.check.ts`, `packages/three-by-three/src/old-pochmann.check.ts`. Changing puzzle/alg/stats logic: add an assert to the nearest `*.check.ts`, or a new `<name>.check.ts` next to the code in the same style (assert-based, throws on failure). `npm test` picks up any tracked `*.check.ts` automatically.
 
