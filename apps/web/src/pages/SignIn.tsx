@@ -4,6 +4,7 @@ import { useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import Logo from "@/components/Logo"
 import { useAuthStore } from "@/stores/authStore"
+import { generateScramble } from "@/lib/scramble"
 
 const SignIn = () => {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -12,6 +13,7 @@ const SignIn = () => {
   const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [scramble] = useState(generateScramble)
 
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
@@ -43,107 +45,114 @@ const SignIn = () => {
     }
   }
 
+  const inputClass =
+    "w-full h-10 px-3 bg-background border border-line rounded-md text-sm placeholder:text-foreground/30 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+  const focusRing =
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-purple-100 dark:selection:bg-accent/30 flex flex-col">
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto w-full animate-reveal">
-        <div className="flex items-center space-x-2">
-          <Link to="/">
-            <Logo className="text-xl font-medium cursor-pointer hover:opacity-80 transition-opacity" />
-          </Link>
-        </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <header className="w-full max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center border-b border-line">
+        <Link to="/" className={`rounded-sm hover:opacity-70 transition-opacity ${focusRing}`}>
+          <Logo className="text-lg" />
+        </Link>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 pt-20">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-serif font-medium mb-4 tracking-tight animate-blur-in">
-              {isSignUp ? "Join Algobase" : "Welcome back"}
-            </h1>
-            <p className="text-foreground/60 font-medium animate-slide-up delay-200">
-              {isSignUp
-                ? "Create an account to track your solves"
-                : "Sign in to your account"}
-            </p>
-          </div>
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm">
+          <h1 className="text-3xl sm:text-4xl font-serif font-medium tracking-tight">
+            {isSignUp ? "Create your account" : "Sign in to Algobase"}
+          </h1>
+          <p className="mt-2 text-sm text-foreground/60">
+            {isSignUp
+              ? "Your solves, stats, and alg lists are saved to this account."
+              : "Pick up where you left off."}
+          </p>
 
-          <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-surface border border-foreground/5 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4 animate-slide-up delay-300">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
-                <p className="flex items-center gap-2">
-                  <span>⚠️</span>
-                  {error}
-                </p>
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4" aria-busy={loading}>
             {isSignUp && (
               <div>
-                <label className="block text-sm font-medium mb-2">Username</label>
+                <label htmlFor="username" className="block text-sm font-medium mb-1.5">Username</label>
                 <input
+                  id="username"
+                  name="username"
                   type="text"
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="speedcuber123"
-                  className="w-full px-3 py-2 border border-foreground/10 rounded-lg focus:outline-none focus:border-foreground/30"
+                  className={inputClass}
                   required
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium mb-1.5">Email</label>
               <input
+                id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-3 py-2 border border-foreground/10 rounded-lg focus:outline-none focus:border-foreground/30"
+                className={inputClass}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium mb-1.5">Password</label>
               <input
+                id="password"
+                name="password"
                 type="password"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-3 py-2 border border-foreground/10 rounded-lg focus:outline-none focus:border-foreground/30"
+                className={inputClass}
                 required
               />
             </div>
 
+            {error && (
+              <p role="alert" className="text-sm text-red-700 dark:text-red-400 border-l-2 border-red-600 dark:border-red-400 pl-3">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 px-4 py-2 bg-foreground text-background font-medium rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
+              className={`w-full h-10 px-4 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 ${focusRing}`}
             >
-              {loading ? "Loading..." : isSignUp ? "Create account" : "Sign in"}
+              {loading
+                ? isSignUp ? "Creating account..." : "Signing in..."
+                : isSignUp ? "Create account" : "Sign in"}
             </button>
           </form>
 
-          <p className="text-center mt-6 text-sm animate-reveal delay-500">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+          <p className="mt-6 pt-6 border-t border-line text-sm text-foreground/60">
+            {isSignUp ? "Already have an account?" : "New to Algobase?"}{" "}
             <button
+              type="button"
               onClick={() => {
                 setIsSignUp(!isSignUp)
                 setError("")
               }}
-              className="underline font-medium hover:opacity-70"
+              className={`text-foreground font-medium underline underline-offset-4 decoration-foreground/30 hover:decoration-foreground rounded-sm ${focusRing}`}
             >
-              {isSignUp ? "Sign in" : "Sign up"}
+              {isSignUp ? "Sign in" : "Create account"}
             </button>
-          </p>
-
-          <p className="mt-8 text-xs text-foreground/40 px-4 sm:px-10 leading-relaxed text-center animate-reveal delay-500">
-            By signing in, you agree to our <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.
           </p>
         </div>
       </main>
 
-      <footer className="py-8 text-center text-xs text-foreground/20 animate-reveal delay-500">
-        © 2026 Algobase Inc.
+      <footer className="w-full max-w-6xl mx-auto px-4 sm:px-8 py-6 border-t border-line">
+        <p aria-hidden="true" className="font-mono text-xs text-foreground/35 break-words">
+          {scramble}
+        </p>
       </footer>
     </div>
   )
