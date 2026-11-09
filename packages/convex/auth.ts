@@ -3,7 +3,12 @@ import { v } from "convex/values";
 
 declare const process: { env: Record<string, string | undefined> };
 
-const TOKEN_SECRET = process.env.CONVEX_JWT_SECRET || "dev-secret-key-change-me";
+// Read at call time (not module load) so codegen/analysis works without the env var.
+function tokenSecret(): string {
+  const secret = process.env.CONVEX_JWT_SECRET;
+  if (!secret) throw new Error("CONVEX_JWT_SECRET is not set on this Convex deployment");
+  return secret;
+}
 const TOKEN_VERSION = "v1";
 const TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -41,7 +46,7 @@ async function generateToken(userId: string, email: string): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
-    encoder.encode(TOKEN_SECRET),
+    encoder.encode(tokenSecret()),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
@@ -61,6 +66,7 @@ async function generateToken(userId: string, email: string): Promise<string> {
 }
 
 export const verifyToken = async (token: string): Promise<{ userId: string; email: string } | null> => {
+  const secret = tokenSecret();
   try {
     const parts = token.split("|");
     if (parts.length !== 6) return null;
@@ -79,7 +85,7 @@ export const verifyToken = async (token: string): Promise<{ userId: string; emai
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
-      encoder.encode(TOKEN_SECRET),
+      encoder.encode(secret),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["verify"]
