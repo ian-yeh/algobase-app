@@ -7,44 +7,30 @@ const TOKEN_SECRET = process.env.CONVEX_JWT_SECRET || "dev-secret-key-change-me"
 const TOKEN_VERSION = "v1";
 const TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-async function hashPassword(password: string): Promise<string> {
+// Rows created before per-user salts have no `salt` and were hashed with this.
+const LEGACY_SALT = "static-salt-change-in-prod";
+
+const toHex = (bytes: Uint8Array) => Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+
+const newSalt = () => toHex(crypto.getRandomValues(new Uint8Array(16)));
+
+async function hashPassword(password: string, salt: string): Promise<string> {
   const encoder = new TextEncoder();
-  const salt = "static-salt-change-in-prod"; // In production, use random salt per user
-
-  // Use SubtleCrypto for PBKDF2
-  try {
-    const key = await crypto.subtle.importKey(
-      "raw",
-      encoder.encode(password),
-      { name: "PBKDF2" },
-      false,
-      ["deriveBits"]
-    );
-
-    const hash = await crypto.subtle.deriveBits(
-      {
-        name: "PBKDF2",
-        hash: "SHA-256",
-        salt: encoder.encode(salt),
-        iterations: 100000,
-      },
-      key,
-      256
-    );
-
-    return Array.from(new Uint8Array(hash))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-  } catch (e) {
-    // Fallback if SubtleCrypto fails
-    console.warn("PBKDF2 not available, using simpler hash");
-    return simpleHash(password + salt);
-  }
+  const key = await crypto.subtle.importKey("raw", encoder.encode(password), { name: "PBKDF2" }, false, ["deriveBits"]);
+  const hash = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 100000 },
+    key,
+    256
+  );
+  return toHex(new Uint8Array(hash));
 }
 
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const newHash = await hashPassword(password);
-  return newHash === hash;
+async function verifyPassword(password: string, hash: string, salt: string): Promise<boolean> {
+  const candidate = await hashPassword(password, salt);
+  if (candidate.length !== hash.length) return false;
+  let diff = 0;
+  for (let i = 0; i < hash.length; i++) diff |= candidate.charCodeAt(i) ^ hash.charCodeAt(i);
+  return diff === 0;
 }
 
 async function generateToken(userId: string, email: string): Promise<string> {
@@ -115,16 +101,6 @@ export const verifyToken = async (token: string): Promise<{ userId: string; emai
   }
 };
 
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(16);
-}
-
 export const signUp = mutation({
   args: {
     email: v.string(),
@@ -142,8 +118,8 @@ export const signUp = mutation({
       throw new Error("User already exists");
     }
 
-    // Hash password using PBKDF2
-    const hashedPassword = await hashPassword(args.password);
+    const salt = newSalt();
+    const hashedPassword = await hashPassword(args.password, salt);
 
     // Create user
     const userId = args.email;
@@ -160,6 +136,7 @@ export const signUp = mutation({
     await ctx.db.insert("passwords", {
       userId,
       hashedPassword,
+      salt,
     });
 
     // Generate token
@@ -202,10 +179,15 @@ export const signIn = mutation({
       throw new Error("Invalid email or password");
     }
 
-    // Verify password using PBKDF2
-    const isValid = await verifyPassword(args.password, passwordRecord.hashedPassword);
+    const isValid = await verifyPassword(args.password, passwordRecord.hashedPassword, passwordRecord.salt ?? LEGACY_SALT);
     if (!isValid) {
       throw new Error("Invalid email or password");
+    }
+
+    // Lazy migration: move legacy static-salt rows to a per-user salt on successful sign-in.
+    if (!passwordRecord.salt) {
+      const salt = newSalt();
+      await ctx.db.patch(passwordRecord._id, { salt, hashedPassword: await hashPassword(args.password, salt) });
     }
 
     // Update lastActivityDate
