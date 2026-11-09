@@ -133,26 +133,16 @@ h6 {
   }
 }
 
-/* Scroll-triggered reveal (IntersectionObserver toggles .is-visible) */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+/* White stage behind a puzzle render; matches the 3D scene's own background. */
+.plate {
+  background: #ffffff;
+  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+.dark .plate {
+  background: #202124;
 }
 
 .delay-100 {
