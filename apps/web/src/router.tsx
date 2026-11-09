@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, useRouteError } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import App from '@/App';
 import DashboardPage from '@/pages/Dashboard';
@@ -12,21 +12,7 @@ import ThreeBldMemo from "@/pages/ThreeBldMemo";
 import AlgLists from "@/pages/AlgLists";
 import AlgList from "@/pages/AlgList";
 import Layout from "@/features/layout/Layout";
-import { useAuthStore } from "@/stores/authStore";
-
-const RedirectIfSignedIn = ({ children }: { children: React.ReactNode }) => {
-  const token = useAuthStore((s) => s.token);
-  return token ? <Navigate to="/home" replace /> : <>{children}</>;
-};
-
-// A stale/expired token makes every protected query throw "Invalid token".
-// Sign the user out so they land on /signin instead of the crash screen.
-const SessionExpired = () => {
-  const error = useRouteError();
-  if (!String((error as Error)?.message ?? error).includes("Invalid token")) throw error;
-  useAuthStore.getState().clearAuth();
-  return <Navigate to="/signin" replace />;
-};
+import { RedirectIfSignedIn, SessionExpired } from "@/features/layout/RouteGuards";
 
 export const router = createBrowserRouter([
   { path: '/', element: <RedirectIfSignedIn><App /></RedirectIfSignedIn> },
