@@ -7,9 +7,12 @@ import { chartOptions, INTERVALS, SERIES_STYLE, type Interval, type Series } fro
 
 interface SolveChartProps {
     solves: Doc<'solves'>[];
+    headingId?: string;
 }
 
-const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
+const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+
+const SolveChart: React.FC<SolveChartProps> = ({ solves, headingId }) => {
     const dark = useThemeStore((s) => s.theme === 'dark');
     const options = useMemo(() => chartOptions(dark), [dark]);
     const [interval, setInterval] = useState<Interval>('all');
@@ -58,28 +61,31 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
         return { labels, datasets };
     }, [filteredSolves, visible, interval, dark]);
 
+    const seg = (on: boolean) =>
+        `px-2.5 py-1 text-xs rounded transition-colors ${FOCUS} ${on ? 'bg-foreground text-background' : 'text-foreground/50 hover:text-foreground'}`;
+    const seriesBtn = (on: boolean, color?: string) =>
+        `px-2.5 py-1 rounded-md border text-xs transition-colors ${FOCUS} ${on
+            ? `${color ?? 'text-foreground/70'} border-line`
+            : 'border-transparent text-foreground/30 hover:text-foreground/60'}`;
+
     return (
-        <div className="bg-surface rounded-2xl border border-line p-5 sm:p-7">
+        <div className="rounded-lg border border-line p-4 sm:p-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
-                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/45">
-                        Solve Insights
-                    </h3>
-                    <p className="text-foreground/70 text-sm mt-1 font-mono tabular-nums">
+                    <h2 id={headingId} className="text-base font-semibold">Progress</h2>
+                    <p className="text-foreground/55 text-sm mt-0.5 font-mono tabular-nums">
                         {filteredSolves.length} solve{filteredSolves.length === 1 ? '' : 's'}
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex bg-background p-1 rounded-lg border border-line">
+                    <div className="flex p-0.5 rounded-md border border-line" role="group" aria-label="Time range">
                         {INTERVALS.map((int) => (
                             <button
                                 key={int}
                                 onClick={() => setInterval(int)}
-                                className={`px-3 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-md transition-all ${interval === int
-                                    ? 'bg-foreground text-background shadow-sm'
-                                    : 'text-foreground/40 hover:text-foreground'
-                                    }`}
+                                aria-pressed={interval === int}
+                                className={`${seg(interval === int)} capitalize`}
                             >
                                 {int}
                             </button>
@@ -88,42 +94,22 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
 
                     <button
                         onClick={() => setScrollMode(s => !s)}
-                        className={`px-3 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-md border transition-all ${scrollMode
-                            ? 'border-foreground/30 bg-background text-foreground/70'
-                            : 'border-line text-foreground/40 hover:text-foreground'
-                            }`}
+                        aria-pressed={scrollMode}
+                        className={seriesBtn(scrollMode)}
                         title="Toggle between fitting all points and scrolling through detail"
                     >
                         {scrollMode ? 'Scroll' : 'Fit'}
                     </button>
 
-                    <div className="flex gap-2 ml-2">
-                        <button
-                            onClick={() => toggle('single')}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${visible.single
-                                ? 'border-line bg-background text-foreground/70'
-                                : 'border-transparent text-foreground/30'
-                                }`}
-                        >
+                    <div className="flex gap-1" role="group" aria-label="Series">
+                        <button onClick={() => toggle('single')} aria-pressed={visible.single} className={seriesBtn(visible.single)}>
                             Single
                         </button>
-                        <button
-                            onClick={() => toggle('ao5')}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${visible.ao5
-                                ? 'border-[#9333ea]/30 bg-background text-[#9333ea]'
-                                : 'border-transparent text-foreground/30'
-                                }`}
-                        >
-                            AO5
+                        <button onClick={() => toggle('ao5')} aria-pressed={visible.ao5} className={seriesBtn(visible.ao5, 'text-[#9333ea]')}>
+                            Ao5
                         </button>
-                        <button
-                            onClick={() => toggle('ao12')}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${visible.ao12
-                                ? 'border-[#c2761a]/30 bg-background text-[#c2761a]'
-                                : 'border-transparent text-foreground/30'
-                                }`}
-                        >
-                            AO12
+                        <button onClick={() => toggle('ao12')} aria-pressed={visible.ao12} className={seriesBtn(visible.ao12, 'text-[#c2761a]')}>
+                            Ao12
                         </button>
                     </div>
                 </div>
