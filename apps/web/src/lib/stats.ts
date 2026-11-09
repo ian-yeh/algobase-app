@@ -51,6 +51,7 @@ export const formatTime = (ms: number) => {
 };
 
 export const formatSecondsTime = (seconds: number | null | undefined) => {
-    if (!seconds || seconds === Infinity) return '--';
+    if (seconds === Infinity) return 'DNF';
+    if (!seconds) return '--';
     return formatTime(seconds * 1000);
 };

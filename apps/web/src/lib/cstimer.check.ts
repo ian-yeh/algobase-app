@@ -51,7 +51,7 @@ const throws = (text: string) => {
 };
 assert(throws("not json"));
 assert(throws(JSON.stringify({ session1: [[null]] })), "entry without [penalty, ms]");
-// Known gap: a non-array entry isn't rejected and parses to a NaN time instead.
-assert(Number.isNaN(parseCsTimer(JSON.stringify({ session1: [["bad"]] }))[0].solves[0].time));
+assert(throws(JSON.stringify({ session1: [["bad"]] })), "non-array entry is rejected, not parsed to NaN");
+assert(throws(JSON.stringify({ session1: [[[0, "12.3"]]] })), "non-numeric ms is rejected");
 assert(parseCsTimer("{}").length === 0 && parseCsTimer("[]").length === 0);
 console.log("cstimer ok");
