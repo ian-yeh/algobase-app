@@ -39,10 +39,12 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves }) => {
                 : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         });
 
-        const times = filteredSolves.map(s => s.time);
+        // DNFs average as Infinity; plot them (and DNF averages) as gaps.
+        const times = filteredSolves.map(s => (s.dnf ? Infinity : s.time));
+        const gap = (xs: (number | null)[]) => xs.map(x => (x === Infinity ? null : x));
         const ao5Series = calculateAverageSeries([...times].reverse(), 5).reverse();
         const ao12Series = calculateAverageSeries([...times].reverse(), 12).reverse();
-        const seriesData: Record<Series, (number | null)[]> = { single: times, ao5: ao5Series, ao12: ao12Series };
+        const seriesData: Record<Series, (number | null)[]> = { single: gap(times), ao5: gap(ao5Series), ao12: gap(ao12Series) };
 
         const datasets = (Object.keys(SERIES_STYLE) as Series[])
             .filter(key => visible[key])

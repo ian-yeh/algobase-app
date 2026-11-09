@@ -49,6 +49,7 @@ export const parseCsTimer = (text: string): CsTimerSession[] => {
             cubeType,
             solves: session.map((entry) => {
                 const [penalty, ms] = entry[0];
+                if (!Number.isFinite(penalty) || !Number.isFinite(ms)) throw new Error(`Bad csTimer entry in ${key}`);
                 return {
                     cubeType,
                     time: (ms + (penalty > 0 ? penalty : 0)) / 1000,

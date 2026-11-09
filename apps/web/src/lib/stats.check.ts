@@ -18,7 +18,7 @@ assert(near(calculateAO12([1, ...Array(10).fill(10), 50]), 10), "ao12 trims one 
 // DNFs are passed as Infinity: one is trimmed as the worst, two make the average DNF.
 assert(near(calculateAO5([10, 11, 12, 13, Infinity]), 12), "one DNF counts as worst");
 assert(calculateAO5([10, 11, 12, Infinity, Infinity]) === Infinity, "two DNFs -> DNF average");
-assert(formatSecondsTime(Infinity) === "--");
+assert(formatSecondsTime(Infinity) === "DNF");
 
 const series = calculateAverageSeries([10, 11, 12, 13, 14, 15], 5);
 assert(series.length === 6 && near(series[0], 12) && near(series[1], 13) && series[2] === null);

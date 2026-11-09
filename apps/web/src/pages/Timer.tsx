@@ -16,6 +16,8 @@ import { generateScramble } from '@/lib/scramble';
 import Loading from '@/components/Loading';
 import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
+const effectiveSeconds = (s: Solve) => (s.dnf ? Infinity : s.time / 1000);
+
 const Timer = () => {
     const token = useAuthStore((s) => s.token);
     const [currentScramble, setCurrentScramble] = useState(generateScramble);
@@ -39,7 +41,8 @@ const Timer = () => {
             id: s._id,
             time: s.time * 1000,
             scramble: s.scramble,
-            timestamp: s._creationTime
+            timestamp: s._creationTime,
+            dnf: s.dnf,
         })));
     }, [solvesData]);
 
@@ -139,8 +142,8 @@ const Timer = () => {
                 <div className={`absolute inset-x-0 bottom-0 z-10 px-4 2xl:pl-100 pb-16 md:pb-32 ${chrome}`}>
                     <StatsDisplay
                         stats={statsData}
-                        runningAO5={calculateAO5(solves.map(s => s.time / 1000))}
-                        runningAO12={calculateAO12(solves.map(s => s.time / 1000))}
+                        runningAO5={calculateAO5(solves.map(effectiveSeconds))}
+                        runningAO12={calculateAO12(solves.map(effectiveSeconds))}
                     />
                 </div>
             </div>
