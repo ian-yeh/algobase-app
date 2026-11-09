@@ -3,5 +3,6 @@
   "outputDirectory": "apps/web/dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
