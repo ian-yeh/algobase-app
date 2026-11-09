@@ -21,6 +21,7 @@ export default defineSchema({
   passwords: defineTable({
     userId: v.string(),
     hashedPassword: v.string(),
+    salt: v.optional(v.string()), // hex, per-user; unset = legacy static salt (rehashed on next sign-in)
   })
     .index("by_userId", ["userId"]),
 
