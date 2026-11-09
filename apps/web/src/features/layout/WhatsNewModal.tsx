@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useAuthStore } from '@/stores/authStore';
@@ -19,10 +19,10 @@ const WhatsNewModal = () => {
 
     const open = !!me && me.whatsNewSeen !== VERSION && !dismissed;
 
-    const close = () => {
+    const close = useCallback(() => {
         setDismissed(true);
         if (token) setSeen({ token, version: VERSION });
-    };
+    }, [token, setSeen]);
 
     useEffect(() => {
         if (!open) return;
