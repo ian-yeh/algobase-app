@@ -49,7 +49,7 @@ export const SERIES_STYLE: Record<Series, {
         tension: 0.25,
     },
     ao5: {
-        label: 'AO5',
+        label: 'Ao5',
         borderColor: '#9333ea',
         backgroundColor: 'transparent',
         borderWidth: 1.25,
@@ -57,7 +57,7 @@ export const SERIES_STYLE: Record<Series, {
         tension: 0.3,
     },
     ao12: {
-        label: 'AO12',
+        label: 'Ao12',
         borderColor: '#c2761a',
         backgroundColor: 'transparent',
         borderWidth: 1.25,
