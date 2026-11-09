@@ -23,10 +23,14 @@
     "dev": "concurrently \"npm run web:dev\" \"npm run convex:dev\"",
     "build": "npm run web:build",
     "typecheck": "tsc -p packages/convex --noEmit && tsc -b apps/web",
-    "test": "for f in $(git ls-files '*.check.ts'); do echo \"$f\" && esbuild \"$f\" --bundle --platform=node --log-level=warning --outfile=node_modules/.tmp/check.cjs && node node_modules/.tmp/check.cjs || exit 1; done"
+    "test": "for f in $(git ls-files '*.check.ts'); do echo \"$f\" && esbuild \"$f\" --bundle --platform=node --log-level=warning --outfile=node_modules/.tmp/check.cjs && node node_modules/.tmp/check.cjs || exit 1; done",
+    "test:convex": "vitest run"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "concurrently": "^8.2.2",
-    "esbuild": "0.27.0"
+    "convex-test": "^0.0.67",
+    "esbuild": "0.27.0",
+    "vitest": "^5.1.0"
   }
 }
