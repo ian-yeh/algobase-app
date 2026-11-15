@@ -3,6 +3,8 @@ import { formatTime } from '@/lib/stats';
 
 interface TimerDisplayProps {
     onSolveComplete: (time: number) => void;
+    // Shown under the time while idle, in place of the hint (e.g. penalty buttons for the last solve).
+    footer?: React.ReactNode;
     onStart?: () => void;
     onStop?: () => void;
     disabled?: boolean;
@@ -10,7 +12,7 @@ interface TimerDisplayProps {
 
 type TimerState = 'IDLE' | 'HOLDING' | 'READY' | 'RUNNING';
 
-const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, onStop, disabled }) => {
+const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, onStop, disabled, footer }) => {
     const [time, setTime] = useState(0);
     const [displayState, setDisplayState] = useState<TimerState>('IDLE');
 
@@ -168,8 +170,8 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ onSolveComplete, onStart, o
             <div className={`text-8xl sm:text-9xl md:text-[160px] lg:text-[224px] leading-none font-sans tabular-nums transition-colors duration-100 ${getTimerColor()}`}>
                 {formatTime(time)}
             </div>
-            <div className="text-foreground/60 text-sm font-medium h-5 text-center px-4">
-                {displayState === 'IDLE' && 'Hold to start'}
+            <div className="text-foreground/60 text-sm font-medium min-h-5 text-center px-4">
+                {displayState === 'IDLE' && (footer || 'Hold to start')}
                 {displayState === 'HOLDING' && 'Wait for green...'}
                 {displayState === 'READY' && 'Release to start!'}
                 {displayState === 'RUNNING' && 'Tap or press a key to stop'}

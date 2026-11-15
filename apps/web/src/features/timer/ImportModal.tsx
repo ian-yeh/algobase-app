@@ -4,6 +4,7 @@ import { Upload } from 'lucide-react';
 import { api } from '@convex/_generated/api';
 import { useAuthStore } from '@/stores/authStore';
 import { parseCsTimer, type CsTimerSession } from '@/lib/cstimer';
+import { formatSolve } from '@/lib/stats';
 
 interface ImportModalProps {
     open: boolean;
@@ -155,7 +156,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ open, onClose }) => {
                                         {session.solves.slice(0, 10).map((solve, i) => (
                                             <div key={i} className="flex gap-3 text-xs text-foreground/50">
                                                 <span className="w-12 tabular-nums">
-                                                    {solve.dnf ? 'DNF' : solve.time.toFixed(2)}
+                                                    {formatSolve(solve)}
                                                 </span>
                                                 <span className="truncate">{solve.scramble}</span>
                                             </div>

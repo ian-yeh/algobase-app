@@ -30,7 +30,7 @@ const [main, sq1, big] = sessions;
 
 assert(main.key === "session1" && main.name === "Main 3x3" && main.cubeType === "3x3");
 assert(main.solves[0].time === 12.345 && !main.solves[0].dnf && main.solves[0].scramble === "R U R' U'");
-assert(main.solves[1].time === 12 && !main.solves[1].dnf, "+2 is added to the time");
+assert(main.solves[1].time === 10 && main.solves[1].plus2 && !main.solves[1].dnf, "+2 is a flag on the raw time");
 assert(main.solves[2].time === 9 && main.solves[2].dnf, "DNF keeps raw time and sets dnf");
 
 assert(sq1.cubeType === "Square-1" && sq1.solves[0].cubeType === "Square-1");

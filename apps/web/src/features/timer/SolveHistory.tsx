@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
 import ImportModal from './ImportModal';
-import { formatTime } from '@/lib/stats';
+import { formatSolve } from '@/lib/stats';
 
 export interface Solve {
     id: string;
-    time: number;
+    time: number; // seconds, without the +2
     scramble: string;
     timestamp: number;
     dnf?: boolean;
+    plus2?: boolean;
 }
 
 interface SolveHistoryProps {
@@ -90,7 +91,7 @@ const SolveHistory: React.FC<SolveHistoryProps> = ({ solves, total, onLoadMore, 
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="text-2xl tabular-nums leading-tight">
-                                                {formatTime(solve.time)}
+                                                {formatSolve(solve)}
                                             </span>
                                             <span
                                                 role="button"

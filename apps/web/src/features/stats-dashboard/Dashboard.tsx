@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import SolveChart from './SolveChart';
 import StatCard from './StatCard';
 import type { Doc } from '@convex/_generated/dataModel';
-import { calculateAO12, calculateAO5, formatSecondsTime } from '@/lib/stats';
+import { calculateAO12, calculateAO5, effectiveSeconds, formatSecondsTime, formatSolve } from '@/lib/stats';
 
 const TrainingThumb = lazy(() => import('./TrainingThumb'));
 
@@ -71,7 +71,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
 
     const hasSolves = stats.total_solves > 0;
     const recent = solves.slice(-5).reverse();
-    const newestFirst = solves.map((s) => (s.dnf ? Infinity : s.time)).reverse();
+    const newestFirst = solves.map(effectiveSeconds).reverse();
 
     return (
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-12">
@@ -120,7 +120,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
                                 {recent.map((s) => (
                                     <li key={s._id} className="flex items-baseline gap-4 py-2.5 border-b border-line">
                                         <span className={`w-16 shrink-0 font-mono tabular-nums ${s.dnf ? 'text-foreground/45' : ''}`}>
-                                            {s.dnf ? 'DNF' : formatSecondsTime(s.time)}
+                                            {formatSolve(s)}
                                         </span>
                                         <span className="min-w-0 truncate font-mono text-xs text-foreground/45" title={s.scramble}>
                                             {s.scramble}

@@ -77,3 +77,20 @@ test("expired token is rejected", async () => {
   vi.setSystemTime(Date.now() + 8 * 24 * 60 * 60 * 1000);
   await expect(addSolve(t, token)).rejects.toThrow(/Invalid token/);
 });
+
+test("setPenalty updates stats and rejects another user's token", async () => {
+  const t = convexTest(schema, modules);
+  const { token: owner } = await signUp(t);
+  const { token: other } = await signUp(t, "b@x.com");
+  const solveId = await addSolve(t, owner);
+  const penalize = (token: string, penalty: "none" | "plus2" | "dnf") =>
+    t.mutation(api.solve.setPenalty, { token, solveId, penalty });
+
+  await expect(penalize(other, "dnf")).rejects.toThrow(/access denied/);
+  await penalize(owner, "plus2");
+  expect((await t.query(api.solve.getStats, { token: owner })).best_time).toBe(12);
+  await penalize(owner, "dnf");
+  expect((await t.query(api.solve.getStats, { token: owner })).best_time).toBe(0);
+  await penalize(owner, "none");
+  expect((await t.query(api.solve.getStats, { token: owner })).best_time).toBe(10);
+});

@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import type { Solve } from './SolveHistory';
-import { formatTime } from '@/lib/stats';
+import { formatSolve, penaltyOf, type Penalty } from '@/lib/stats';
+import PenaltyButtons from './PenaltyButtons';
 
 interface SolveDetailModalProps {
     solve: Solve | null;
     onClose: () => void;
     onDelete: (id: string) => void;
+    onSetPenalty: (id: string, penalty: Penalty) => void;
 }
 
 const formatTimestamp = (ts: number) => {
@@ -19,7 +21,7 @@ const formatTimestamp = (ts: number) => {
     });
 };
 
-const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onDelete }) => {
+const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onDelete, onSetPenalty }) => {
     useEffect(() => {
         if (!solve) return;
         const handleKey = (e: KeyboardEvent) => {
@@ -48,8 +50,11 @@ const SolveDetailModal: React.FC<SolveDetailModalProps> = ({ solve, onClose, onD
                 <div className="text-xs font-bold uppercase tracking-widest text-foreground/40 mb-2">
                     Solve
                 </div>
-                <div className="text-6xl tabular-nums mb-8 text-foreground">
-                    {formatTime(solve.time)}
+                <div className="text-6xl tabular-nums mb-4 text-foreground">
+                    {formatSolve(solve)}
+                </div>
+                <div className="mb-8">
+                    <PenaltyButtons penalty={penaltyOf(solve)} onChange={(p) => onSetPenalty(solve.id, p)} />
                 </div>
                 <div className="space-y-5">
                     <div>
