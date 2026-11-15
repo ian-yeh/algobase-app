@@ -16,6 +16,8 @@ import { generateScramble } from '@/lib/scramble';
 import Loading from '@/components/Loading';
 import { calculateAO5, calculateAO12 } from '@/lib/stats';
 
+const MIN_SOLVE_MS = 10;
+
 const effectiveSeconds = (s: Solve) => (s.dnf ? Infinity : s.time / 1000);
 
 const Timer = () => {
@@ -47,6 +49,8 @@ const Timer = () => {
     }, [solvesData]);
 
     const handleSolveComplete = useCallback(async (timeMs: number) => {
+        // A stop that lands right after the start (shows as 0.00) is a misfire, not a solve.
+        if (timeMs < MIN_SOLVE_MS) return;
         const timeSec = timeMs / 1000;
 
         if (!token) {

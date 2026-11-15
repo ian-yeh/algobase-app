@@ -47,15 +47,17 @@ export const parseCsTimer = (text: string): CsTimerSession[] => {
             key,
             name: meta?.name || key,
             cubeType,
-            solves: session.map((entry) => {
+            solves: session.flatMap((entry) => {
                 const [penalty, ms] = entry[0];
                 if (!Number.isFinite(penalty) || !Number.isFinite(ms)) throw new Error(`Bad csTimer entry in ${key}`);
-                return {
+                // A 0.00 that isn't a DNF is a misfire; importing it would become the best single.
+                if (ms < 10 && penalty !== -1) return [];
+                return [{
                     cubeType,
                     time: (ms + (penalty > 0 ? penalty : 0)) / 1000,
                     scramble: String(entry[1] ?? '').trim(),
                     dnf: penalty === -1,
-                };
+                }];
             }),
         });
     }
