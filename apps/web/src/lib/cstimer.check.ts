@@ -55,3 +55,6 @@ assert(throws(JSON.stringify({ session1: [["bad"]] })), "non-array entry is reje
 assert(throws(JSON.stringify({ session1: [[[0, "12.3"]]] })), "non-numeric ms is rejected");
 assert(parseCsTimer("{}").length === 0 && parseCsTimer("[]").length === 0);
 console.log("cstimer ok");
+
+const zeros = parseCsTimer(JSON.stringify({ session1: [[[0, 0], "R"], [[-1, 0], "U"], [[0, 9500], "F"]] }))[0].solves;
+assert(zeros.length === 2 && zeros[0].dnf && zeros[1].time === 9.5, "0.00 non-DNF is dropped; 0.00 DNF is kept");
