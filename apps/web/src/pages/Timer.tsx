@@ -14,22 +14,24 @@ import SolveDetailModal from '@/features/timer/SolveDetailModal';
 import type { Solve } from '@/features/timer/SolveHistory';
 import { generateScramble } from '@/lib/scramble';
 import Loading from '@/components/Loading';
-import { calculateAO5, calculateAO12 } from '@/lib/stats';
+import { calculateAO5, calculateAO12, effectiveSeconds, penaltyOf, type Penalty } from '@/lib/stats';
+import PenaltyButtons from '@/features/timer/PenaltyButtons';
 
 const MIN_SOLVE_MS = 10;
-
-const effectiveSeconds = (s: Solve) => (s.dnf ? Infinity : s.time / 1000);
 
 const Timer = () => {
     const token = useAuthStore((s) => s.token);
     const [currentScramble, setCurrentScramble] = useState(generateScramble);
     const [solves, setSolves] = useState<Solve[]>([]);
     const [isTiming, setIsTiming] = useState(false);
-    const [selectedSolve, setSelectedSolve] = useState<Solve | null>(null);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    // The solve just finished on this page, once saved: the one the quick penalty buttons apply to.
+    const [lastSolveId, setLastSolveId] = useState<string | null>(null);
     const { menuOpen, openMenu } = useOutletContext<LayoutContext>();
 
     const createSolveMutation = useMutation(api.solve.createSolve);
     const deleteSolveMutation = useMutation(api.solve.deleteSolve);
+    const setPenaltyMutation = useMutation(api.solve.setPenalty);
 
     const { results: solvesData, status: solvesStatus, loadMore } = usePaginatedQuery(
         api.solve.listSolves,
@@ -41,10 +43,11 @@ const Timer = () => {
     useEffect(() => {
         setSolves(solvesData.map((s) => ({
             id: s._id,
-            time: s.time * 1000,
+            time: s.time,
             scramble: s.scramble,
             timestamp: s._creationTime,
             dnf: s.dnf,
+            plus2: s.plus2,
         })));
     }, [solvesData]);
 
@@ -61,21 +64,24 @@ const Timer = () => {
         const tempId = crypto.randomUUID();
         const newSolve: Solve = {
             id: tempId,
-            time: timeMs,
+            time: timeSec,
             scramble: currentScramble,
             timestamp: Date.now(),
         };
         setSolves(prev => [newSolve, ...prev]);
         setCurrentScramble(generateScramble());
+        setLastSolveId(null);
 
         try {
-            await createSolveMutation({
+            const id = await createSolveMutation({
                 token,
                 cubeType: '3x3',
                 time: timeSec,
                 scramble: currentScramble,
                 dnf: false
             });
+            setSolves(prev => prev.map(s => (s.id === tempId ? { ...s, id } : s)));
+            setLastSolveId(id);
         } catch (e) {
             console.error('Failed to save solve', e);
             setSolves(prev => prev.filter(s => s.id !== tempId));
@@ -102,11 +108,26 @@ const Timer = () => {
         }
     }, [solves, token, deleteSolveMutation]);
 
+    const handleSetPenalty = useCallback(async (id: string, penalty: Penalty) => {
+        if (!token) return;
+        const originalSolves = solves;
+        setSolves(prev => prev.map(s => (s.id === id ? { ...s, dnf: penalty === 'dnf', plus2: penalty === 'plus2' } : s)));
+        try {
+            await setPenaltyMutation({ token, solveId: id as Id<'solves'>, penalty });
+        } catch (e) {
+            console.error('Failed to set penalty', e);
+            setSolves(originalSolves);
+        }
+    }, [solves, token, setPenaltyMutation]);
+
     const handleStart = useCallback(() => setIsTiming(true), []);
     const handleStop = useCallback(() => setIsTiming(false), []);
     const handleLoadMore = useCallback(() => {
         if (solvesStatus === 'CanLoadMore') loadMore(50);
     }, [solvesStatus, loadMore]);
+
+    const selectedSolve = solves.find(s => s.id === selectedId) ?? null;
+    const lastSolve = solves[0]?.id === lastSolveId ? solves[0] : null;
 
     if (solvesStatus === 'LoadingFirstPage' || !statsData) {
         return <Loading />;
@@ -122,6 +143,12 @@ const Timer = () => {
                     onStart={handleStart}
                     onStop={handleStop}
                     disabled={!!selectedSolve || menuOpen}
+                    footer={lastSolve && (
+                        <PenaltyButtons
+                            penalty={penaltyOf(lastSolve)}
+                            onChange={(penalty) => handleSetPenalty(lastSolve.id, penalty)}
+                        />
+                    )}
                 />
 
                 <div className={`absolute inset-x-0 top-0 z-10 pointer-events-none ${chrome}`}>
@@ -157,15 +184,16 @@ const Timer = () => {
                     solves={solves}
                     total={statsData.total_solves}
                     onLoadMore={handleLoadMore}
-                    onSelectSolve={setSelectedSolve}
+                    onSelectSolve={(s) => setSelectedId(s.id)}
                     onDeleteSolve={handleDeleteSolve}
                 />
             </aside>
 
             <SolveDetailModal
                 solve={selectedSolve}
-                onClose={() => setSelectedSolve(null)}
+                onClose={() => setSelectedId(null)}
                 onDelete={handleDeleteSolve}
+                onSetPenalty={handleSetPenalty}
             />
         </div>
     );

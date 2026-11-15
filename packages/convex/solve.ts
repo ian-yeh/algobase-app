@@ -41,7 +41,8 @@ const foldStats = (stats: Stats, prior: number[], added: number[]): Stats => {
   return next;
 };
 
-const effectiveTime = (s: { time: number; dnf: boolean }) => (s.dnf ? Infinity : s.time);
+const effectiveTime = (s: { time: number; dnf: boolean; plus2?: boolean }) =>
+  s.dnf ? Infinity : s.time + (s.plus2 ? 2 : 0);
 
 const solvesByUser = (ctx: QueryCtx, userId: string) =>
   ctx.db.query("solves").withIndex("by_userId", (q) => q.eq("userId", userId));
@@ -52,7 +53,7 @@ const recentTimes = async (ctx: QueryCtx, userId: string) =>
 const statsRow = (ctx: QueryCtx, userId: string) =>
   ctx.db.query("userStats").withIndex("by_userId", (q) => q.eq("userId", userId)).unique();
 
-// ponytail: full scan of the user's solves (~1MB at 4k). Only runs on delete and first-time backfill.
+// ponytail: full scan of the user's solves (~1MB at 4k). Only runs on delete, penalty changes and first-time backfill.
 const computeAllStats = async (ctx: QueryCtx, userId: string) =>
   foldStats(EMPTY_STATS, [], (await solvesByUser(ctx, userId).collect()).map(effectiveTime));
 
@@ -148,6 +149,29 @@ export const deleteSolve = mutation({
   },
 });
 
+export const setPenalty = mutation({
+  args: {
+    token: v.string(),
+    solveId: v.id("solves"),
+    penalty: v.union(v.literal("none"), v.literal("plus2"), v.literal("dnf")),
+  },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    const solve = await ctx.db.get(args.solveId);
+    if (!solve || solve.userId !== decoded.userId) {
+      throw new Error("Solve not found or access denied");
+    }
+
+    await ctx.db.patch(args.solveId, { dnf: args.penalty === "dnf", plus2: args.penalty === "plus2" });
+    await recomputeStats(ctx, decoded.userId);
+    return { status: "success" };
+  },
+});
+
 export const getStats = query({
   args: {
     token: v.string(),
@@ -174,6 +198,7 @@ export const importSolves = mutation({
         time: v.number(),
         scramble: v.string(),
         dnf: v.boolean(),
+        plus2: v.optional(v.boolean()),
       })
     ),
   },

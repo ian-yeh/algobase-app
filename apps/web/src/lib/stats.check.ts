@@ -1,6 +1,6 @@
 // Self-check for trimmed-mean averages and time formatting.
 // Run: npx esbuild apps/web/src/lib/stats.check.ts --bundle --platform=node | node
-import { calculateAO5, calculateAO12, calculateAverageSeries, formatSecondsTime, formatTime } from "./stats";
+import { calculateAO5, calculateAO12, calculateAverageSeries, effectiveSeconds, formatSecondsTime, formatSolve, formatTime, penaltyOf } from "./stats";
 
 function assert(cond: unknown, msg = "check failed"): asserts cond {
   if (!cond) throw new Error(msg);
@@ -28,3 +28,9 @@ assert(formatTime(65_430) === "1:05.43");
 assert(formatTime(3_725_000) === "01:02:05.00");
 assert(formatSecondsTime(0) === "--" && formatSecondsTime(null) === "--");
 console.log("stats ok");
+
+// Penalties: time is stored without the +2.
+assert(effectiveSeconds({ time: 10, plus2: true }) === 12 && effectiveSeconds({ time: 10, dnf: true }) === Infinity);
+assert(formatSolve({ time: 10.5, plus2: true }) === "12.50+" && formatSolve({ time: 10, dnf: true }) === "DNF" && formatSolve({ time: 9.87 }) === "9.87");
+assert(penaltyOf({ time: 1, dnf: true, plus2: true }) === "dnf" && penaltyOf({ time: 1 }) === "none");
+console.log("penalties ok");

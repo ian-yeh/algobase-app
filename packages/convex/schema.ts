@@ -31,6 +31,7 @@ export default defineSchema({
     time: v.number(), // seconds, e.g., 45.32
     scramble: v.string(),
     dnf: v.boolean(),
+    plus2: v.optional(v.boolean()), // +2 penalty; `time` stays the raw time
   })
     .index("by_userId", ["userId"]),
 

@@ -3,6 +3,7 @@ export interface ImportedSolve {
     time: number; // seconds
     scramble: string;
     dnf: boolean;
+    plus2: boolean;
 }
 
 export interface CsTimerSession {
@@ -29,7 +30,7 @@ const cubeTypeFor = (scrType?: string) => {
 };
 
 // csTimer export: { session1: [[[penalty, ms], scramble, comment, unixDate], ...], properties: {...} }
-// penalty is 0 (none), 2000 (+2, already excluded from ms) or -1 (DNF).
+// penalty is 0 (none), 2000 (+2, not included in ms) or -1 (DNF).
 export const parseCsTimer = (text: string): CsTimerSession[] => {
     const data = JSON.parse(text);
     const sessionData = data?.properties?.sessionData
@@ -54,9 +55,10 @@ export const parseCsTimer = (text: string): CsTimerSession[] => {
                 if (ms < 10 && penalty !== -1) return [];
                 return [{
                     cubeType,
-                    time: (ms + (penalty > 0 ? penalty : 0)) / 1000,
+                    time: ms / 1000,
                     scramble: String(entry[1] ?? '').trim(),
                     dnf: penalty === -1,
+                    plus2: penalty > 0,
                 }];
             }),
         });

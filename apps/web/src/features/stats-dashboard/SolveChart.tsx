@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
-import { calculateAverageSeries } from '@/lib/stats';
+import { calculateAverageSeries, effectiveSeconds } from '@/lib/stats';
 import type { Doc } from '@convex/_generated/dataModel';
 import { useThemeStore } from '@/stores/themeStore';
 import { chartOptions, INTERVALS, SERIES_STYLE, type Interval, type Series } from './SolveChart.config';
@@ -43,7 +43,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves, headingId }) => {
         });
 
         // DNFs average as Infinity; plot them (and DNF averages) as gaps.
-        const times = filteredSolves.map(s => (s.dnf ? Infinity : s.time));
+        const times = filteredSolves.map(effectiveSeconds);
         const gap = (xs: (number | null)[]) => xs.map(x => (x === Infinity ? null : x));
         const ao5Series = calculateAverageSeries([...times].reverse(), 5).reverse();
         const ao12Series = calculateAverageSeries([...times].reverse(), 12).reverse();

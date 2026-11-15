@@ -55,3 +55,15 @@ export const formatSecondsTime = (seconds: number | null | undefined) => {
     if (!seconds) return '--';
     return formatTime(seconds * 1000);
 };
+
+export type Penalty = 'none' | 'plus2' | 'dnf';
+type PenalizedSolve = { time: number; dnf?: boolean; plus2?: boolean }; // time in seconds, without the +2
+
+export const penaltyOf = (s: PenalizedSolve): Penalty => (s.dnf ? 'dnf' : s.plus2 ? 'plus2' : 'none');
+
+// The time that counts toward averages: DNF is Infinity, +2 adds two seconds.
+export const effectiveSeconds = (s: PenalizedSolve) => (s.dnf ? Infinity : s.time + (s.plus2 ? 2 : 0));
+
+// "DNF", "12.34+" (the +2 already added), or "12.34".
+export const formatSolve = (s: PenalizedSolve) =>
+    s.dnf ? 'DNF' : `${formatSecondsTime(effectiveSeconds(s))}${s.plus2 ? '+' : ''}`;
