@@ -41,6 +41,9 @@ const foldStats = (stats: Stats, prior: number[], added: number[]): Stats => {
   return next;
 };
 
+// WCA-style: times are cut down to the hundredth, never rounded up. The epsilon absorbs float error (1.15 * 100 = 114.99999999999999).
+const toCentis = (t: number) => Math.floor(t * 100 + 1e-9) / 100;
+
 const effectiveTime = (s: { time: number; dnf: boolean; plus2?: boolean }) =>
   s.dnf ? Infinity : s.time + (s.plus2 ? 2 : 0);
 
@@ -225,16 +228,17 @@ export const createSolve = mutation({
       throw new Error("Invalid token");
     }
 
+    const time = toCentis(args.time);
     const prior = await recentTimes(ctx, decoded.userId);
     const id = await ctx.db.insert("solves", {
       userId: decoded.userId,
       cubeType: args.cubeType,
-      time: args.time,
+      time,
       scramble: args.scramble,
       dnf: args.dnf,
     });
-    await addToStats(ctx, decoded.userId, prior, [effectiveTime(args)]);
-    await addToBuckets(ctx, decoded.userId, [effectiveTime(args)]);
+    await addToStats(ctx, decoded.userId, prior, [effectiveTime({ ...args, time })]);
+    await addToBuckets(ctx, decoded.userId, [effectiveTime({ ...args, time })]);
     return id;
   },
 });
@@ -322,12 +326,13 @@ export const importSolves = mutation({
       throw new Error("Invalid token");
     }
 
+    const solves = args.solves.map((s) => ({ ...s, time: toCentis(s.time) }));
     const prior = await recentTimes(ctx, decoded.userId);
-    for (const solve of args.solves) {
+    for (const solve of solves) {
       await ctx.db.insert("solves", { ...solve, userId: decoded.userId });
     }
-    await addToStats(ctx, decoded.userId, prior, args.solves.map(effectiveTime));
-    await addToBuckets(ctx, decoded.userId, args.solves.map(effectiveTime));
-    return { imported: args.solves.length };
+    await addToStats(ctx, decoded.userId, prior, solves.map(effectiveTime));
+    await addToBuckets(ctx, decoded.userId, solves.map(effectiveTime));
+    return { imported: solves.length };
   },
 });
