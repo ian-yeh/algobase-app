@@ -46,6 +46,17 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"]),
 
+  // One row per user per UTC day, maintained by solve mutations so the "all time" chart reads O(days), not O(solves).
+  solveBuckets: defineTable({
+    userId: v.string(),
+    day: v.number(), // ms timestamp of 00:00 UTC
+    count: v.number(), // non-DNF solves
+    dnfs: v.number(),
+    sum: v.number(), // of effective times for non-DNF solves
+    best: v.number(), // 0 = none (all DNF)
+  })
+    .index("by_user_day", ["userId", "day"]),
+
   algLists: defineTable({
     userId: v.string(),
     name: v.string(),
