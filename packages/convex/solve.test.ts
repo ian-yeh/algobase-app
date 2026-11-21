@@ -58,3 +58,17 @@ test("getSolvesSince and getRecentSolves are bounded and ordered", async () => {
   expect((await t.query(api.solve.getSolvesSince, { token, since: Date.now() + 1e9 }))).toEqual([]);
   expect((await t.query(api.solve.getRecentSolves, { token, limit: 2 })).map((s) => s.time)).toEqual([3, 2]);
 });
+
+test("times are truncated to centiseconds, not rounded", async () => {
+  const { t, token } = await setup();
+  await add(t, token, 22.993);
+  await add(t, token, 22.999);
+  await add(t, token, 1.15);
+  await t.mutation(api.solve.importSolves, {
+    token,
+    solves: [{ cubeType: "3x3", time: 9.996, scramble: "", dnf: false }],
+  });
+  const times = (await t.query(api.solve.getRecentSolves, { token, limit: 10 })).map((s) => s.time);
+  expect(times).toEqual([9.99, 1.15, 22.99, 22.99]);
+  expect(await t.query(api.solve.getStats, { token })).toMatchObject({ best_time: 1.15 });
+});
