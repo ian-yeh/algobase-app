@@ -16,7 +16,7 @@ interface StatsDashboardProps {
         best_time: number;
         total_solves: number;
     } | null;
-    solves: Doc<'solves'>[];
+    recent: Doc<'solves'>[]; // newest first, up to 12
 }
 
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
@@ -66,12 +66,11 @@ const SectionHeading = ({ id, children, link }: { id: string; children: React.Re
     </div>
 );
 
-const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
+const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, recent }) => {
     if (!stats) return null;
 
     const hasSolves = stats.total_solves > 0;
-    const recent = solves.slice(-5).reverse();
-    const newestFirst = solves.map(effectiveSeconds).reverse();
+    const newestFirst = recent.map(effectiveSeconds);
 
     return (
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-12">
@@ -106,7 +105,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
 
                     <div className="grid gap-8 xl:grid-cols-3">
                         <section aria-labelledby="progress" className="xl:col-span-2 min-w-0">
-                            <SolveChart solves={solves} headingId="progress" />
+                            <SolveChart headingId="progress" />
                         </section>
 
                         <section aria-labelledby="recent">
@@ -117,7 +116,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, solves }) => {
                                 ao12 <span className="font-mono tabular-nums text-foreground">{formatSecondsTime(calculateAO12(newestFirst))}</span>
                             </p>
                             <ol className="border-t border-line">
-                                {recent.map((s) => (
+                                {recent.slice(0, 5).map((s) => (
                                     <li key={s._id} className="flex items-baseline gap-4 py-2.5 border-b border-line">
                                         <span className={`w-16 shrink-0 font-mono tabular-nums ${s.dnf ? 'text-foreground/45' : ''}`}>
                                             {formatSolve(s)}

@@ -1,65 +1,89 @@
 import React, { useState, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
+import { useQuery } from 'convex/react';
+import { api } from '@convex/_generated/api';
 import { calculateAverageSeries, effectiveSeconds } from '@/lib/stats';
-import type { Doc } from '@convex/_generated/dataModel';
+import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
-import { chartOptions, INTERVALS, SERIES_STYLE, type Interval, type Series } from './SolveChart.config';
+import { chartOptions, INTERVALS, SERIES_COLOR, SERIES_STYLE, type Interval, type Series } from './SolveChart.config';
 
 interface SolveChartProps {
-    solves: Doc<'solves'>[];
     headingId?: string;
 }
 
+const MINUTE = 60_000;
+
+const windowStart = (interval: Exclude<Interval, 'all'>) => {
+    const cutoff = new Date();
+    if (interval === 'hour') cutoff.setHours(cutoff.getHours() - 1);
+    else if (interval === 'day') cutoff.setDate(cutoff.getDate() - 1);
+    else if (interval === 'week') cutoff.setDate(cutoff.getDate() - 7);
+    else cutoff.setMonth(cutoff.getMonth() - 1);
+    return Math.floor(cutoff.getTime() / MINUTE) * MINUTE;
+};
+
+const DETAIL_SERIES: Series[] = ['single', 'ao5', 'ao12'];
+const DAILY_SERIES: Series[] = ['mean', 'best'];
+
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
-const SolveChart: React.FC<SolveChartProps> = ({ solves, headingId }) => {
+const SolveChart: React.FC<SolveChartProps> = ({ headingId }) => {
+    const token = useAuthStore((s) => s.token);
     const dark = useThemeStore((s) => s.theme === 'dark');
     const options = useMemo(() => chartOptions(dark), [dark]);
     const [interval, setInterval] = useState<Interval>('all');
-    const [visible, setVisible] = useState<Record<Series, boolean>>({ single: true, ao5: true, ao12: true });
+    const [visible, setVisible] = useState<Record<Series, boolean>>({ single: true, ao5: true, ao12: true, mean: true, best: true });
     const [scrollMode, setScrollMode] = useState(false);
     const toggle = (series: Series) => setVisible(v => ({ ...v, [series]: !v[series] }));
 
-    const filteredSolves = useMemo(() => {
-        const sorted = [...solves].sort((a, b) => a._creationTime - b._creationTime);
-        if (interval === 'all') return sorted;
+    const daily = interval === 'all';
+    // Fixed per interval selection: a cutoff that moved on every render would resubscribe the query each time.
+    const since = useMemo(() => (daily ? 0 : windowStart(interval)), [daily, interval]);
+    const buckets = useQuery(api.solve.getSolveBuckets, token && daily ? { token } : 'skip');
+    const solves = useQuery(api.solve.getSolvesSince, token && !daily ? { token, since } : 'skip');
+    const loading = daily ? buckets === undefined : solves === undefined;
 
-        const now = new Date();
-        const cutoff = new Date();
-        if (interval === 'hour') cutoff.setHours(now.getHours() - 1);
-        else if (interval === 'day') cutoff.setDate(now.getDate() - 1);
-        else if (interval === 'week') cutoff.setDate(now.getDate() - 7);
-        else if (interval === 'month') cutoff.setMonth(now.getMonth() - 1);
-
-        return sorted.filter(s => s._creationTime >= cutoff.getTime());
-    }, [solves, interval]);
+    const seriesKeys = daily ? DAILY_SERIES : DETAIL_SERIES;
+    const points = daily ? (buckets?.length ?? 0) : (solves?.length ?? 0);
+    const solveCount = daily ? (buckets ?? []).reduce((n, b) => n + b.count + b.dnfs, 0) : points;
 
     const chartData = useMemo(() => {
-        const labels = filteredSolves.map(s => {
-            const date = new Date(s._creationTime);
-            return interval === 'hour' || interval === 'day'
-                ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        });
+        const dateLabel = (t: number) => new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric', ...(daily && { timeZone: 'UTC' }) });
+        let labels: string[] = [];
+        let seriesData: Partial<Record<Series, (number | null)[]>> = {};
 
-        // DNFs average as Infinity; plot them (and DNF averages) as gaps.
-        const times = filteredSolves.map(effectiveSeconds);
-        const gap = (xs: (number | null)[]) => xs.map(x => (x === Infinity ? null : x));
-        const ao5Series = calculateAverageSeries([...times].reverse(), 5).reverse();
-        const ao12Series = calculateAverageSeries([...times].reverse(), 12).reverse();
-        const seriesData: Record<Series, (number | null)[]> = { single: gap(times), ao5: gap(ao5Series), ao12: gap(ao12Series) };
+        if (daily) {
+            labels = (buckets ?? []).map(b => dateLabel(b.day));
+            seriesData = { mean: (buckets ?? []).map(b => b.mean), best: (buckets ?? []).map(b => b.best) };
+        } else {
+            const list = solves ?? [];
+            labels = list.map(s => {
+                const date = new Date(s._creationTime);
+                return interval === 'hour' || interval === 'day'
+                    ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : dateLabel(s._creationTime);
+            });
+            // DNFs average as Infinity; plot them (and DNF averages) as gaps.
+            const times = list.map(effectiveSeconds);
+            const gap = (xs: (number | null)[]) => xs.map(x => (x === Infinity ? null : x));
+            seriesData = {
+                single: gap(times),
+                ao5: gap(calculateAverageSeries([...times].reverse(), 5).reverse()),
+                ao12: gap(calculateAverageSeries([...times].reverse(), 12).reverse()),
+            };
+        }
 
-        const datasets = (Object.keys(SERIES_STYLE) as Series[])
+        const datasets = seriesKeys
             .filter(key => visible[key])
             .map(key => ({
                 ...SERIES_STYLE[key],
                 ...(key === 'single' && dark && { borderColor: 'rgba(247, 248, 248, 0.2)' }),
-                data: seriesData[key],
+                data: seriesData[key] ?? [],
                 fill: false,
             }));
 
         return { labels, datasets };
-    }, [filteredSolves, visible, interval, dark]);
+    }, [buckets, solves, seriesKeys, visible, interval, daily, dark]);
 
     const seg = (on: boolean) =>
         `px-2.5 py-1 text-xs rounded transition-colors ${FOCUS} ${on ? 'bg-foreground text-background' : 'text-foreground/50 hover:text-foreground'}`;
@@ -74,7 +98,7 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves, headingId }) => {
                 <div>
                     <h2 id={headingId} className="text-base font-semibold">Progress</h2>
                     <p className="text-foreground/55 text-sm mt-0.5 font-mono tabular-nums">
-                        {filteredSolves.length} solve{filteredSolves.length === 1 ? '' : 's'}
+                        {solveCount.toLocaleString()} solve{solveCount === 1 ? '' : 's'}{daily && ', by day'}
                     </p>
                 </div>
 
@@ -102,26 +126,26 @@ const SolveChart: React.FC<SolveChartProps> = ({ solves, headingId }) => {
                     </button>
 
                     <div className="flex gap-1" role="group" aria-label="Series">
-                        <button onClick={() => toggle('single')} aria-pressed={visible.single} className={seriesBtn(visible.single)}>
-                            Single
-                        </button>
-                        <button onClick={() => toggle('ao5')} aria-pressed={visible.ao5} className={seriesBtn(visible.ao5, 'text-[#9333ea]')}>
-                            Ao5
-                        </button>
-                        <button onClick={() => toggle('ao12')} aria-pressed={visible.ao12} className={seriesBtn(visible.ao12, 'text-[#c2761a]')}>
-                            Ao12
-                        </button>
+                        {seriesKeys.map((key) => (
+                            <button key={key} onClick={() => toggle(key)} aria-pressed={visible[key]} className={seriesBtn(visible[key], SERIES_COLOR[key])}>
+                                {SERIES_STYLE[key].label}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
 
             <div className="h-64 w-full overflow-x-auto">
-                <div
-                    className="h-full"
-                    style={scrollMode ? { width: Math.max(filteredSolves.length * 14, 100) } : { width: '100%' }}
-                >
-                    <Line data={chartData} options={options} />
-                </div>
+                {loading ? (
+                    <div className="h-full" aria-busy="true" />
+                ) : (
+                    <div
+                        className="h-full"
+                        style={scrollMode ? { width: Math.max(points * 14, 100) } : { width: '100%' }}
+                    >
+                        <Line data={chartData} options={options} />
+                    </div>
+                )}
             </div>
         </div>
     );

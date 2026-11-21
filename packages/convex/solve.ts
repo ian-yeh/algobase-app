@@ -70,17 +70,128 @@ const addToStats = async (ctx: MutationCtx, userId: string, prior: number[], add
   await ctx.db.patch(row._id, foldStats(row, prior, added));
 };
 
-export const getSolves = query({
-  args: {
-    token: v.string(),
-  },
+const DAY_MS = 86_400_000;
+const dayOf = (t: number) => Math.floor(t / DAY_MS) * DAY_MS;
+const MAX_BUCKETS = 3650;
+const MAX_WINDOW_SOLVES = 5000;
+
+type Bucket = { day: number; count: number; dnfs: number; sum: number; best: number };
+
+const foldBucket = (b: Bucket, times: number[]): Bucket =>
+  times.reduce(
+    (acc, t) =>
+      t === Infinity
+        ? { ...acc, dnfs: acc.dnfs + 1 }
+        : { ...acc, count: acc.count + 1, sum: acc.sum + t, best: better(acc.best, t) },
+    b,
+  );
+
+const emptyBucket = (day: number): Bucket => ({ day, count: 0, dnfs: 0, sum: 0, best: 0 });
+
+const groupBuckets = (solves: { _creationTime: number; time: number; dnf: boolean; plus2?: boolean }[]): Bucket[] => {
+  const byDay = new Map<number, Bucket>();
+  for (const s of solves) {
+    const day = dayOf(s._creationTime);
+    byDay.set(day, foldBucket(byDay.get(day) ?? emptyBucket(day), [effectiveTime(s)]));
+  }
+  return [...byDay.values()].sort((a, b) => a.day - b.day);
+};
+
+const bucketRow = (ctx: QueryCtx, userId: string, day: number) =>
+  ctx.db.query("solveBuckets").withIndex("by_user_day", (q) => q.eq("userId", userId).eq("day", day)).unique();
+
+const hasBuckets = async (ctx: QueryCtx, userId: string) =>
+  (await ctx.db.query("solveBuckets").withIndex("by_user_day", (q) => q.eq("userId", userId)).first()) !== null;
+
+const upsertBucket = async (ctx: MutationCtx, userId: string, b: Bucket) => {
+  const row = await bucketRow(ctx, userId, b.day);
+  if (b.count + b.dnfs === 0) {
+    if (row) await ctx.db.delete(row._id);
+  } else if (row) await ctx.db.patch(row._id, b);
+  else await ctx.db.insert("solveBuckets", { userId, ...b });
+};
+
+// Full rebuild from the solves table. Used for users who predate buckets, so it has to read everything once.
+const rebuildBuckets = async (ctx: MutationCtx, userId: string) => {
+  for (const row of await ctx.db.query("solveBuckets").withIndex("by_user_day", (q) => q.eq("userId", userId)).collect()) {
+    await ctx.db.delete(row._id);
+  }
+  for (const b of groupBuckets(await solvesByUser(ctx, userId).collect())) await upsertBucket(ctx, userId, b);
+};
+
+// Recomputes one day from its solves. Skipped for users without buckets, whose chart is computed on read.
+const rebuildDay = async (ctx: MutationCtx, userId: string, day: number) => {
+  if (!(await hasBuckets(ctx, userId))) return;
+  const solves = await ctx.db
+    .query("solves")
+    .withIndex("by_userId", (q) => q.eq("userId", userId).gte("_creationTime", day).lt("_creationTime", day + DAY_MS))
+    .collect();
+  await upsertBucket(ctx, userId, foldBucket(emptyBucket(day), solves.map(effectiveTime)));
+};
+
+// Call after the new solves are inserted, so the legacy rebuild path sees them.
+const addToBuckets = async (ctx: MutationCtx, userId: string, times: number[]) => {
+  const day = dayOf(Date.now());
+  if (!(await hasBuckets(ctx, userId))) return rebuildBuckets(ctx, userId);
+  const row = await bucketRow(ctx, userId, day);
+  await upsertBucket(ctx, userId, foldBucket(row ?? emptyBucket(day), times));
+};
+
+const toPoint = (b: Bucket) => ({
+  day: b.day,
+  count: b.count,
+  dnfs: b.dnfs,
+  mean: b.count ? b.sum / b.count : null,
+  best: b.best || null,
+});
+
+// Daily aggregates for the "all time" chart, oldest first.
+export const getSolveBuckets = query({
+  args: { token: v.string() },
   handler: async (ctx, args) => {
     const decoded = await verifyToken(args.token);
     if (!decoded) {
       throw new Error("Invalid token");
     }
 
-    return await solvesByUser(ctx, decoded.userId).collect();
+    const rows = await ctx.db
+      .query("solveBuckets")
+      .withIndex("by_user_day", (q) => q.eq("userId", decoded.userId))
+      .order("desc")
+      .take(MAX_BUCKETS);
+    if (rows.length) return rows.reverse().map(toPoint);
+    return groupBuckets(await solvesByUser(ctx, decoded.userId).collect()).slice(-MAX_BUCKETS).map(toPoint);
+  },
+});
+
+// Raw solves from `since` on, oldest first, for the short-range chart views.
+export const getSolvesSince = query({
+  args: { token: v.string(), since: v.number() },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    const rows = await ctx.db
+      .query("solves")
+      .withIndex("by_userId", (q) => q.eq("userId", decoded.userId).gte("_creationTime", args.since))
+      .order("desc")
+      .take(MAX_WINDOW_SOLVES);
+    return rows.reverse();
+  },
+});
+
+// Newest first, capped, for the dashboard's recent list.
+export const getRecentSolves = query({
+  args: { token: v.string(), limit: v.number() },
+  handler: async (ctx, args) => {
+    const decoded = await verifyToken(args.token);
+    if (!decoded) {
+      throw new Error("Invalid token");
+    }
+
+    return await solvesByUser(ctx, decoded.userId).order("desc").take(Math.min(Math.max(args.limit, 1), 100));
   },
 });
 
@@ -123,6 +234,7 @@ export const createSolve = mutation({
       dnf: args.dnf,
     });
     await addToStats(ctx, decoded.userId, prior, [effectiveTime(args)]);
+    await addToBuckets(ctx, decoded.userId, [effectiveTime(args)]);
     return id;
   },
 });
@@ -145,6 +257,7 @@ export const deleteSolve = mutation({
 
     await ctx.db.delete(args.solveId);
     await recomputeStats(ctx, decoded.userId);
+    await rebuildDay(ctx, decoded.userId, dayOf(solve._creationTime));
     return { status: "success" };
   },
 });
@@ -168,6 +281,7 @@ export const setPenalty = mutation({
 
     await ctx.db.patch(args.solveId, { dnf: args.penalty === "dnf", plus2: args.penalty === "plus2" });
     await recomputeStats(ctx, decoded.userId);
+    await rebuildDay(ctx, decoded.userId, dayOf(solve._creationTime));
     return { status: "success" };
   },
 });
@@ -213,6 +327,7 @@ export const importSolves = mutation({
       await ctx.db.insert("solves", { ...solve, userId: decoded.userId });
     }
     await addToStats(ctx, decoded.userId, prior, args.solves.map(effectiveTime));
+    await addToBuckets(ctx, decoded.userId, args.solves.map(effectiveTime));
     return { imported: args.solves.length };
   },
 });

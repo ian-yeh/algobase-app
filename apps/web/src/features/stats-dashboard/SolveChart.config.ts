@@ -25,7 +25,7 @@ ChartJS.register(
 );
 
 export type Interval = 'hour' | 'day' | 'week' | 'month' | 'all';
-export type Series = 'single' | 'ao5' | 'ao12';
+export type Series = 'single' | 'ao5' | 'ao12' | 'mean' | 'best';
 
 export const INTERVALS: Interval[] = ['hour', 'day', 'week', 'month', 'all'];
 
@@ -64,6 +64,29 @@ export const SERIES_STYLE: Record<Series, {
         pointRadius: 0,
         tension: 0.3,
     },
+    mean: {
+        label: 'Daily mean',
+        borderColor: '#9333ea',
+        backgroundColor: 'transparent',
+        borderWidth: 1.25,
+        pointRadius: 0,
+        tension: 0.3,
+    },
+    best: {
+        label: 'Daily best',
+        borderColor: '#c2761a',
+        backgroundColor: 'transparent',
+        borderWidth: 1.25,
+        pointRadius: 0,
+        tension: 0.3,
+    },
+};
+
+export const SERIES_COLOR: Partial<Record<Series, string>> = {
+    ao5: 'text-[#9333ea]',
+    mean: 'text-[#9333ea]',
+    ao12: 'text-[#c2761a]',
+    best: 'text-[#c2761a]',
 };
 
 export const chartOptions = (dark: boolean): ChartOptions<'line'> => ({
